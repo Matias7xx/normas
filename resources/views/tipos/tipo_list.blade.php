@@ -41,7 +41,7 @@
                                             <nobr>
                                                 <nobr>
                                                 <a
-                                                    href="{{ route('normas.tipo_edit', $tipo_obj->id) }}"><button
+                                                    href="{{ route('tipos.tipo_edit', $tipo_obj->id) }}"><button
                                                         type='button' class='btn btn-primary'>
                                                         <nobr><i class='fas fa-edit'></i> Editar</nobr>
                                                     </button></a>

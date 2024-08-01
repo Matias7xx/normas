@@ -40,12 +40,12 @@
     <div class="col-md-8">
         <label class="section-form-label">Descrição</label>
         <input type="text" class="section-form-input {{ $errors->has('descricao') ? 'border-error' : '' }}"
-            name="descricao" id="descricao">
+            name="descricao" id="descricao" value="{{ old('descricao') }}">
     </div>
     <div class="col-md-4">
         <label class="section-form-label">Anexo</label>
         <input type="file" class="section-form-input {{ $errors->has('anexo') ? 'border-error' : '' }}"
-            name="anexo" id="anexo">
+            name="anexo" id="anexo" value="{{ old('anexo') }}" accept=".pdf">
     </div>
 </div>
 
@@ -53,7 +53,7 @@
     <div class="col-md-12">
         <label class="section-form-label">Resumo da norma</label>
         <input type="text" class="section-form-input {{ $errors->has('resumo') ? 'border-error' : '' }}"
-            name="resumo" id="resumo">
+            name="resumo" id="resumo" value="{{ old('resumo') }}">
     </div>
 </div>
 

@@ -40,7 +40,7 @@
                                         <td>
                                             <nobr>
                                                 <a
-                                                    href="{{ route('normas.orgao_edit', $orgao_obj->id) }}"><button
+                                                    href="{{ route('orgaos.orgao_edit', $orgao_obj->id) }}"><button
                                                         type='button' class='btn btn-primary'>
                                                         <nobr><i class='fas fa-edit'></i> Editar</nobr>
                                                     </button></a>

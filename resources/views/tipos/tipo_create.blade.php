@@ -24,9 +24,9 @@
                         <h3>Criar um novo <b>TIPO</b></h3>
                     </div>
                     <div class="card-body">
-                        <form id="user_form" action="{{ route('normas.tipo_store') }}" method="POST">
+                        <form id="user_form" action="{{ route('tipos.tipo_store') }}" method="POST">
                             @csrf
-                            @include('normas.tipo_create_form')
+                            @include('tipos.tipo_create_form')
                         </form>
                     </div>
                 </div>

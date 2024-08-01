@@ -26,9 +26,9 @@
                         <h3>Editar Órgão</h3>
                     </div>
                     <div class="card-body">
-                        <form id="user_form" action="{{ route('normas.orgao_update', [ 'id' => $orgao->id ]) }}" method="POST">
+                        <form id="user_form" action="{{ route('orgaos.orgao_update', [ 'id' => $orgao->id ]) }}" method="POST">
                             @csrf
-                            @include('normas.orgao_edit_form')
+                            @include('orgaos.orgao_edit_form')
                         </form>
                     </div>
                 </div>

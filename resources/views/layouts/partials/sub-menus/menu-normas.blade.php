@@ -2,7 +2,7 @@
     {{-- @can('add_roles') --}}
 
 
-    @can('administrador')
+    @can('gestor')
         <li class="nav-item">
             <a href="{{ route('normas.norma_create') }}" class="nav-link {{ Request::is('admin') ? 'active' : '' }}">
                 &nbsp;&nbsp;&nbsp;<i class="far fa-dot-circle nav-icon text-danger"></i>
@@ -23,7 +23,7 @@
         </a>
     </li>
 
-    @can('administrador')
+    @can('gestor')
         <li class="nav-item">
             <a href="#" class="nav-link">
                 <i class="fas fa-cog nav-icon text-warning"></i>

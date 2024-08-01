@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\Permission;
-use App\Models\Ocorrencia;
 use App\Models\Publicidade;
 use App\Models\Role;
 use App\Models\User;

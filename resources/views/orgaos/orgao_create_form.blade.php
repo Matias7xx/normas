@@ -10,7 +10,7 @@
     <div class="col-md-4">
         <div class="btn-group">
             <button class="btn btn-success" type="submit" onclick="return validateForm()"><i class="fas fa-save"></i> Confirmar</button>
-            &nbsp;&nbsp;<a class="btn btn-secondary" href="{{route('normas.orgao_list')}}"><i class="fas fa-arrow-left"></i> Voltar para a lista</a>
+            &nbsp;&nbsp;<a class="btn btn-secondary" href="{{route('orgaos.orgao_list')}}"><i class="fas fa-arrow-left"></i> Voltar para a lista</a>
         </div>
     </div>
 </div>

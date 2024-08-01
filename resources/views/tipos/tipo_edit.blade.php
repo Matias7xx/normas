@@ -26,9 +26,9 @@
                         <h3>Editar Tipo de Norma</h3>
                     </div>
                     <div class="card-body">
-                        <form id="user_form" action="{{ route('normas.tipo_update', [ 'id' => $tipo->id ]) }}" method="POST">
+                        <form id="user_form" action="{{ route('tipos.tipo_update', [ 'id' => $tipo->id ]) }}" method="POST">
                             @csrf
-                            @include('normas.tipo_edit_form')
+                            @include('tipos.tipo_edit_form')
                         </form>
                     </div>
                 </div>

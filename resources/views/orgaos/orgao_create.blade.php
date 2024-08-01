@@ -24,9 +24,9 @@
                         <h3>Criar um novo <b>ÓRGÃO</b></h3>
                     </div>
                     <div class="card-body">
-                        <form id="user_form" action="{{ route('normas.orgao_store') }}" method="POST">
+                        <form id="user_form" action="{{ route('orgaos.orgao_store') }}" method="POST">
                             @csrf
-                            @include('normas.orgao_create_form')
+                            @include('orgaos.orgao_create_form')
                         </form>
                     </div>
                 </div>
