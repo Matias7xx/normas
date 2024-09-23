@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.guest')
 @section('page-title')
     Pesquisa de Normas
 @endsection
@@ -21,7 +21,7 @@
             <div class="col-md-12">
                 <div class="card card-defalt">
                     <div class="card-header">
-                        <form action="{{ route('normas.norma_search') }}" method="GET">
+                        <form action="{{ route('norma_public_search') }}" method="GET">
                             @csrf
                             <div class="row">
                                 <div class="col-2">
@@ -31,11 +31,11 @@
                                 </div>
                                 <div class="col-2">
                                     <label class="section-form-label">Resumo</label>
-                                    <input type="text" name="resumo" class="section-form-input">
+                                    <input type="text" name="resumo" class="section-form-input" value="{{ isset($_GET['resumo']) ? $_GET['resumo'] : '' }}">
                                 </div>
                                 <div class="col-2">
                                     <label class="section-form-label">Palavra chave</label>
-                                    <input type="text" name="palavra_chave" class="section-form-input">
+                                    <input type="text" name="palavra_chave" class="section-form-input" value="{{ isset($_GET['palavra_chave']) ? $_GET['palavra_chave'] : '' }}">
                                 </div>
                                 <div class="col-2">
                                     <label class="section-form-label">Órgão</label>
@@ -74,7 +74,6 @@
                                                 <th>Resumo</th>
                                                 <th>Órgão</th>
                                                 <th>**</th>
-                                                <th>**</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -89,13 +88,6 @@
                                                             href='javascript:abrirPagina("storage/normas/{{ $norma->anexo }}",600,600);'><button
                                                                 class='btn btn-danger'>
                                                                 <nobr><i class='fas fa-file-pdf'></i> Anexo</nobr>
-                                                            </button></a>
-                                                    </td>
-                                                    <td>
-                                                        <a
-                                                            href="{{ route('normas.norma_edit', $norma->id) }}"><button
-                                                                class='btn btn-success'>
-                                                                <nobr><i class='fas fa-edit'></i> Editar</nobr>
                                                             </button></a>
                                                     </td>
                                                 </tr>

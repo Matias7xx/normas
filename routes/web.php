@@ -5,6 +5,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\DocumentoController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\NormaController;
+use App\Http\Controllers\NormaSearchPublicController;
 use App\Http\Controllers\OrgaoController;
 use App\Http\Controllers\PalavraChaveController;
 use App\Http\Controllers\TipoController;
@@ -13,6 +14,8 @@ use App\Models\Orgao;
 use App\Models\PalavraChave;
 use App\Models\Tipo;
 use Illuminate\Support\Facades\Route;
+
+Route::get('/norma_public_search', [NormaSearchPublicController::class, 'search'])->name('norma_public_search');
 
 Route::middleware([Authenticate::class])->group(function() {
 

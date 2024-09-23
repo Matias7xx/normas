@@ -9,7 +9,7 @@
             <img src="/images/brasao_pcpb.png" alt="Logo PCPB" width="40px;"  class="brand-image" style="opacity: .8; position: relative; top: 50%; transform: translateY(-40%); height:40px;"/>
         </li>
 
-            <h3 style="margin-left: 30px;"><b>Biblioteca de <font color="red">NORMAS</font> da Polícia Civil da Paraíba</b></h3>
+            <h3 style="margin-left: 30px;"><b>Biblioteca de Normas da Polícia Civil</b></h3>
 
 
         {{-- <li class="nav-item d-none d-sm-inline-block">
