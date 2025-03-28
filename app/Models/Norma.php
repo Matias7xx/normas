@@ -35,7 +35,8 @@ class Norma extends Model
     }
 
     public function palavrasChave(){
-        return $this->belongsToMany(PalavraChave::class,'normas_chaves', 'norma_id', 'palavra_chave_id');
+        return $this->belongsToMany(PalavraChave::class, 'normas_chaves', 'norma_id', 'palavra_chave_id')
+                    ->wherePivot('status', true);
     }
 
 }

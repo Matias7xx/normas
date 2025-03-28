@@ -42,14 +42,18 @@ class NormaController extends Controller
     }
 
     public function create()
-    {
-        $tipos = Tipo::orderBy('tipo')->get();
-        $publicidades = Publicidade::orderBy('publicidade')->get();
-        $orgaos = Orgao::where('status', true)
-            ->orderBy('orgao')
-            ->get();
-        return view('normas.norma_create', compact(['tipos'], ['orgaos'], ['publicidades']));
-    }
+{
+    $tipos = Tipo::orderBy('tipo')->get();
+    $publicidades = Publicidade::orderBy('publicidade')->get();
+    $orgaos = Orgao::where('status', true)
+        ->orderBy('orgao')
+        ->get();
+    $palavras_chave = PalavraChave::where('status', true)
+        ->orderBy('palavra_chave')
+        ->get();
+        
+    return view('normas.norma_create', compact(['tipos'], ['orgaos'], ['publicidades'], ['palavras_chave']));
+}
 
     public function index()
     {   $servidor = Servidor::where('matricula', Auth::user()->matricula)->first();
@@ -93,83 +97,263 @@ class NormaController extends Controller
     }
 
     public function store(CreateNormaRequest $request)
-    {
-        try {
-            /*função para salvar o arquivo*/
-            if ($request->file('anexo')->isValid()) {
+{
+    try {
+        /*função para salvar o arquivo*/
+        if ($request->file('anexo')->isValid()) {
+            /*cria um rash para renomear o arquivo*/
+            $name_file = Str::uuid() . "." . $request->anexo->extension();
+            /*salva o arquivo e renomeia automaticamente e renomeia com o valor informado */
+            $request->file('anexo')->storeAs('public/normas', $name_file);
+            
+            // Criar a norma
+            $norma = Norma::create([
+                'usuario_id' => auth()->user()->id,
+                'data' => $request->data,
+                'descricao' => $request->descricao,
+                'anexo' => $name_file,
+                'resumo' => $request->resumo,
+                'publicidade_id' => $request->publicidade,
+                'tipo_id' => $request->tipo,
+                'orgao_id' => $request->orgao,
+                'status' => true
+            ]);
+            
+            // Array para armazenar IDs de palavras-chave para vincular
+            $palavrasChaveIds = [];
+            
+            // Processar palavras-chave existentes selecionadas
+            if ($request->has('palavras_chave') && is_array($request->palavras_chave)) {
+                $palavrasChaveIds = $request->palavras_chave;
+            }
+            
+            // Processar novas palavras-chave
+            if ($request->has('novas_palavras_chave') && !empty($request->novas_palavras_chave)) {
+                try {
+                    $novasPalavrasChave = json_decode($request->novas_palavras_chave, true);
+                    
+                    if (is_array($novasPalavrasChave) && count($novasPalavrasChave) > 0) {
+                        foreach ($novasPalavrasChave as $palavraChave) {
+                            // Verificar se esta palavra-chave já existe
+                            $existente = PalavraChave::where('palavra_chave', 'ILIKE', $palavraChave)
+                                ->where('status', true)
+                                ->first();
+                            
+                            if ($existente) {
+                                // Se existir, adicione o ID ao array
+                                $palavrasChaveIds[] = $existente->id;
+                            } else {
+                                // Se não existir, crie-a e adicione o ID ao array
+                                $novaPalavraChave = PalavraChave::create([
+                                    'usuario_id' => auth()->user()->id,
+                                    'palavra_chave' => $palavraChave,
+                                    'status' => true
+                                ]);
+                                
+                                $palavrasChaveIds[] = $novaPalavraChave->id;
+                            }
+                        }
+                    }
+                } catch (\Exception $e) {
+                    Log::error('Erro ao processar novas palavras-chave: ' . $e->getMessage());
+                }
+            }
+            
+            // Vincular todas as palavras-chave à norma
+            if (!empty($palavrasChaveIds)) {
+                foreach ($palavrasChaveIds as $palavraChaveId) {
+                    NormaChave::create([
+                        'norma_id' => $norma->id,
+                        'palavra_chave_id' => $palavraChaveId,
+                        'status' => true
+                    ]);
+                }
+            }
+            
+            return redirect()->route('normas.norma_list')->withSuccess('Cadastro realizado com sucesso!');
+        } else {
+            return back()->withErrors(['Erro ao fazer o Upload do arquivo!']);
+        }
+    } catch (\Exception $e) {
+        Log::error($e);
+        return back()->withErrors(['Erro interno no servidor, informe o administrador do sistema! ' . $e->getMessage()]);
+    }
+}
+
+public function update(Request $request, $id)
+{
+    try {
+        $tipos = Tipo::orderBy('tipo')->get();
+        $publicidades = Publicidade::orderBy('publicidade')->get();
+        $orgaos = Orgao::where('status', true)
+            ->orderBy('orgao')
+            ->get();
+        $palavra_chaves = NormaChave::where('norma_id', '=', $id)
+            ->where('status', true)
+            ->get();
+        $norma = Norma::with(['publicidade', 'orgao', 'tipo', 'palavrasChave'])
+            ->where('id', $id)
+            ->first();
+
+        if (isset($request->delete_palavra_chave)) {
+            //Soft delete - encontrar e atualizar status para false
+            $normaChave = NormaChave::where('norma_id', $id)
+                ->where('palavra_chave_id', $request->delete_palavra_chave)
+                ->first();
+                
+            if ($normaChave) {
+                $normaChave->status = false;
+                $normaChave->save();
+                return redirect()->route('normas.norma_edit', ['id' => $id])
+                    ->withSuccess('Palavra-chave desvinculada com sucesso!');
+            } else {
+                return redirect()->route('normas.norma_edit', ['id' => $id])
+                    ->withErrors(['Não foi possível desvincular a palavra-chave.']);
+            }
+        } elseif (isset($request->add_palavra_chave) || !empty($request->novas_palavras_chave)) {
+            //Array para armazenar todos os IDs de palavras-chave para vincular
+            $palavrasChaveIds = [];
+            
+            //Processar palavras-chave existentes selecionadas
+            if ($request->has('add_palavra_chave') && is_array($request->add_palavra_chave)) {
+                $palavrasChaveIds = $request->add_palavra_chave;
+            }
+            
+            //Processar novas palavras-chave
+            if ($request->has('novas_palavras_chave') && !empty($request->novas_palavras_chave)) {
+                try {
+                    $novasPalavrasChave = json_decode($request->novas_palavras_chave, true);
+                    
+                    if (is_array($novasPalavrasChave) && count($novasPalavrasChave) > 0) {
+                        foreach ($novasPalavrasChave as $palavraChave) {
+                            //Verificar se esta palavra-chave já existe
+                            $existente = PalavraChave::where('palavra_chave', 'ILIKE', $palavraChave)
+                                ->where('status', true)
+                                ->first();
+                            
+                            if ($existente) {
+                                //Se existir, adicione o ID ao array
+                                $palavrasChaveIds[] = $existente->id;
+                            } else {
+                                //Se não existir, crie-a e adicione o ID ao array
+                                $novaPalavraChave = PalavraChave::create([
+                                    'usuario_id' => auth()->user()->id,
+                                    'palavra_chave' => $palavraChave,
+                                    'status' => true
+                                ]);
+                                
+                                $palavrasChaveIds[] = $novaPalavraChave->id;
+                            }
+                        }
+                    }
+                } catch (\Exception $e) {
+                    Log::error('Erro ao processar novas palavras-chave: ' . $e->getMessage());
+                }
+            }
+            
+            //Vincular todas as palavras-chave à norma
+            if (!empty($palavrasChaveIds)) {
+                foreach ($palavrasChaveIds as $palavraChaveId) {
+                    //Verificar se já existe um registro (mesmo que inativo)
+                    $existente = NormaChave::where('norma_id', $id)
+                        ->where('palavra_chave_id', $palavraChaveId)
+                        ->first();
+                        
+                    if ($existente) {
+                        //Se existir, apenas atualiza para ativo
+                        $existente->status = true;
+                        $existente->save();
+                    } else {
+                        //Se não existir, cria novo
+                        NormaChave::create([
+                            'norma_id' => $id,
+                            'palavra_chave_id' => $palavraChaveId,
+                            'status' => true
+                        ]);
+                    }
+                }
+            }
+            
+            return redirect()->route('normas.norma_edit', ['id' => $id])
+                ->withSuccess('Palavras-chave vinculadas com sucesso!');
+                
+        } else {
+            $update_norma = Norma::find($id);
+            $update_norma->data  = $request->data;
+            $update_norma->descricao = $request->descricao;
+            if (($request->hasFile('anexo')) && ($request->file('anexo')->isValid())) {
+                /*excluir arquivo anterior*/
+                if(($update_norma->anexo != NULL)&&(file_exists(storage_path().'/app/public/normas/'.$update_norma->anexo))){
+                    unlink(storage_path().'/app/public/normas/'.$update_norma->anexo);
+                }
                 /*cria um rash para renomear o arquivo*/
                 $name_file = Str::uuid() . "." . $request->anexo->extension();
                 /*salva o arquivo e renomeia automaticamente e renomeia com o valor informado */
                 $request->file('anexo')->storeAs('public/normas', $name_file);
-                Norma::create([
-                    'usuario_id' => auth()->user()->id,
-                    'data' => $request->data,
-                    'descricao' => $request->descricao,
-                    'anexo' => $name_file,
-                    'resumo' => $request->resumo,
-                    'publicidade_id' => $request->publicidade,
-                    'tipo_id' => $request->tipo,
-                    'orgao_id' => $request->orgao,
-                    'status' => true
-                ]);
-                return redirect()->route('normas.norma_list')->withSuccess('Cadastro realizado com sucesso!');
-            } else {
-                return back()->withErrors(['Erro ao fazer o Upload do arquivo!']);
+                $update_norma->anexo  = $name_file;
             }
-        } catch (\Exception $e) {
-            Log::error($e);
-            return back()->withErrors(['Erro interno no servidor, informe o administrador do sistema!']);
-        }
-    }
-
-    public function update(Request $request, $id)
-    {
-        try {
-            $tipos = Tipo::orderBy('tipo')->get();
-            $publicidades = Publicidade::orderBy('publicidade')->get();
-            $orgaos = Orgao::where('status', true)
-                ->orderBy('orgao')
-                ->get();
-            $palavra_chaves = NormaChave::where('norma_id', '=', $id)
-                ->where('status', true)
-                ->get();
-            $norma = Norma::with(['publicidade', 'orgao', 'tipo', 'palavrasChave'])
-                ->where('id', $id)
-                ->first();
-
-            if (isset($request->delete_palavra_chave)) {
-                $norma_result = Norma::find($id);
-                $norma_result->palavrasChave()->detach($request->delete_palavra_chave);
-                return redirect()->route('normas.norma_edit', compact(['id'], ['norma'], ['tipos'], ['orgaos'], ['publicidades'], ['palavra_chaves']))->withSuccess('Palavra chave desvinculada com sucesso!');
-            } elseif (isset($request->add_palavra_chave)) {
-                $norma_result = Norma::find($id);
-                $norma_result->palavrasChave()->attach($request->add_palavra_chave);
-                return redirect()->route('normas.norma_edit', compact(['id'], ['norma'], ['tipos'], ['orgaos'], ['publicidades'], ['palavra_chaves']))->withSuccess('Palavra chave vinculada com sucesso!');
-            } else {
-                $update_norma = Norma::find($id);
-                $update_norma->data  = $request->data;
-                $update_norma->descricao = $request->descricao;
-                if (($request->hasFile('anexo')) && ($request->file('anexo')->isValid())) {
-                    /*excluir arquivo anterior*/
-                    if(($update_norma->anexo != NULL)&&(file_exists(storage_path().'/app/public/normas/'.$update_norma->anexo))){
-                        unlink(storage_path().'/app/public/normas/'.$update_norma->anexo);
+            $update_norma->resumo = $request->resumo;
+            $update_norma->publicidade_id  = $request->publicidade;
+            $update_norma->tipo_id  = $request->tipo;
+            $update_norma->orgao_id  = $request->orgao;
+            $update_norma->save();
+            
+            //Processar as novas palavras-chave mesmo durante um save normal
+            if ($request->has('novas_palavras_chave') && !empty($request->novas_palavras_chave)) {
+                try {
+                    $novasPalavrasChave = json_decode($request->novas_palavras_chave, true);
+                    
+                    if (is_array($novasPalavrasChave) && count($novasPalavrasChave) > 0) {
+                        foreach ($novasPalavrasChave as $palavraChave) {
+                            //Verificar se esta palavra-chave já existe
+                            $existente = PalavraChave::where('palavra_chave', 'ILIKE', $palavraChave)
+                                ->where('status', true)
+                                ->first();
+                            
+                            if ($existente) {
+                                //Verificar se já está vinculada à norma
+                                $normaChaveExistente = NormaChave::where('norma_id', $id)
+                                    ->where('palavra_chave_id', $existente->id)
+                                    ->first();
+                                    
+                                if ($normaChaveExistente) {
+                                    //Se existir, apenas atualiza para ativo
+                                    $normaChaveExistente->status = true;
+                                    $normaChaveExistente->save();
+                                } else {
+                                    //Se não existir, cria novo vínculo
+                                    NormaChave::create([
+                                        'norma_id' => $id,
+                                        'palavra_chave_id' => $existente->id,
+                                        'status' => true
+                                    ]);
+                                }
+                            } else {
+                                //Se não existir, crie-a e vincule
+                                $novaPalavraChave = PalavraChave::create([
+                                    'usuario_id' => auth()->user()->id,
+                                    'palavra_chave' => $palavraChave,
+                                    'status' => true
+                                ]);
+                                
+                                NormaChave::create([
+                                    'norma_id' => $id,
+                                    'palavra_chave_id' => $novaPalavraChave->id,
+                                    'status' => true
+                                ]);
+                            }
+                        }
                     }
-                    /*cria um rash para renomear o arquivo*/
-                    $name_file = Str::uuid() . "." . $request->anexo->extension();
-                    /*salva o arquivo e renomeia automaticamente e renomeia com o valor informado */
-                    $request->file('anexo')->storeAs('public/normas', $name_file);
-                    $update_norma->anexo  = $name_file;
+                } catch (\Exception $e) {
+                    Log::error('Erro ao processar novas palavras-chave durante edição: ' . $e->getMessage());
                 }
-                $update_norma->resumo = $request->resumo;
-                $update_norma->publicidade_id  = $request->publicidade;
-                $update_norma->tipo_id  = $request->tipo;
-                $update_norma->orgao_id  = $request->orgao;
-                $update_norma->save();
-                return redirect()->route('normas.norma_list')->withSuccess('Edição realizada com sucesso!');
             }
-        } catch (\Exception $e) {
-            Log::error($e);
-            return back()->withErrors(['Erro interno no servidor, informe o administrador do sistema!']);
+            
+            return redirect()->route('normas.norma_list')->withSuccess('Edição realizada com sucesso!');
         }
+    } catch (\Exception $e) {
+        Log::error($e);
+        return back()->withErrors(['Erro interno no servidor, informe o administrador do sistema! ' . $e->getMessage()]);
     }
+}
 }

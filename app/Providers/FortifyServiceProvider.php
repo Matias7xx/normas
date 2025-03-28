@@ -54,7 +54,18 @@ class FortifyServiceProvider extends ServiceProvider
         });
 
         Fortify::authenticateUsing(function(Request $request){
-            try {
+
+        /*      //Buscar usuário pela matrícula. Trecho necessário para Login sem API
+        $user = User::where('matricula', $request->matricula)->first();
+        
+        //Verificar se o usuário existe e se a senha está correta
+        if ($user && Hash::check($request->password, $user->password)) {
+            return $user;
+        }
+        
+        return null; */
+        
+             try {
                 $response = Http::withToken(env('API_TOKEN'))
                 ->post(env('API_LOGIN_URL').'/api/servidor/login', [
                     'matricula' => $request->matricula,
