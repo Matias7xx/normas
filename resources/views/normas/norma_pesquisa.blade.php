@@ -86,7 +86,7 @@
                                                     <td>{{ $norma->orgao->orgao }}</td>
                                                     <td>
                                                         <a
-                                                            href='javascript:abrirPagina("storage/normas/{{ $norma->anexo }}",600,600);'><button
+                                                        href='javascript:abrirPagina("{{ asset('storage/normas/'.$norma->anexo) }}",600,600);'><button
                                                                 class='btn btn-danger'>
                                                                 <nobr><i class='fas fa-file-pdf'></i> Anexo</nobr>
                                                             </button></a>
