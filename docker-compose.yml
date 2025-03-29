@@ -4,6 +4,7 @@ services:
     build: .
     volumes: 
       - ./:/var/www/
+      - ./custom.ini:/usr/local/etc/php/conf.d/custom.ini #Aumenta o limite de tamanho dos uploads (anexos)
     networks:
       - network
     depends_on: 
