@@ -3,7 +3,7 @@
 
 
     @can('gestor')
-   {{-- @if(Auth::user()->role_id == 1 || Auth::user()->role_id == 2 || Auth::user()->role->name == 'root') Necessário para usar sem API--}}
+   {{-- @if(Auth::user()->role_id == 1 || Auth::user()->role_id == 2 || Auth::user()->role->name == 'root') --}} {{-- Necessário para usar sem API --}}
         <li class="nav-item">
             <a href="{{ route('normas.norma_create') }}" class="nav-link {{ Request::is('admin') ? 'active' : '' }}">
                 &nbsp;&nbsp;&nbsp;<i class="far fa-dot-circle nav-icon text-danger"></i>
@@ -26,7 +26,7 @@
     </li>
 
     @can('gestor')
-    {{-- @if(Auth::user()->role_id == 1 || Auth::user()->role_id == 2 || Auth::user()->role->name == 'root') Necessário para usar sem API --}}
+    {{-- @if(Auth::user()->role_id == 1 || Auth::user()->role_id == 2 || Auth::user()->role->name == 'root') --}} {{-- Necessário para usar sem API --}}
         <li class="nav-item">
             <a href="#" class="nav-link">
                 <i class="fas fa-cog nav-icon text-warning"></i>

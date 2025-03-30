@@ -40,7 +40,7 @@
       <nav class="mt-2">
         <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
           @can ('administrador')
-          {{-- @if(Auth::user()->role_id == 1 || Auth::user()->role->name == 'root') Necessário para usar sem API --}}
+          {{-- @if(Auth::user()->role_id == 1 || Auth::user()->role->name == 'root') --}} {{-- Necessário para usar sem API --}}
             <li class="nav-item has-treeview {{ (Request::is('admin*') ? 'menu-open': '') }}">
               <a href="#" class="nav-link {{ (Request::is('admin*') ? 'active': '') }}">
                 <i class="nav-icon fa fa-tachometer-alt"></i>
