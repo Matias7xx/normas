@@ -15,15 +15,15 @@
     <li class="nav-item">
         <a href="{{ route('normas.norma_list') }}" class="nav-link {{ Request::is('admin') ? 'active' : '' }}">
             &nbsp;&nbsp;&nbsp;<i class="far fa-dot-circle nav-icon text-danger"></i>
-            <p>Listar</p>
+            <p>Pesquisar</p>
         </a>
     </li>
-    <li class="nav-item">
+    {{-- <li class="nav-item">
         <a href="{{ route('normas.norma_search') }}" class="nav-link {{ Request::is('admin') ? 'active' : '' }}">
             &nbsp;&nbsp;&nbsp;<i class="far fa-dot-circle nav-icon text-danger"></i>
             <p>Pesquisar</p>
         </a>
-    </li>
+    </li> --}}
 
     @can('gestor')
     {{-- @if(Auth::user()->role_id == 1 || Auth::user()->role_id == 2 || Auth::user()->role->name == 'root') --}} {{-- Necessário para usar sem API --}}

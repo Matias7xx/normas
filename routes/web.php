@@ -44,17 +44,23 @@ Route::middleware([Authenticate::class])->group(function() {
         Route::get('/list-permissions', [AdminController::class, 'listPermissions'])->name('admin.listpermission');
     });
 
-    // =====================  NORMAS   ============================
-    Route::group(['prefix' => 'normas'], function(){
-        Route::get('/norma_list', [NormaController::class, 'index'])->name('normas.norma_list');
-        Route::get('/norma_search', [NormaController::class, 'search'])->name('normas.norma_search');
+    //Rotas para o módulo de normas
+Route::group(['prefix' => 'normas', 'middleware' => ['auth']], function(){
+    //Listagem e pesquisa
+    Route::get('/norma_list', [NormaController::class, 'index'])->name('normas.norma_list');
+    Route::get('/norma_search', [NormaController::class, 'search'])->name('normas.norma_search');
+    
+        //Criação
         Route::get('/norma_create', [NormaController::class, 'create'])->name('normas.norma_create');
         Route::post('/norma_store', [NormaController::class, 'store'])->name('normas.norma_store');
-        Route::post('/norma_update/{id}', [NormaController::class, 'update'])->name('normas.norma_update');
+        
+        //Edição
         Route::get('/norma_edit/{id}', [NormaController::class, 'edit'])->name('normas.norma_edit');
-        Route::post('/norma_relacionamento_palavra_chave', [NormaController::class, 'relacionamento'])->name('normas.norma_relacionamento_palavra_chave');
-        Route::post('/norma_desvincular_palavra_chave', [NormaController::class, 'desvincular'])->name('normas.norma_desvincular_palavra_chave');
-    });
+        Route::post('/norma_update/{id}', [NormaController::class, 'update'])->name('normas.norma_update');
+        
+        //Exclusão (soft delete)
+        Route::delete('/norma_destroy/{id}', [NormaController::class, 'destroy'])->name('normas.norma_destroy');
+});
 
     // =====================  ORGAOS   ============================
     Route::group(['prefix' => 'orgaos'], function(){
