@@ -8,7 +8,7 @@
     <div class="col-md-2">
         <label class="section-form-label">Data</label>
         <input type="date" class="section-form-input {{ $errors->has('data') ? 'border-error' : '' }}"
-            name="data" id="data" value="{{ $norma->data }}">
+            name="data" id="data" value="{{ $norma->data ? $norma->data->format('Y-m-d') : '' }}">
     </div>
     <div class="col-md-2">
         <label class="section-form-label">Publicidade</label>

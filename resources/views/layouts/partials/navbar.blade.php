@@ -5,9 +5,9 @@
         <li class="nav-item">
             <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
         </li>
-        <li class="nav-item">
+        {{-- <li class="nav-item">
             <img src="/images/brasao_pcpb.png" alt="Logo PCPB" width="40px;"  class="brand-image" style="opacity: .8; position: relative; top: 50%; transform: translateY(-40%); height:40px;"/>
-        </li>
+        </li> --}}
 
             <h3 style="margin-left: 30px;"><b>Biblioteca de Normas da Polícia Civil</b></h3>
 

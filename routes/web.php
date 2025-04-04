@@ -47,6 +47,9 @@ Route::middleware([Authenticate::class])->group(function() {
     //Rotas para o módulo de normas
 Route::group(['prefix' => 'normas', 'middleware' => ['auth']], function(){
     //Listagem e pesquisa
+    //Carregar as normas com Ajax
+    Route::get('/ajax', [NormaController::class, 'getNormasAjax'])->name('normas.ajax');
+
     Route::get('/norma_list', [NormaController::class, 'index'])->name('normas.norma_list');
     Route::get('/norma_search', [NormaController::class, 'search'])->name('normas.norma_search');
     
