@@ -77,6 +77,10 @@ use Illuminate\Support\Facades\Storage;
         
         // Aplicar ordenação em órgão e tipo de norma
         switch ($orderBy) {
+            case 'id':
+                // Ordenação específica por ID
+                $query->orderBy('id', $orderDir);
+                break;
             case 'orgao':
                 // Ordenar pelo nome do órgão usando subconsulta
                 $query->orderBy(function($query) {

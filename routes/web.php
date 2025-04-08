@@ -92,5 +92,17 @@ Route::group(['prefix' => 'normas', 'middleware' => ['auth']], function(){
         Route::get('/palavras_chaves_list', [PalavraChaveController::class, 'index'])->name('palavras_chaves.palavras_chaves_list');
         Route::get('/palavras_chaves_edit/{id}', [PalavraChaveController::class, 'edit'])->name('palavras_chaves.palavras_chaves_edit');
         Route::post('/palavras_chaves_update/{id}', [PalavraChaveController::class, 'update'])->name('palavras_chaves.palavras_chaves_update');
+
+    // Desvincular palavra-chave de uma norma
+    Route::get('/desvincular/{palavra_chave_id}/{norma_id}', [PalavraChaveController::class, 'desvincular'])
+    ->name('palavras_chaves.desvincular');
+
+    // Excluir palavra-chave permanentemente
+    Route::get('/excluir/{id}', [PalavraChaveController::class, 'destroy'])
+    ->name('palavras_chaves.excluir');
+
+    // Obter todas as normas vinculadas a uma palavra-chave (para o modal)
+    Route::get('/normas-vinculadas/{id}', [PalavraChaveController::class, 'normasVinculadas'])
+    ->name('palavras_chaves.normas_vinculadas');
     });
 });

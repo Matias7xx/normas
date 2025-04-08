@@ -2,12 +2,12 @@
  * Script para gerenciamento de normas com paginação AJAX
  */
 $(function () {
-    // Estado da aplicação
+    // Estado da aplicação ORDENADO PELO ID do menor para o maior
     let state = {
         currentPage: 1,
         perPage: 15,
-        orderBy: 'data',
-        orderDir: 'desc',
+        orderBy: 'id',
+        orderDir: 'asc',
         filters: {
             search_term: '',
             tipo_id: '',
@@ -32,11 +32,13 @@ $(function () {
         }
     });
 
-    // Cores diferentes para cada tipo de norma. Cores: info, primary, danger, warning, secondary, success
+    // Cores diferentes para cada tipo de norma. Cores: info, primary, danger, warning, secondary, success, dark (preto), light (cinza), white
     const tipoColors = {
         'DECRETO': 'primary',
         'PORTARIA': 'success',
         'LEI ORDINÁRIA': 'danger',
+        'MEDIDA PROVISÓRIA': 'dark',
+        'REGIMENTO': 'warning',
         'default': 'secondary' // Cor para tipos não especificados
     };
 
@@ -51,10 +53,10 @@ $(function () {
         if (state.loading) return;
         state.loading = true;
         
-        // Mostrar loading
+        // Mostrar loading Colspan era 5 e ficou 7 após acrescentar o ID
         $('#normas-body').html(`
             <tr>
-                <td colspan="5" class="text-center py-4">
+                <td colspan="7" class="text-center py-4">
                     <i class="fas fa-spinner fa-spin mr-2"></i> Carregando normas...
                 </td>
             </tr>
@@ -94,16 +96,17 @@ $(function () {
                 $('#normas-table').removeClass('d-none');
                 $('#no-data-message').addClass('d-none');
                 
-                // Limpar e preencher tabela
+                // Limpar e preencher tabela //Acrescentado o ID
                 let html = '';
                 response.normas.forEach(function(norma) {
-                        html += `
-            <tr>
-                <td>
-                    <span class="badge badge-${getTipoColor(norma.tipo)}" style="font-size: 90%;">
-                        ${norma.tipo}
-                    </span>
-                </td>
+                    html += `
+                    <tr>
+                        <td><strong>${norma.id}</strong></td>
+                        <td>
+                            <span class="badge badge-${getTipoColor(norma.tipo)}" style="font-size: 90%;">
+                                ${norma.tipo}
+                            </span>
+                        </td>
                 <td>${norma.data}</td>
                 <td>
                     <div class="text-truncate-custom" data-toggle="tooltip" title="${norma.descricao}">
@@ -157,10 +160,10 @@ $(function () {
             error: function(xhr, status, error) {
                 state.loading = false;
                 
-                // Exibir mensagem de erro com detalhes
+                // Exibir mensagem de erro com detalhes. Colspan era 5 e ficou 7 após acrescentar o ID
                 $('#normas-body').html(`
                     <tr>
-                        <td colspan="5" class="text-center text-danger py-4">
+                        <td colspan="7" class="text-center py-4">
                             <i class="fas fa-exclamation-circle mr-2"></i> 
                             Erro ao carregar dados: ${error}
                             <br>

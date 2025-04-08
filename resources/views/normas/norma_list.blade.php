@@ -115,12 +115,13 @@
                             <table class="table table-hover" id="normas-table">
                                 <thead>
                                     <tr>
+                                        <th width="5%" class="sortable" data-field="id">ID <i class="fas fa-sort text-muted"></i></th>
                                         <th width="10%" class="sortable" data-field="tipo">Tipo <i class="fas fa-sort text-muted"></i></th>
                                         <th width="10%" class="sortable" data-field="data">Data <i class="fas fa-sort text-muted"></i></th>
                                         <th width="20%" class="sortable" data-field="descricao">Norma <i class="fas fa-sort text-muted"></i></th>
-                                        <th width="35%" class="sortable" data-field="resumo">Resumo <i class="fas fa-sort text-muted"></i></th>
+                                        <th width="30%" class="sortable" data-field="resumo">Resumo <i class="fas fa-sort text-muted"></i></th>
                                         <th width="15%" class="sortable" data-field="orgao">Órgão <i class="fas fa-sort text-muted"></i></th>
-                                        <th width="15%" class="text-center">Ações</th>
+                                        <th width="10%" class="text-center">Ações</th>
                                     </tr>
                                 </thead>
                                 <tbody id="normas-body">
