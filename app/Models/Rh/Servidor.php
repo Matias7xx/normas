@@ -23,7 +23,7 @@ class Servidor extends Model
         return $this->belongsTo(Cargo::class, 'cargo', 'codigo');
     }
 
-    /* use HasFactory;
+    /*  use HasFactory; //comente daqui até o fim
     
     //Usando a conexão padrão temporariamente. Trecho necessário para login sem API
     protected $table = 'users';
@@ -71,5 +71,5 @@ class Servidor extends Model
         }
         
         return $attributes;
-    } */
+    }  */
 }

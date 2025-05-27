@@ -32,7 +32,8 @@ class User extends Authenticatable implements Auditable
         'role_id',
         'cpf',
         'sexo',
-        'active'
+        'active',
+        'telefone',
     ];
 
     /**

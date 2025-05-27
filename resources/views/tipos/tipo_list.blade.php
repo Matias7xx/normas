@@ -5,12 +5,12 @@
 @section('header-content')
     <div class="row mb-2">
         <div class="col-sm-6">
-            <h1 class="m-0 text-dark">Lista de Tipos de Normas</h1>
+            <h1 class="m-0 text-dark">Tipos de Normas</h1>
         </div><!-- /.col -->
         <div class="col-sm-6">
             <ol class="breadcrumb float-sm-right">
                 <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
-                <li class="breadcrumb-item active">Lista de Tipos de Normas</li>
+                <li class="breadcrumb-item active">Tipos de Normas</li>
             </ol>
         </div><!-- /.col -->
     </div>
@@ -19,9 +19,9 @@
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-12">
-                <div class="card card-primary">
+                <div class="card card-dark">
                     <div class="card-header">
-                        <h3>Lista de <b>TIPOS DE NORMAS</b> cadastradas</h3>
+                        <h3><b>TIPOS DE NORMAS</b> cadastradas</h3>
                     </div>
                     <div class="card-body">
                         <table id="example1" class="table table-bordered table-striped">
@@ -42,7 +42,7 @@
                                                 <nobr>
                                                 <a
                                                     href="{{ route('tipos.tipo_edit', $tipo_obj->id) }}"><button
-                                                        type='button' class='btn btn-primary'>
+                                                        type='button' class='btn btn-secondary'>
                                                         <nobr><i class='fas fa-edit'></i> Editar</nobr>
                                                     </button></a>
 

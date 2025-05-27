@@ -19,9 +19,9 @@
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-12">
-                <div class="card card-primary">
+                <div class="card card-dark">
                     <div class="card-header">
-                        <h3>Criar um novo <b>ÓRGÃO</b></h3>
+                        <h3>Cadastrar um novo <b>ÓRGÃO</b></h3>
                     </div>
                     <div class="card-body">
                         <form id="user_form" action="{{ route('orgaos.orgao_store') }}" method="POST">

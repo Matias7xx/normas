@@ -19,7 +19,7 @@
 @section('content')
   <div class="row justify-content-center">
     <div class="col-md-10">
-      <div class="card card-primary">
+      <div class="card card-dark">
         <div class="card-header">
           <h3 class="card-title">EDITAR PERFIL</h3>
         </div>
@@ -49,7 +49,7 @@
           </form>
         </div>
         <div class="card-footer">
-          <button form="atualizarPerfil" class="btn btn-primary">ATUALIZAR</button>
+          <button form="atualizarPerfil" class="btn btn-secondary">ATUALIZAR</button>
         </div>
       </div>
     </div>

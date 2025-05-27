@@ -1,68 +1,98 @@
 <!-- Navbar -->
-<nav class="main-header navbar navbar-expand navbar-white navbar-light">
+<nav class="main-header navbar navbar-expand navbar-light" style="background: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%); border-bottom: 3px solid #bea55a;">
     <!-- Left navbar links -->
     <ul class="navbar-nav">
         <li class="nav-item">
-            <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
+            <a class="nav-link" data-widget="pushmenu" href="#" role="button" style="color: #495057;">
+                <i class="fas fa-bars"></i>
+            </a>
         </li>
-        {{-- <li class="nav-item">
-            <img src="/images/brasao_pcpb.png" alt="Logo PCPB" width="40px;"  class="brand-image" style="opacity: .8; position: relative; top: 50%; transform: translateY(-40%); height:40px;"/>
-        </li> --}}
-
-            <h3 style="margin-left: 30px;"><b>Biblioteca de Normas da Polícia Civil</b></h3>
-
-
-        {{-- <li class="nav-item d-none d-sm-inline-block">
-        <a href="/index3.html" class="nav-link">Home</a>
-      </li>
-      <li class="nav-item d-none d-sm-inline-block">
-        <a href="#" class="nav-link">Contact</a>
-      </li> --}}
+        <li class="nav-item d-flex align-items-center ml-3">
+            <img src="/images/brasao_pcpb.png" alt="Logo PCPB" width="35px" class="mr-2" style="opacity: .9"/>
+            <div>
+                <h4 class="mb-0 font-weight-bold" style="color: #343a40;">Biblioteca de Normas</h4>
+                <small style="color: #6c757d;">Polícia Civil da Paraíba</small>
+            </div>
+        </li>
     </ul>
 
     <!-- Right navbar links -->
     <ul class="navbar-nav ml-auto">
-        <!-- Navbar Search -->
+
+        <!-- Fullscreen -->
         <li class="nav-item">
-            <a class="nav-link" data-widget="navbar-search" href="#" role="button">
-                <i class="fas fa-search"></i>
-            </a>
-            <div class="navbar-search-block">
-                <form class="form-inline">
-                    <div class="input-group input-group-sm">
-                        <input class="form-control form-control-navbar" type="search" placeholder="Search"
-                            aria-label="Search">
-                        <div class="input-group-append">
-                            <button class="btn btn-navbar" type="submit">
-                                <i class="fas fa-search"></i>
-                            </button>
-                            <button class="btn btn-navbar" type="button" data-widget="navbar-search">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" data-widget="fullscreen" href="#" role="button">
+            <a class="nav-link" data-widget="fullscreen" href="#" role="button" 
+               data-toggle="tooltip" title="Tela cheia" style="color: #495057;">
                 <i class="fas fa-expand-arrows-alt"></i>
             </a>
         </li>
-        <li class="nav-item d-none d-sm-inline-block">
-            <a href="#" class="nav-link">{{ Auth::user() ? Auth::user()->name : '' }}</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" href="{{ route('logout') }}"
-                onclick="event.preventDefault();
-                      document.getElementById('logout-form').submit();">
-                Sair
-                <i class="fa fa-sign-out"></i>
+
+        <!-- User Info -->
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" 
+               id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+               style="color: #495057;">
+                <div class="user-avatar mr-2 d-flex align-items-center justify-content-center rounded-circle" 
+                     style="width: 32px; height: 32px; background: linear-gradient(45deg, #bea55a, #d4b86a);">
+                    <i class="fas fa-user text-dark"></i>
+                </div>
+                <div class="d-none d-lg-block text-right">
+                    <div class="font-weight-bold" style="font-size: 0.85rem; color: #343a40;">
+                        {{ Auth::user() ? Auth::user()->name : '' }}
+                    </div>
+                    <small style="font-size: 0.75rem; color: #6c757d;">
+                        Mat: {{ Auth::user() ? Auth::user()->matricula : '' }}
+                    </small>
+                </div>
             </a>
+            <div class="dropdown-menu dropdown-menu-right shadow-lg border-0" 
+                 style="background-color: #f8f9fa; border: 1px solid #bea55a !important;">
+                <div class="dropdown-header border-bottom" style="color: #343a40; border-color: #bea55a !important;">
+                    <strong>{{ Auth::user() ? Auth::user()->name : '' }}</strong><br>
+                    <small style="color: #6c757d;">{{ Auth::user() ? Auth::user()->email : '' }}</small>
+                </div>
+                <div class="dropdown-divider" style="border-color: #dee2e6;"></div>
+                <a class="dropdown-item" href="{{ route('logout') }}"
+                   onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
+                   style="background-color: transparent; color: #495057;">
+                    <i class="fas fa-sign-out-alt mr-2 text-danger"></i> Sair
+                </a>
+            </div>
         </li>
-        <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-            @csrf
-        </form>
     </ul>
+
+    <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+        @csrf
+    </form>
 </nav>
-<!-- /.navbar -->
+
+<style>
+/* Hover effects for navbar */
+.navbar .nav-link:hover {
+    color: #bea55a !important;
+    transition: color 0.3s ease;
+}
+
+.dropdown-item:hover {
+    background-color: rgba(190, 165, 90, 0.1) !important;
+    color: #bea55a !important;
+}
+
+.navbar-search-block {
+    background-color: rgba(248, 249, 250, 0.95) !important;
+    border: 1px solid #bea55a;
+    border-radius: 8px;
+    backdrop-filter: blur(10px);
+}
+
+/* Tooltip styling */
+.tooltip-inner {
+    background-color: #bea55a;
+    color: #1a1a1a;
+    font-weight: 500;
+}
+
+.tooltip.bs-tooltip-bottom .arrow::before {
+    border-bottom-color: #bea55a;
+}
+</style>

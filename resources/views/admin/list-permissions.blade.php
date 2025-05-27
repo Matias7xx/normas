@@ -18,7 +18,7 @@
 @section('content')
     <div class="row justify-content-center">
       <div class="col-md-6">
-        <div class="card card-primary">
+        <div class="card card-dark">
           <div class="card-header">
             <h3>CRIAR UMA NOVA PERMISSÃO</h3>
           </div>
@@ -41,14 +41,14 @@
               </div>
               <div class="box-footer">
                 <a href="#" class="btn btn-default"><i class="fa fa-angle-double-left"></i> Voltar</a>
-                <button type="submit" class="btn btn-primary pull-right">Adicionar</button>
+                <button type="submit" class="btn btn-secondary pull-right">Adicionar</button>
               </div>
             </form>
           </div>
         </div>
         </div>
         <div class="col-md-6">
-        <div class="card card-primary">
+        <div class="card card-dark">
           <div class="card-header">
             <h3>PERMISSÕES EXISTENTES</h3>
           </div>

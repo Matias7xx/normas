@@ -4,8 +4,23 @@
 @endsection
 
 @section('scripts')
+<script>
+    // Passar permissões do usuário para o JavaScript
+    @if(isset($userPermissions))
+        window.userPermissions = @json($userPermissions);
+    @else
+        window.userPermissions = {
+            canEdit: false,
+            canDelete: false,
+            canCreate: false,
+            isRoot: false,
+            isAdmin: false
+        };
+    @endif
+</script>
 <script src="{{ asset('js/normas.js') }}"></script>
 @endsection
+
 @section('header-content')
     <div class="row mb-2">
         <div class="col-sm-6">
@@ -21,6 +36,30 @@
 @endsection
 
 @section('content')
+
+{{-- DEBUG DE ROLES --}}
+{{-- <div class="alert alert-info">
+    <h5>Debug - Permissões do Usuário:</h5>
+    <p><strong>User ID:</strong> {{ Auth::user()->id }}</p>
+    <p><strong>Role ID:</strong> {{ Auth::user()->role_id }}</p>
+    <p><strong>Permissões:</strong></p>
+    <ul>
+        @if(isset($userPermissions))
+            @foreach($userPermissions as $key => $value)
+                <li><strong>{{ $key }}:</strong> {{ $value ? 'true' : 'false' }}</li>
+            @endforeach
+        @else
+            <li>Variável $userPermissions não definida</li>
+        @endif
+    </ul>
+</div>
+
+<script>
+    // Debug JavaScript
+    console.log('User Permissions from PHP:', @json($userPermissions ?? []));
+    console.log('Window User Permissions:', window.userPermissions);
+</script> --}}
+
     <div class="container-fluid">
         <!-- Filtros aprimorados -->
         <div class="row mb-3">
@@ -72,7 +111,7 @@
                             
                             <div class="col-md-2">
                                 <div class="form-group mb-0 text-right">
-                                    <button type="button" class="btn btn-primary mr-1" id="btn-search">
+                                    <button type="button" class="btn btn-dark mr-1" id="btn-search">
                                         <i class="fas fa-search"></i> Pesquisar
                                     </button>
                                     <button type="button" id="clear-filters" class="btn btn-light border">
@@ -96,8 +135,8 @@
                         </span>
                     </div>
                     <div>
-                        @if(Auth::user()->role_id == 1 || Auth::user()->can('gestor'))
-                        <a href="{{ route('normas.norma_create') }}" class="btn btn-success btn-sm">
+                        @if(($userPermissions['canCreate'] ?? false))
+                        <a href="{{ route('normas.norma_create') }}" class="btn btn-dark btn-sm">
                             <i class="fas fa-plus"></i> Nova Norma
                         </a>
                         @endif
@@ -126,7 +165,7 @@
                                 </thead>
                                 <tbody id="normas-body">
                                     <tr>
-                                        <td colspan="5" class="text-center py-4">
+                                        <td colspan="7" class="text-center py-4">
                                             <i class="fas fa-spinner fa-spin mr-2"></i> Carregando normas...
                                         </td>
                                     </tr>
@@ -156,7 +195,8 @@
         </div>
     </div>
 
-    <!-- Modal de confirmação de exclusão -->
+    <!-- Modal de confirmação de exclusão (só aparece se o usuário tiver permissão) -->
+    @if(($userPermissions['canDelete'] ?? false))
     <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-sm" role="document">
             <div class="modal-content">
@@ -181,6 +221,7 @@
             </div>
         </div>
     </div>
+    @endif
 @endsection
 
 @section('styles')

@@ -26,7 +26,7 @@ class AdminController extends Controller
   {
     $role = new Role;
     $role->name = mb_strtoupper($request->name, mb_internal_encoding());
-    $role->display_name = $request->display_name;
+    /* $role->display_name = $request->display_name; */ //Não existe na migration
     $role->description = mb_strtoupper($request->description, mb_internal_encoding());
     $role->save();
     // $permissions = $request->permissions;

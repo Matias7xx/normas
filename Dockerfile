@@ -1,4 +1,4 @@
-FROM php:7.4.0-fpm-alpine
+FROM php:8.2.0-fpm-alpine
 RUN apk update && apk upgrade
 RUN apk add php php-fpm php-opcache
 RUN apk add --no-cache openssl nodejs npm postgresql-dev bash libpng-dev libzip-dev

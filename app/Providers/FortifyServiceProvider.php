@@ -55,7 +55,7 @@ class FortifyServiceProvider extends ServiceProvider
 
         Fortify::authenticateUsing(function(Request $request){
 
-        /*      //Buscar usuário pela matrícula. Trecho necessário para Login sem API
+        /*       //Buscar usuário pela matrícula. Trecho necessário para Login sem API
         $user = User::where('matricula', $request->matricula)->first();
         
         //Verificar se o usuário existe e se a senha está correta

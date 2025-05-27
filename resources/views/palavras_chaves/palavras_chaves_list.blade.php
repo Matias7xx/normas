@@ -19,16 +19,16 @@
     <div class="container-fluid">
         <div class="row mb-3">
             <div class="col-md-12">
-                <a href="{{ route('palavras_chaves.palavras_chaves_create') }}" class="btn btn-success">
+                <a href="{{ route('palavras_chaves.palavras_chaves_create') }}" class="btn btn-dark">
                     <i class="fas fa-plus"></i> Nova Palavra-chave
                 </a>
             </div>
         </div>
         <div class="row">
             <div class="col-md-12">
-                <div class="card card-primary">
+                <div class="card card-dark">
                     <div class="card-header">
-                        <h3>Lista de <b>PALAVRAS-CHAVE</b> cadastradas</h3>
+                        <h3><b>PALAVRAS-CHAVE</b> Cadastradas</h3>
                     </div>
                     <div class="card-body">
                         <table id="palavras-chave-table" class="table table-bordered table-striped">
@@ -82,7 +82,7 @@
                                         <td>
                                             <div class="d-flex flex-column">
                                                 <a href="{{ route('palavras_chaves.palavras_chaves_edit', $palavra_chave_obj->id) }}" 
-                                                   class="btn btn-primary mb-2">
+                                                   class="btn btn-dark mb-2">
                                                     <i class='fas fa-edit'></i> Editar
                                                 </a>
                                                 

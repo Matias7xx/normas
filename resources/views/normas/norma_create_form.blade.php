@@ -44,7 +44,7 @@
 
 <div class="row mt-4">
     <div class="col-md-8">
-        <label class="section-form-label">Descrição</label>
+        <label class="section-form-label">Descrição <span class="text-danger">*</span></label>
         <input type="text" class="section-form-input {{ $errors->has('descricao') ? 'border-error' : '' }}"
             name="descricao" id="descricao" value="{{ old('descricao') }}" placeholder="Informe a descrição da norma">
     </div>
@@ -58,7 +58,7 @@
 
 <div class="row mt-4">
     <div class="col-md-12">
-        <label class="section-form-label">Resumo da norma</label>
+        <label class="section-form-label">Resumo da norma <span class="text-danger">*</span></label>
         <input type="text" class="section-form-input {{ $errors->has('resumo') ? 'border-error' : '' }}"
             name="resumo" id="resumo" value="{{ old('resumo') }}" placeholder="Informe um resumo do conteúdo da norma">
     </div>
@@ -66,7 +66,7 @@
 
 <div class="row mt-4">
     <div class="col-md-12">
-        <div class="card card-outline card-info">
+        <div class="card card-outline card-secondary">
             <div class="card-header">
                 <h3 class="card-title">Gerenciamento de Palavras-chave</h3>
             </div>
@@ -91,7 +91,7 @@
                                 <input type="text" class="section-form-input" id="nova_palavra_chave" 
                                     placeholder="Digite uma nova palavra-chave">
                                 <div class="input-group-append">
-                                    <button class="btn btn-primary" type="button" id="btn_add_palavra_chave">
+                                    <button class="btn btn-dark" type="button" id="btn_add_palavra_chave">
                                         <i class="fas fa-plus"></i> Adicionar
                                     </button>
                                 </div>
@@ -112,12 +112,12 @@
 
                     <div class="col-md-6">
                         <div class="card card-secondary h-100">
-                            <div class="card-header" style="padding: 10px; background-color: #17a2b8;">
+                            <div class="card-header" style="padding: 10px; bg-secondary;">
                                 <h5 class="card-title" style="color: white;">Como funciona</h5>
                             </div>
                             <div class="card-body">
-                                <p><i class="fas fa-info-circle text-info"></i> <strong>Palavras-chave existentes:</strong> Busque e selecione palavras-chave já cadastradas no sistema.</p>
-                                <p><i class="fas fa-info-circle text-info"></i> <strong>Novas palavras-chave:</strong> Caso não encontre uma palavra-chave desejada, você pode adicionar novas que serão criadas ao salvar a norma.</p>
+                                <p><i class="fas fa-info-circle text-secondary"></i> <strong>Palavras-chave existentes:</strong> Busque e selecione palavras-chave já cadastradas no sistema.</p>
+                                <p><i class="fas fa-info-circle text-secondary"></i> <strong>Novas palavras-chave:</strong> Caso não encontre uma palavra-chave desejada, você pode adicionar novas que serão criadas ao salvar a norma.</p>
                                 <p><i class="fas fa-exclamation-triangle text-warning"></i> As palavras-chave ajudam a categorizar e facilitar a busca de normas no sistema.</p>
                             </div>
                         </div>
@@ -128,14 +128,14 @@
     </div>
 </div>
 
-<div class="row mt-5">
+<div class="row mt-3">
     <div class="col-md-6">
         <div class="btn-group">
-            <button class="btn btn-success btn-lg" type="submit" onclick="return validateForm()">
+            <button class="btn btn-dark btn-lg" type="submit" onclick="return validateForm()">
                 <i class="fas fa-save"></i> Salvar Norma
             </button>
-            &nbsp;&nbsp;
-            <a class="btn btn-secondary" href="{{route('normas.norma_list')}}">
+            
+            &nbsp;&nbsp;<a class="btn btn-secondary" href="{{route('normas.norma_list')}}">
                 <i class="fas fa-arrow-left"></i> Voltar para a lista
             </a>
         </div>

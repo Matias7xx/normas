@@ -18,21 +18,21 @@
 @section('content')
   <div class="col-md-11">
     <div class="new_project">
-      <a type="button" class="btn btn-primary" href="{{route('user.create')}}"><span class="fa fa-plus" aria-hidden="true"></span> Novo Usuário</a>
+      <a type="button" class="btn btn-secondary" href="{{route('user.create')}}"><span class="fa fa-plus" aria-hidden="true"></span> Novo Usuário</a>
     </div>
   </div>
   <br/>
   <div class="row justify-content-center">
     <div class="col-md-11">
       <div class="card card-primary">
-        <div class="card-header">USUÁRIOS</div>
+        <div class="card-header bg-dark">USUÁRIOS</div>
         <div class="card-body">
           <table id="usersList" class="table table-bordered table-striped">
             <thead>
               <tr>
                 <th>NOME</th>
                 <th>CARGO</th>
-                <th>CPF</th>
+                <th>MATRÍCULA</th>
                 <th>TELEFONE</th>
                 <th>EMAIL</th>
                 <th>PERFIL</th>
@@ -46,17 +46,18 @@
                   @if ( $user->id == 1 )  @continue
                   @endif
                   <tr>
-                    <td><a href="{{ route('user.list', ['id'=> $user->id] ) }}">{{ $user->name }}</a></td>
+                    {{-- <td><a href="{{ route('user.list', ['id'=> $user->id] ) }}">{{ $user->name }}</a></td> --}}
+                    <td class="text-primary">{{ $user->name }}</td>
                     <td>{{ $user->cargo ? $user->cargo : 'NÃO ATRIBUÍDO' }}</td>
-                    <td>{{ $user->cpf ? $user->cpf : 'NÃO ATRIBUÍDO' }}</td>
+                    <td>{{ $user->matricula ? $user->matricula : 'NÃO ATRIBUÍDO' }}</td>
                     <td>{{ $user->telefone ? $user->telefone : 'NÃO ATRIBUÍDO' }}</td>
                     <td>{{ $user->email }}</td>
                     <td>{{ $user->role ? $user->role->name : 'NÃO ATRIBUÍDO' }}</td>
                     <td>
                       @if ( !$user->active )
-                        <a href="{{ route('user.activate', ['id' => $user->id]) }}" class="btn btn-warning"> Ativar Usuário</a>
+                        <a href="{{ route('user.activate', ['id' => $user->id]) }}" class="btn btn-success"> Ativar</a>
                       @else
-                        <a href="{{ route('user.disable', ['id' => $user->id]) }}" class="btn btn-warning"> Inativar Usuário</a>
+                        <a href="{{ route('user.disable', ['id' => $user->id]) }}" class="btn btn-danger"> Inativar</a>
                         <span class="badge badge-success">Ativo</span>
                       @endif
                     </td>

@@ -79,7 +79,7 @@
 
 <div class="row mt-4">
     <div class="col-md-12">
-        <div class="card card-outline card-info">
+        <div class="card card-outline card-secondary">
             <div class="card-header">
                 <h3 class="card-title">Gerenciamento de Palavras-chave</h3>
             </div>
@@ -109,7 +109,7 @@
                                 <input type="text" class="section-form-input" id="nova_palavra_chave" 
                                     placeholder="Digite uma nova palavra-chave">
                                 <div class="input-group-append">
-                                    <button class="btn btn-primary" type="button" id="btn_add_palavra_chave">
+                                    <button class="btn btn-dark" type="button" id="btn_add_palavra_chave">
                                         <i class="fas fa-plus"></i> Adicionar
                                     </button>
                                 </div>
@@ -130,7 +130,7 @@
 
                     <div class="col-md-6">
                         <div class="card card-secondary h-100">
-                            <div class="card-header" style="padding: 10px; background-color: #17a2b8;">
+                            <div class="card-header" style="padding: 10px; bg-dark">
                                 <h5 class="card-title" style="color: white;">Palavras-chave vinculadas</h5>
                             </div>
                             <div class="card-body" style="height: 350px; overflow-y: auto;">
@@ -166,10 +166,10 @@
     </div>
 </div>
 
-<div class="row mt-5">
+<div class="row mt-3">
     <div class="col-md-6">
         <div class="btn-group">
-            <button class="btn btn-success btn-lg" type="submit" onclick="return validateForm()">
+            <button class="btn btn-dark btn-lg" type="submit" onclick="return validateForm()">
                 <i class="fas fa-save"></i> Salvar Alterações
             </button>
             &nbsp;&nbsp;

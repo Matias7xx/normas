@@ -24,22 +24,36 @@ use Illuminate\Support\Facades\Storage;
          * @return \Illuminate\View\View
          */
         public function index(Request $request)
-    {   
-        try {
-            $servidor = Servidor::where('matricula', Auth::user()->matricula)->first();
-            
-            // Obter listas para filtros
-            $tipos = Tipo::where('status', true)->orderBy('tipo')->get();
-            $orgaos = Orgao::where('status', true)->orderBy('orgao')->get();
-            
-            // Para a primeira carga, é enviada a página vazia com os filtros
-            return view('normas.norma_list', compact('servidor', 'tipos', 'orgaos'));
-            
-        } catch (\Exception $e) {
-            Log::error('Erro ao listar normas: ' . $e->getMessage());
-            return back()->withErrors(['Erro ao carregar normas. Por favor, tente novamente.']);
-        }
+{   
+    try {
+        $servidor = Servidor::where('matricula', Auth::user()->matricula)->first();
+        
+        // Obter listas para filtros
+        $tipos = Tipo::where('status', true)->orderBy('tipo')->get();
+        $orgaos = Orgao::where('status', true)->orderBy('orgao')->get();
+        
+        // Verificar permissões do usuário
+        $user = Auth::user();
+        $userPermissions = [
+            'canEdit' => $user->role_id == 1 || in_array($user->role_id, [1, 2, 3]), // root ou admin
+            'canDelete' => $user->role_id == 1 || in_array($user->role_id, [1, 2, 3]), // root ou admin
+            'canCreate' => $user->role_id == 1 || in_array($user->role_id, [1, 2, 3]), // root ou admin
+            'isRoot' => $user->role_id == 1,
+            'isAdmin' => in_array($user->role_id, [1, 2, 3])
+        ];
+        
+        // Debug - Log das permissões
+        Log::info('User ID: ' . $user->id . ', Role ID: ' . $user->role_id);
+        Log::info('User Permissions: ', $userPermissions);
+        
+        // Para a primeira carga, é enviada a página vazia com os filtros
+        return view('normas.norma_list', compact('servidor', 'tipos', 'orgaos', 'userPermissions'));
+        
+    } catch (\Exception $e) {
+        Log::error('Erro ao listar normas: ' . $e->getMessage());
+        return back()->withErrors(['Erro ao carregar normas. Por favor, tente novamente.']);
     }
+}
 
     /**
      * Obtém normas com paginação via Ajax

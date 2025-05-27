@@ -16,6 +16,16 @@ $(function () {
         loading: false
     };
     
+    // Verificar permissões do usuário (passadas do backend)
+    const userPermissions = window.userPermissions || {};
+    const canEdit = userPermissions.canEdit === true;
+    const canDelete = userPermissions.canDelete === true;
+    
+    // Debug - verificar se as permissões estão sendo carregadas corretamente
+    console.log('User Permissions:', userPermissions);
+    console.log('Can Edit:', canEdit);
+    console.log('Can Delete:', canDelete);
+    
     // Inicializar Select2
     $('.select2-sm').select2({
         theme: 'bootstrap4',
@@ -46,6 +56,49 @@ $(function () {
     function getTipoColor(tipo) {
         const tipoUpperCase = tipo.toUpperCase();
         return tipoColors[tipoUpperCase] || tipoColors.default;
+    }
+    
+    // Função para gerar botões de ação baseado nas permissões
+    function generateActionButtons(norma) {
+        let buttons = '';
+        
+        // Debug
+        console.log('Generating buttons for norma:', norma.id);
+        console.log('Can Edit:', canEdit, 'Can Delete:', canDelete);
+        
+        // Botão para visualizar PDF (sempre disponível)
+        buttons += `
+            <a href="javascript:abrirPagina('${window.location.origin}/storage/normas/${norma.anexo}',800,600);" 
+                class="btn btn-xs btn-default" data-toggle="tooltip" title="Visualizar PDF">
+                <i class="fas fa-file-pdf"></i>
+            </a>
+        `;
+        
+        // Botão de editar (apenas para admins)
+        if (canEdit) {
+            buttons += `
+                <a href="/normas/norma_edit/${norma.id}" 
+                    class="btn btn-xs btn-primary" data-toggle="tooltip" title="Editar">
+                    <i class="fas fa-edit"></i>
+                </a>
+            `;
+        }
+        
+        // Botão de excluir (apenas para admins)
+        if (canDelete) {
+            buttons += `
+                <button type="button" class="btn btn-xs btn-danger delete-norma" 
+                        data-toggle="modal" data-target="#deleteModal" 
+                        data-norma-id="${norma.id}"
+                        data-norma-desc="${norma.descricao}"
+                        title="Remover">
+                    <i class="fas fa-trash"></i>
+                </button>
+            `;
+        }
+        
+        console.log('Generated buttons:', buttons);
+        return buttons;
     }
     
     // Carregar dados
@@ -107,43 +160,27 @@ $(function () {
                                 ${norma.tipo}
                             </span>
                         </td>
-                <td>${norma.data}</td>
-                <td>
-                    <div class="text-truncate-custom" data-toggle="tooltip" title="${norma.descricao}">
-                        ${norma.descricao}
-                    </div>
-                    ${renderPalavrasChave(norma.palavras_chave, norma.palavras_chave_restantes)}
-                </td>
-                <td>
-                    <div class="text-truncate-custom" data-toggle="tooltip" title="${norma.resumo}">
-                        ${norma.resumo}
-                    </div>
-                </td>
-                <td>${norma.orgao}</td>
-                <td class="text-center">
-                    <div class="action-buttons">
-                        <a href="javascript:abrirPagina('${window.location.origin}/storage/normas/${norma.anexo}',800,600);" 
-                            class="btn btn-xs btn-default" data-toggle="tooltip" title="Visualizar PDF">
-                            <i class="fas fa-file-pdf"></i>
-                        </a>
-                        
-                        <a href="/normas/norma_edit/${norma.id}" 
-                            class="btn btn-xs btn-primary" data-toggle="tooltip" title="Editar">
-                            <i class="fas fa-edit"></i>
-                        </a>
-                        
-                        <button type="button" class="btn btn-xs btn-danger delete-norma" 
-                                data-toggle="modal" data-target="#deleteModal" 
-                                data-norma-id="${norma.id}"
-                                data-norma-desc="${norma.descricao}"
-                                title="Remover">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                </td>
-            </tr>
-        `;
-    });
+                        <td>${norma.data}</td>
+                        <td>
+                            <div class="text-truncate-custom" data-toggle="tooltip" title="${norma.descricao}">
+                                ${norma.descricao}
+                            </div>
+                            ${renderPalavrasChave(norma.palavras_chave, norma.palavras_chave_restantes)}
+                        </td>
+                        <td>
+                            <div class="text-truncate-custom" data-toggle="tooltip" title="${norma.resumo}">
+                                ${norma.resumo}
+                            </div>
+                        </td>
+                        <td>${norma.orgao}</td>
+                        <td class="text-center">
+                            <div class="action-buttons">
+                                ${generateActionButtons(norma)}
+                            </div>
+                        </td>
+                    </tr>
+                    `;
+                });
                 
                 $('#normas-body').html(html);
                 
@@ -382,8 +419,13 @@ $(function () {
         loadNormas();
     });
     
-    // Modal de exclusão
+    // Modal de exclusão (só funciona se o usuário tiver permissão)
     $(document).on('click', '.delete-norma', function() {
+        if (!canDelete) {
+            alert('Você não tem permissão para excluir normas.');
+            return;
+        }
+        
         const normaId = $(this).data('norma-id');
         const normaDesc = $(this).data('norma-desc');
         

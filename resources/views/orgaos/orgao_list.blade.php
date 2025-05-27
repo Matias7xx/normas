@@ -19,9 +19,9 @@
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-12">
-                <div class="card card-primary">
+                <div class="card card-dark">
                     <div class="card-header">
-                        <h3>Lista de <b>ÓRGÃOS</b> cadastrados</h3>
+                        <h3><b>ÓRGÃOS</b> Cadastrados</h3>
                     </div>
                     <div class="card-body">
                         <table id="example1" class="table table-bordered table-striped">
@@ -41,7 +41,7 @@
                                             <nobr>
                                                 <a
                                                     href="{{ route('orgaos.orgao_edit', $orgao_obj->id) }}"><button
-                                                        type='button' class='btn btn-primary'>
+                                                        type='button' class='btn btn-secondary'>
                                                         <nobr><i class='fas fa-edit'></i> Editar</nobr>
                                                     </button></a>
 

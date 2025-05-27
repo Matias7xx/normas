@@ -18,7 +18,7 @@
 @section('content')
   <div class="row justify-content-center">
     <div class="col-md-6">
-      <div class="card card-primary">
+      <div class="card card-dark">
         <div class="card-header">
           <h3>CRIAR UM NOVO PERFIL</h3>
         </div>
@@ -52,30 +52,32 @@
             </div>
             <div class="box-footer">
               <a href="#" class="btn btn-default"><i class="fa fa-angle-double-left"></i> Voltar</a>
-              <button type="submit" class="btn btn-primary pull-right">Adicionar</button>
+              <button type="submit" class="btn btn-secondary pull-right">Adicionar</button>
             </div>
           </form>
         </div>
       </div>
     </div>
     <div class="col-md-6">
-      <div class="card card-primary">
+      <div class="card card-dark">
         <div class="card-header">
-          <h3>PERFÍS CADASTRADOS</h3>
+          <h3>PERFIS CADASTRADOS</h3>
         </div>
         <div class="card-body">
           <table class="table table-bordered table-stripped table-hover">
             <thead>
               <tr>
+                <th class="col-md-1">ID</th>
                 <th class="col-md-2">Nome</th>
-                <th class="col-md-6">Descrição</th>
+                <th class="col-md-5">Descrição</th>
                 <th class="col-md-3">Permissões</th>
-								<th class="col-md-1">AÇÕES</th>
+								<th class="col-md-1">Ações</th>
               </tr>
             </thead>
             <tbody>
                 @foreach ($roles as $role)
                   <tr>
+                    <td><strong>{{ $role->id }}</strong></td>
                     <td>{{ $role->name }}</td>
                     <td>{{ $role->description }}</td>
                     <td>

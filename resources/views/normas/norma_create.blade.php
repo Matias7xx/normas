@@ -19,9 +19,9 @@
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-12">
-                <div class="card card-primary">
+                <div class="card card-dark">
                     <div class="card-header">
-                        <h3>Criar uma nova <b>NORMA</b></h3>
+                        <h3>Cadastrar <b>NORMA</b></h3>
                     </div>
                     <div class="card-body">
                         <form id="user_form" action="{{ route('normas.norma_store') }}" method="POST" enctype="multipart/form-data">

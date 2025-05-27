@@ -8,7 +8,7 @@
   <div class="col-md-2">
     <div class="form-group">
       <label for="matricula">Matrícula</label>
-      <input type="text" class="form-control" placeholder="Somente números" name="matricula" value="{{ old('matricula', $user->matricula) }}">
+      <input type="text" class="form-control" maxlength="7" pattern="[0-9]{7}" inputmode="numeric" placeholder="Somente números" name="matricula" value="{{ old('matricula', $user->matricula) }}">
     </div>
   </div>
   <div class="col-md-4">
@@ -36,10 +36,10 @@
       <label for="cargo_id">Cargo</label>
       <select name="cargo_id" class="form-control">
         <option value="">Selecione...</option>
-        <option {{ (collect(old('cargo_id'))->contains($user->cargo_id)) ? 'selected':'' }} value="G601">Delegado de Polícia</option>
-        <option {{ (collect(old('cargo_id'))->contains($user->cargo_id)) ? 'selected':'' }} value="G608">Investigador de Polícia</option>
-        <option {{ (collect(old('cargo_id'))->contains($user->cargo_id)) ? 'selected':'' }} value="G610">Escrivão de Polícia</option>
-        <option {{ (collect(old('cargo_id'))->contains($user->cargo_id)) ? 'selected':'' }} value="G612">Agente Operacional de Polícia</option>
+            <option {{ (collect(old('cargo_id'))->contains($user->cargo_id)) ? 'selected':'' }} value="1">Delegado de Polícia</option>
+            <option {{ (collect(old('cargo_id'))->contains($user->cargo_id)) ? 'selected':'' }} value="2">Investigador de Polícia</option>
+            <option {{ (collect(old('cargo_id'))->contains($user->cargo_id)) ? 'selected':'' }} value="3">Escrivão de Polícia</option>
+            <option {{ (collect(old('cargo_id'))->contains($user->cargo_id)) ? 'selected':'' }} value="4">Agente Operacional de Polícia</option>
       </select>
     </div>
   </div>
@@ -82,7 +82,7 @@
 <div class="row">
   <div class="col-md-4">
     <div class="btn-group">
-      <input class="btn btn-primary" type="submit" value="Confirmar" onclick="return validateForm()">
+      <input class="btn btn-secondary" type="submit" value="Confirmar" onclick="return validateForm()">
       <a class="btn btn-default" href="{{ redirect()->getUrlGenerator()->previous() }}">Voltar</a>
     </div>
   </div>

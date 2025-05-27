@@ -1,20 +1,20 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt_BR">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{{ config('app.name')}} | PCPB</title>
 
-  <!-- Google Font: Source Sans Pro -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Google Font: Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <!-- Font Awesome -->
   <link rel="stylesheet" href="{{asset('/plugins/fontawesome-free/css/all.min.css')}}">
   <!-- icheck bootstrap -->
   <link rel="stylesheet" href="{{asset('/plugins/icheck-bootstrap/icheck-bootstrap.min.css')}}">
   <!-- Theme style -->
   <link rel="stylesheet" href="{{asset('/dist/css/adminlte.min.css')}}">
-  <!-- Estilo local -->
-  <link rel="stylesheet" href="{{asset('/dist/css/estilo.css')}}">
+  
+  @yield('styles')
 </head>
 <body class="hold-transition login-page">
 
@@ -28,12 +28,4 @@
 <script src="{{asset('/dist/js/adminlte.min.js')}}"></script>
 @yield('scripts')
 </body>
-<style>
-    body {
-      background-image: url('images/background_login.jpg');
-      background-repeat: no-repeat;
-      background-attachment: fixed;
-      background-size: cover;
-    }
-  </style>
 </html>

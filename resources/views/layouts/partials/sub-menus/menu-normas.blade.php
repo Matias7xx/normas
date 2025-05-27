@@ -43,7 +43,7 @@
                             <a href="{{ route('tipos.tipo_list') }}"
                                 class="nav-link {{ Request::is('admin') ? 'active' : '' }}">
                                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<i class="far fa-dot-circle nav-icon text-warning"></i>
-                                <p>listar</p>
+                                <p>Listar</p>
                             </a>
                         </li>
                         <li class="nav-item">
@@ -65,7 +65,7 @@
                             <a href="{{ route('orgaos.orgao_list') }}"
                                 class="nav-link {{ Request::is('admin') ? 'active' : '' }}">
                                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<i class="far fa-dot-circle nav-icon text-warning"></i>
-                                <p>listar</p>
+                                <p>Listar</p>
                             </a>
                         </li>
                         <li class="nav-item">
@@ -87,7 +87,7 @@
                             <a href="{{ route('palavras_chaves.palavras_chaves_list') }}"
                                 class="nav-link {{ Request::is('normas/norma_list') ? 'active' : '' }}">
                                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<i class="far fa-dot-circle nav-icon text-warning"></i>
-                                <p>listar</p>
+                                <p>Listar</p>
                             </a>
                         </li>
                         <li class="nav-item">

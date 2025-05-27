@@ -26,7 +26,7 @@ Route::middleware([Authenticate::class])->group(function() {
     Route::get('/home', [NormaController::class, 'index'])->name('home');
 
     // =====================  USERS   ============================
-    Route::group(['prefix' => 'admin'], function(){
+    Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'root']], function(){
         Route::get('/users', [UserController::class, 'index'])->name('user.index');
         Route::get('/users/list/{id}',[UserController::class, 'userTaskList'])->name('user.list');
         Route::get('/users/create', [UserController::class, 'create'])->name('user.create');
@@ -49,10 +49,11 @@ Route::group(['prefix' => 'normas', 'middleware' => ['auth']], function(){
     //Listagem e pesquisa
     //Carregar as normas com Ajax
     Route::get('/ajax', [NormaController::class, 'getNormasAjax'])->name('normas.ajax');
-
     Route::get('/norma_list', [NormaController::class, 'index'])->name('normas.norma_list');
-    Route::get('/norma_search', [NormaController::class, 'search'])->name('normas.norma_search');
+    /* Route::get('/norma_search', [NormaController::class, 'search'])->name('normas.norma_search'); */
+    });
     
+    Route::group(['prefix' => 'normas', 'middleware' => ['auth', 'admin']], function(){
         //Criação
         Route::get('/norma_create', [NormaController::class, 'create'])->name('normas.norma_create');
         Route::post('/norma_store', [NormaController::class, 'store'])->name('normas.norma_store');
@@ -66,7 +67,7 @@ Route::group(['prefix' => 'normas', 'middleware' => ['auth']], function(){
 });
 
     // =====================  ORGAOS   ============================
-    Route::group(['prefix' => 'orgaos'], function(){
+    Route::group(['prefix' => 'orgaos', 'middleware' => ['auth', 'admin']], function(){
         Route::get('/orgao_list', [OrgaoController::class, 'show'])->name('orgaos.orgao_list');
         Route::get('/orgao_create', [OrgaoController::class, 'create'])->name('orgaos.orgao_create');
         Route::post('/orgao_store', [OrgaoController::class, 'store'])->name('orgaos.orgao_store');
@@ -76,7 +77,7 @@ Route::group(['prefix' => 'normas', 'middleware' => ['auth']], function(){
     });
 
     // =====================  TIPOS   ============================
-    Route::group(['prefix' => 'tipos'], function(){
+    Route::group(['prefix' => 'tipos', 'middleware' => ['auth', 'admin']], function(){
         Route::get('/tipo_list', [TipoController::class, 'show'])->name('tipos.tipo_list');
         Route::get('/tipo_create', [TipoController::class, 'create'])->name('tipos.tipo_create');
         Route::post('/tipo_store', [TipoController::class, 'store'])->name('tipos.tipo_store');
@@ -86,7 +87,7 @@ Route::group(['prefix' => 'normas', 'middleware' => ['auth']], function(){
     });
 
     // =====================  PALAVRAS CHAVES   ============================
-    Route::group(['prefix' => 'palavras_chaves'], function(){
+    Route::group(['prefix' => 'palavras_chaves', 'middleware' => ['auth', 'admin']], function(){
         Route::get('/palavras_chaves_create', [PalavraChaveController::class, 'create'])->name('palavras_chaves.palavras_chaves_create');
         Route::post('/palavras_chaves_store', [PalavraChaveController::class, 'store'])->name('palavras_chaves.palavras_chaves_store');
         Route::get('/palavras_chaves_list', [PalavraChaveController::class, 'index'])->name('palavras_chaves.palavras_chaves_list');

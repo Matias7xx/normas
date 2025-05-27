@@ -19,7 +19,7 @@
 <div class="container">
   <div class="row justify-content-center">
     <div class="col-md-12">
-      <div class="card card-primary">
+      <div class="card card-dark">
         <div class="card-header">
           <h3>CRIAR UM NOVO USUÁRIO</h3>
         </div>
