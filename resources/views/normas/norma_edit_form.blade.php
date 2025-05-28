@@ -130,7 +130,7 @@
 
                     <div class="col-md-6">
                         <div class="card card-secondary h-100">
-                            <div class="card-header" style="padding: 10px; bg-dark">
+                            <div class="card-header" id="palavras_vinculadas" style="padding: 10px; bg-dark">
                                 <h5 class="card-title" style="color: white;">Palavras-chave vinculadas</h5>
                             </div>
                             <div class="card-body" style="height: 350px; overflow-y: auto;">
@@ -184,7 +184,7 @@
     /*Estilos específicos para o formulário de normas*/
     .select2-container--default .select2-selection--multiple .select2-selection__choice {
         background-color: #17a2b8;
-        border-color: #148a9d;
+        border-color: #404040;
         color: white;
         padding: 5px 10px;
         margin-top: 5px;
@@ -229,8 +229,8 @@
     
     /*Efeito de foco nos campos*/
     .section-form-input:focus, .section-form-select:focus {
-        border-color: #80bdff;
-        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        border-color: #404040;
+        box-shadow: 0 0 0 0.1rem #404040;
     }
     
     /*Estilo para campos com erro */
@@ -245,7 +245,7 @@
     }
 
     .select2-container--default .select2-results__option--highlighted[aria-selected] {
-        background-color: #17a2b8;
+        background-color: #404040;
     }
 
     .select2-container--default .select2-results__option {
@@ -259,13 +259,12 @@
     }
 
     .select2-container--default.select2-container--focus .select2-selection--multiple {
-        border-color: #80bdff;
-        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        border-color: #404040;
+        box-shadow: 0 0 0 0.1rem #404040;
     }
 
     .select2-container--default .select2-selection--multiple .select2-selection__choice {
-        background-color: #17a2b8;
-        border-color: #148a9d;
+        background-color: #bea55a;
         color: white;
         padding: 5px 10px;
         margin-top: 5px;
@@ -286,6 +285,10 @@
     .select2-dropdown {
         border-color: #ced4da;
         box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+    }
+    
+    #palavras_vinculadas {
+        background-color: #404040;
     }
 </style>
 

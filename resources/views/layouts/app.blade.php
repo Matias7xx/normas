@@ -49,6 +49,22 @@
         </div>
         <!-- ./wrapper -->
 
+        <style>
+            .wrapper {
+                min-height: 100vh; /* Garante que o wrapper ocupe pelo menos a altura da tela */
+                display: flex;
+                flex-direction: column;
+            }
+
+            main {
+                flex: 1 0 auto; /* Faz o conteúdo principal crescer e empurrar o footer para baixo */
+            }
+
+            .main-footer {
+                flex-shrink: 0; /* Impede que o footer encolha */
+            }
+        </style>
+
     <!-- jQuery -->
     <script src="{{asset('/plugins/jquery/jquery.min.js')}}"></script>
     <!-- Bootstrap 4 -->
