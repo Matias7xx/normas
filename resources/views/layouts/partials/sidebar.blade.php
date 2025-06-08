@@ -6,16 +6,16 @@
         <!-- Sidebar user panel -->
         <div class="user-panel mt-3 pb-3 mb-3 d-flex" style="border-bottom: 1px solid #404040;">
             <div class="image">
-                @if (isset($servidor->foto))
-                    <img src="https://sistemas.pc.pb.gov.br/media/foto/{{ $servidor->foto }}" 
-                         class="img-circle elevation-2" alt="User Image"
-                         style="border: 2px solid #bea55a;">
-                @else
-                    <div class="img-circle elevation-2 d-flex align-items-center justify-content-center"
-                         style="width: 34px; height: 34px; background: linear-gradient(45deg, #bea55a, #d4b86a); border: 2px solid #bea55a;">
-                        <i class="fas fa-user text-dark"></i>
-                    </div>
+                @if (Auth::user()->cpf)
+                    <img src="https://sistemas.pc.pb.gov.br/media/servidor/funcionais/{{ Auth::user()->cpf }}_SERVIDOR_F.jpg" 
+                        class="img-circle elevation-2" alt="User Image"
+                        style="border: 2px solid #bea55a;"
+                        onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                 @endif
+                <div class="img-circle elevation-2 align-items-center justify-content-center"
+                    style="width: 34px; height: 34px; background: linear-gradient(45deg, #bea55a, #d4b86a); border: 2px solid #bea55a; {{ Auth::user()->cpf ? 'display: none;' : 'display: flex;' }}">
+                    <i class="fas fa-user text-dark"></i>
+                </div>
             </div>
             <div class="info">
                 <a href="#" class="d-block font-weight-bold" style="font-size: 0.9rem; color: #ffffff;">
@@ -98,7 +98,7 @@
                         <p style="color: #ffffff;">
                             Normas Jurídicas
                             <i class="right fas fa-angle-left"></i>
-                            <span class="badge badge-info right">{{ \App\Models\Norma::where('status', true)->count() }}</span>
+                            {{-- <span class="badge badge-info right">6232{{ \App\Models\Norma::where('status', true)->count() }}</span> --}}
                         </p>
                     </a>
                     <ul class="nav nav-treeview">
@@ -267,7 +267,7 @@
 /* Badge styling */
 .badge {
     font-size: 0.65rem;
-    padding: 3px 6px;
+    padding: 3px 3px;
 }
 
 .badge-info {

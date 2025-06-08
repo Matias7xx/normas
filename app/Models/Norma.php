@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
+use Carbon\Carbon;
 
 class Norma extends Model
 {
@@ -34,29 +35,22 @@ class Norma extends Model
         'status' => 'boolean',
     ];
 
-    // Retorna o tipo de publicidade da norma
+    // Relacionamentos
 
     public function publicidade()
     {
         return $this->belongsTo(Publicidade::class, 'publicidade_id', 'id')->select('id', 'publicidade');
     }
 
-     //Retorna o órgão relacionado à norma
-
     public function orgao()
     {
         return $this->belongsTo(Orgao::class, 'orgao_id', 'id')->select('id', 'orgao');
     }
 
-     //Retorna o tipo da norma
-
     public function tipo()
     {
         return $this->belongsTo(Tipo::class, 'tipo_id', 'id')->select('id', 'tipo');
     }
-
-    
-    //Retorna as palavras-chave relacionadas à norma
 
     public function palavrasChave()
     {
@@ -67,9 +61,6 @@ class Norma extends Model
             'palavra_chave_id'
         )->wherePivot('status', true);
     }
-    
-    
-    /* Retorna o usuário que criou a norma */
 
     public function usuario()
     {
@@ -77,13 +68,9 @@ class Norma extends Model
     }
 
     /**
-     * Acessors
+     * Accessors
      */
     
-    /**
-     * Retorna o URL completo para o anexo
-     * @return string|null
-     */
     public function getAnexoUrlAttribute()
     {
         if (!$this->anexo) {
@@ -93,55 +80,30 @@ class Norma extends Model
         return Storage::url('public/normas/' . $this->anexo);
     }
     
-    /**
-     * Formata a data para exibição
-     * @return string
-     */
     public function getDataFormatadaAttribute()
     {
         return $this->data ? $this->data->format('d/m/Y') : '';
     }
     
-    /**
-     * Retorna um resumo limitado da descrição
-     * @param int $length
-     * @return string
-     */
     public function getDescricaoResumidaAttribute($length = 50)
     {
         return \Illuminate\Support\Str::limit($this->descricao, $length, '...');
     }
     
-    /**
-     * Retorna um resumo limitado do texto do resumo
-     * @param int $length
-     * @return string
-     */
     public function getResumoResumidoAttribute($length = 80)
     {
         return \Illuminate\Support\Str::limit($this->resumo, $length, '...');
     }
     
     /**
-     * Scopes
+     * Scopes Aprimorados
      */
     
-    /**
-     * Filtra apenas normas ativas
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @return \Illuminate\Database\Eloquent\Builder
-     */
     public function scopeAtivas($query)
     {
         return $query->where('status', true);
     }
     
-    /**
-     * Filtra por palavra-chave
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @param string $palavraChave
-     * @return \Illuminate\Database\Eloquent\Builder
-     */
     public function scopePorPalavraChave($query, $palavraChave)
     {
         return $query->whereHas('palavrasChave', function($q) use ($palavraChave) {
@@ -151,10 +113,7 @@ class Norma extends Model
     }
     
     /**
-     * Filtra por termo de pesquisa em múltiplos campos
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @param string $termo
-     * @return \Illuminate\Database\Eloquent\Builder
+     * Busca geral aprimorada - pesquisa em múltiplos campos
      */
     public function scopePesquisaGeral($query, $termo)
     {
@@ -172,17 +131,12 @@ class Norma extends Model
                   $subq->where('tipo', 'ILIKE', "%{$termo}%");
               })
               ->orWhereHas('palavrasChave', function($subq) use ($termo) {
-                  $subq->where('palavra_chave', 'ILIKE', "%{$termo}%");
+                  $subq->where('palavra_chave', 'ILIKE', "%{$termo}%")
+                       ->where('normas_chaves.status', true);
               });
         });
     }
     
-    /**
-     * Filtra normas pelo tipo
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @param int $tipoId
-     * @return \Illuminate\Database\Eloquent\Builder
-     */
     public function scopePorTipo($query, $tipoId)
     {
         if (empty($tipoId)) {
@@ -192,12 +146,6 @@ class Norma extends Model
         return $query->where('tipo_id', $tipoId);
     }
     
-    /**
-     * Filtra normas pelo órgão
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @param int $orgaoId
-     * @return \Illuminate\Database\Eloquent\Builder
-     */
     public function scopePorOrgao($query, $orgaoId)
     {
         if (empty($orgaoId)) {
@@ -208,11 +156,7 @@ class Norma extends Model
     }
     
     /**
-     * Filtra normas por período de data
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @param string $dataInicio
-     * @param string $dataFim
-     * @return \Illuminate\Database\Eloquent\Builder
+     * Filtro por período aprimorado
      */
     public function scopePorPeriodo($query, $dataInicio, $dataFim)
     {
@@ -232,28 +176,37 @@ class Norma extends Model
     }
     
     /**
-     * Filtra normas recentes (últimos X dias)
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @param int $dias
-     * @return \Illuminate\Database\Eloquent\Builder
+     * Scope para filtros rápidos de tempo
      */
     public function scopeRecentes($query, $dias = 30)
     {
         return $query->where('data', '>=', now()->subDays($dias));
     }
     
+    public function scopeEsteMes($query)
+    {
+        return $query->whereMonth('data', now()->month)
+                    ->whereYear('data', now()->year);
+    }
+    
+    public function scopeEsteAno($query)
+    {
+        return $query->whereYear('data', now()->year);
+    }
+    
+    public function scopeUltimosTresMeses($query)
+    {
+        $tresMesesAtras = now()->subMonths(3);
+        return $query->where('data', '>=', $tresMesesAtras);
+    }
+    
     /**
-     * Busca avançada com múltiplos critérios
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @param array $filtros
-     * @return \Illuminate\Database\Eloquent\Builder
+     * Scope para busca avançada com múltiplos critérios
      */
     public function scopeBuscaAvancada($query, array $filtros)
     {
-        //Iniciar com filtro de status ativo
         $query->ativas();
         
-        //Aplicar cada filtro se estiver definido
         if (!empty($filtros['termo'])) {
             $query->pesquisaGeral($filtros['termo']);
         }
@@ -280,12 +233,6 @@ class Norma extends Model
         return $query;
     }
     
-    /**
-     * Filtra normas por publicidade
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @param int $publicidadeId
-     * @return \Illuminate\Database\Eloquent\Builder
-     */
     public function scopePorPublicidade($query, $publicidadeId)
     {
         if (empty($publicidadeId)) {
@@ -295,12 +242,6 @@ class Norma extends Model
         return $query->where('publicidade_id', $publicidadeId);
     }
     
-    /**
-     * Filtra por usuário
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @param int $usuarioId
-     * @return \Illuminate\Database\Eloquent\Builder
-     */
     public function scopePorUsuario($query, $usuarioId)
     {
         if (empty($usuarioId)) {
@@ -308,5 +249,98 @@ class Norma extends Model
         }
         
         return $query->where('usuario_id', $usuarioId);
+    }
+    
+    /**
+     * Scopes para ordenação otimizada
+     */
+    public function scopeOrdenadoPorData($query, $direcao = 'desc')
+    {
+        return $query->orderBy('data', $direcao)->orderBy('id', $direcao);
+    }
+    
+    public function scopeOrdenadoPorId($query, $direcao = 'desc')
+    {
+        return $query->orderBy('id', $direcao);
+    }
+    
+    public function scopeOrdenadoPorTipo($query, $direcao = 'asc')
+    {
+        return $query->join('tipos', 'normas.tipo_id', '=', 'tipos.id')
+                    ->orderBy('tipos.tipo', $direcao)
+                    ->select('normas.*');
+    }
+    
+    public function scopeOrdenadoPorOrgao($query, $direcao = 'asc')
+    {
+        return $query->join('orgaos', 'normas.orgao_id', '=', 'orgaos.id')
+                    ->orderBy('orgaos.orgao', $direcao)
+                    ->select('normas.*');
+    }
+    
+    /**
+     * Métodos utilitários estáticos
+     */
+    
+    /**
+     * Obtém estatísticas rápidas
+     */
+    public static function obterEstatisticas()
+    {
+        return [
+            'total' => self::ativas()->count(),
+            'este_mes' => self::ativas()->esteMes()->count(),
+            'este_ano' => self::ativas()->esteAno()->count(),
+            'recentes' => self::ativas()->recentes(7)->count()
+        ];
+    }
+    
+    /**
+     * Busca normas relacionadas baseada em palavras-chave
+     */
+    public function normasRelacionadas($limit = 5)
+    {
+        if ($this->palavrasChave->isEmpty()) {
+            return collect();
+        }
+        
+        $palavrasChaveIds = $this->palavrasChave->pluck('id');
+        
+        return self::ativas()
+            ->where('id', '!=', $this->id)
+            ->whereHas('palavrasChave', function($query) use ($palavrasChaveIds) {
+                $query->whereIn('palavra_chaves.id', $palavrasChaveIds);
+            })
+            ->withCount(['palavrasChave' => function($query) use ($palavrasChaveIds) {
+                $query->whereIn('palavra_chaves.id', $palavrasChaveIds);
+            }])
+            ->orderBy('palavras_chave_count', 'desc')
+            ->orderBy('data', 'desc')
+            ->limit($limit)
+            ->get();
+    }
+    
+    /**
+     * Verifica se a norma é recente (últimos 30 dias)
+     */
+    public function isRecente($dias = 30)
+    {
+        if (!$this->data) {
+            return false;
+        }
+        
+        return $this->data->diffInDays(now()) <= $dias;
+    }
+    
+    /**
+     * Obtém a idade da norma em anos
+     */
+    public function getIdadeAnos()
+    {
+        if (!$this->data) {
+            return null;
+        }
+        
+        return $this->data->diffInYears(now());
     }
 }

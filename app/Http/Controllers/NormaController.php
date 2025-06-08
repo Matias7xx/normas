@@ -16,44 +16,40 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Carbon\Carbon;
 
-    class NormaController extends Controller
-    {
-        /**
-         * Exibe a listagem de normas agrupadas por tipo
-         * @return \Illuminate\View\View
-         */
-        public function index(Request $request)
-{   
-    try {
-        $servidor = Servidor::where('matricula', Auth::user()->matricula)->first();
-        
-        // Obter listas para filtros
-        $tipos = Tipo::where('status', true)->orderBy('tipo')->get();
-        $orgaos = Orgao::where('status', true)->orderBy('orgao')->get();
-        
-        // Verificar permissões do usuário
-        $user = Auth::user();
-        $userPermissions = [
-            'canEdit' => $user->role_id == 1 || in_array($user->role_id, [1, 2, 3]), // root ou admin
-            'canDelete' => $user->role_id == 1 || in_array($user->role_id, [1, 2, 3]), // root ou admin
-            'canCreate' => $user->role_id == 1 || in_array($user->role_id, [1, 2, 3]), // root ou admin
-            'isRoot' => $user->role_id == 1,
-            'isAdmin' => in_array($user->role_id, [1, 2, 3])
-        ];
-        
-        // Debug - Log das permissões
-        Log::info('User ID: ' . $user->id . ', Role ID: ' . $user->role_id);
-        Log::info('User Permissions: ', $userPermissions);
-        
-        // Para a primeira carga, é enviada a página vazia com os filtros
-        return view('normas.norma_list', compact('servidor', 'tipos', 'orgaos', 'userPermissions'));
-        
-    } catch (\Exception $e) {
-        Log::error('Erro ao listar normas: ' . $e->getMessage());
-        return back()->withErrors(['Erro ao carregar normas. Por favor, tente novamente.']);
+class NormaController extends Controller
+{
+    /**
+     * Exibe a listagem de normas agrupadas por tipo
+     * @return \Illuminate\View\View
+     */
+    public function index(Request $request)
+    {   
+        try {
+            $servidor = Servidor::where('matricula', Auth::user()->matricula)->first();
+            
+            // Obter listas para filtros
+            $tipos = Tipo::where('status', true)->orderBy('tipo')->get();
+            $orgaos = Orgao::where('status', true)->orderBy('orgao')->get();
+            
+            // Verificar permissões do usuário
+            $user = Auth::user();
+            $userPermissions = [
+                'canEdit' => $user->role_id == 1 || in_array($user->role_id, [1, 2, 3]),
+                'canDelete' => $user->role_id == 1 || in_array($user->role_id, [1, 2, 3]),
+                'canCreate' => $user->role_id == 1 || in_array($user->role_id, [1, 2, 3]),
+                'isRoot' => $user->role_id == 1,
+                'isAdmin' => in_array($user->role_id, [1, 2, 3])
+            ];
+            
+            return view('normas.norma_list', compact('servidor', 'tipos', 'orgaos', 'userPermissions'));
+            
+        } catch (\Exception $e) {
+            Log::error('Erro ao listar normas: ' . $e->getMessage());
+            return back()->withErrors(['Erro ao carregar normas. Por favor, tente novamente.']);
+        }
     }
-}
 
     /**
      * Obtém normas com paginação via Ajax
@@ -61,106 +57,186 @@ use Illuminate\Support\Facades\Storage;
      * @return \Illuminate\Http\JsonResponse
      */
     public function getNormasAjax(Request $request)
-{
-    try {
-        // Base query com eager loading otimizado
-        $query = Norma::with([
-            'publicidade:id,publicidade', 
-            'orgao:id,orgao', 
-            'tipo:id,tipo', 
-            'palavrasChave:id,palavra_chave'
-        ])
-        ->ativas();
+    {
+        try {   
+            // Base query com eager loading otimizado
+            $query = Norma::with([
+                'publicidade:id,publicidade', 
+                'orgao:id,orgao', 
+                'tipo:id,tipo', 
+                'palavrasChave:id,palavra_chave'
+            ])
+            ->ativas();
+            
+            // Aplicar filtros de pesquisa
+            if ($request->filled('search_term')) {
+                $searchTerm = trim($request->search_term);
+                $query->where(function($q) use ($searchTerm) {
+                    $q->where('descricao', 'ILIKE', "%{$searchTerm}%")
+                    ->orWhere('resumo', 'ILIKE', "%{$searchTerm}%")
+                    ->orWhereHas('palavrasChave', function($subq) use ($searchTerm) {
+                        $subq->where('palavra_chave', 'ILIKE', "%{$searchTerm}%");
+                    });
+                });
+            }
+            
+            // Filtro por tipo
+            if ($request->filled('tipo_id')) {
+                $query->where('tipo_id', $request->tipo_id);
+            }
+            
+            // Filtro por órgão
+            if ($request->filled('orgao_id')) {
+                $query->where('orgao_id', $request->orgao_id);
+            }
+            
+            if ($request->filled('data_inicio')) {
+                try {
+                    $dataInicio = Carbon::createFromFormat('Y-m-d', $request->data_inicio)->startOfDay();
+                    $query->where('data', '>=', $dataInicio);
+                } catch (\Exception $e) {
+                }
+            }
+            
+            if ($request->filled('data_fim')) {
+                try {
+                    $dataFim = Carbon::createFromFormat('Y-m-d', $request->data_fim)->endOfDay();
+                    $query->where('data', '<=', $dataFim);
+                } catch (\Exception $e) {
+                }
+            }
+                        
+            // Tratamento de ordenação
+            $orderBy = $request->input('order_by', 'data');
+            $orderDir = $request->input('order_dir', 'desc');
+            
+            // Validar direção de ordenação
+            $orderDir = in_array(strtolower($orderDir), ['asc', 'desc']) ? strtolower($orderDir) : 'desc';
+            
+            // Aplicar ordenação baseada no campo
+            switch ($orderBy) {
+                case 'id':
+                    $query->orderBy('id', $orderDir);
+                    break;
+                    
+                case 'data':
+                    $query->orderBy('data', $orderDir)
+                        ->orderBy('id', $orderDir); // Ordenação secundária por ID
+                    break;
+                    
+                case 'descricao':
+                    $query->orderBy('descricao', $orderDir);
+                    break;
+                    
+                case 'resumo':
+                    $query->orderBy('resumo', $orderDir);
+                    break;
+                    
+                case 'orgao':
+                    // Ordenar pelo nome do órgão usando join
+                    $query->join('orgaos', 'normas.orgao_id', '=', 'orgaos.id')
+                        ->orderBy('orgaos.orgao', $orderDir)
+                        ->select('normas.*'); // Garantir que apenas colunas de normas sejam selecionadas
+                    break;
+                    
+                case 'tipo':
+                    // Ordenar pelo nome do tipo usando join
+                    $query->join('tipos', 'normas.tipo_id', '=', 'tipos.id')
+                        ->orderBy('tipos.tipo', $orderDir)
+                        ->select('normas.*'); // Garantir que apenas colunas de normas sejam selecionadas
+                    break;
+                    
+                default:
+                    // Ordenação padrão por data (mais recentes primeiro)
+                    $query->orderBy('data', 'desc')->orderBy('id', 'desc');
+                    break;
+            }
+            
+            // Paginação
+            $perPage = $request->input('per_page', 15);
+            $perPage = in_array($perPage, [10, 15, 25, 50]) ? $perPage : 15; // Validar valores permitidos
+            
+            $normas = $query->paginate($perPage);
+            
+            // Preparar dados para exibição
+            $formattedNormas = $normas->map(function($norma) {
+                return [
+                    'id' => $norma->id,
+                    'data' => $norma->data ? $norma->data->format('d/m/Y') : null,
+                    'descricao' => $norma->descricao,
+                    'resumo' => $norma->resumo,
+                    'orgao' => $norma->orgao->orgao ?? 'N/A',
+                    'tipo' => $norma->tipo->tipo ?? 'N/A',
+                    'anexo' => $norma->anexo,
+                    'palavras_chave' => $norma->palavrasChave->take(3)->map(function($pc) {
+                        return ['id' => $pc->id, 'palavra_chave' => $pc->palavra_chave];
+                    }),
+                    'palavras_chave_restantes' => $norma->palavrasChave->count() > 3 ? 
+                        $norma->palavrasChave->count() - 3 : 0
+                ];
+            });
+            
+            return response()->json([
+                'normas' => $formattedNormas,
+                'pagination' => [
+                    'total' => $normas->total(),
+                    'per_page' => $normas->perPage(),
+                    'current_page' => $normas->currentPage(),
+                    'last_page' => $normas->lastPage(),
+                    'from' => $normas->firstItem(),
+                    'to' => $normas->lastItem()
+                ],
+                'filters_applied' => $this->getAppliedFiltersInfo($request),
+                'debug' => [
+                    'data_inicio' => $request->data_inicio,
+                    'data_fim' => $request->data_fim,
+                    'total_encontrado' => $normas->total()
+                ]
+            ]);
+            
+        } catch (\Exception $e) {            
+            return response()->json([
+                'error' => 'Erro ao carregar normas: ' . $e->getMessage(),
+                'trace' => config('app.debug') ? $e->getTraceAsString() : null
+            ], 500);
+        }
+    }
+    
+    /**
+     * Retorna informações sobre os filtros aplicados
+     */
+    private function getAppliedFiltersInfo(Request $request)
+    {
+        $filters = [];
         
-        // Aplicar filtros de pesquisa
         if ($request->filled('search_term')) {
-            $query->pesquisaGeral($request->search_term);
+            $filters[] = 'Termo de busca: ' . $request->search_term;
         }
         
         if ($request->filled('tipo_id')) {
-            $query->porTipo($request->tipo_id);
+            $tipo = Tipo::find($request->tipo_id);
+            if ($tipo) {
+                $filters[] = 'Tipo: ' . $tipo->tipo;
+            }
         }
         
         if ($request->filled('orgao_id')) {
-            $query->porOrgao($request->orgao_id);
+            $orgao = Orgao::find($request->orgao_id);
+            if ($orgao) {
+                $filters[] = 'Órgão: ' . $orgao->orgao;
+            }
         }
         
-        // Tratamento de ordenação
-        $orderBy = $request->input('order_by', 'data');
-        $orderDir = $request->input('order_dir', 'desc');
-        
-        // Aplicar ordenação em órgão e tipo de norma
-        switch ($orderBy) {
-            case 'id':
-                // Ordenação específica por ID
-                $query->orderBy('id', $orderDir);
-                break;
-            case 'orgao':
-                // Ordenar pelo nome do órgão usando subconsulta
-                $query->orderBy(function($query) {
-                    $query->select('orgao')
-                          ->from('orgaos')
-                          ->whereColumn('orgaos.id', 'normas.orgao_id')
-                          ->limit(1);
-                }, $orderDir);
-                break;
-            case 'tipo':
-                // Ordenar pelo nome do tipo usando subconsulta
-                $query->orderBy(function($query) {
-                    $query->select('tipo')
-                          ->from('tipos')
-                          ->whereColumn('tipos.id', 'normas.tipo_id')
-                          ->limit(1);
-                }, $orderDir);
-                break;
-            default:
-                // Ordenação padrão para campos diretos (data, norma, resumo)
-                $query->orderBy($orderBy, $orderDir);
-                break;
+        if ($request->filled('data_inicio')) {
+            $filters[] = 'A partir de: ' . Carbon::createFromFormat('Y-m-d', $request->data_inicio)->format('d/m/Y');
         }
         
-        // Paginação
-        $perPage = $request->input('per_page', 15);
-        $normas = $query->paginate($perPage);
+        if ($request->filled('data_fim')) {
+            $filters[] = 'Até: ' . Carbon::createFromFormat('Y-m-d', $request->data_fim)->format('d/m/Y');
+        }
         
-        // Preparar dados para exibição
-        $formattedNormas = $normas->map(function($norma) {
-            return [
-                'id' => $norma->id,
-                'data' => $norma->data ? $norma->data->format('d/m/Y') : null,
-                'descricao' => $norma->descricao,
-                'resumo' => $norma->resumo,
-                'orgao' => $norma->orgao->orgao ?? 'N/A',
-                'tipo' => $norma->tipo->tipo ?? 'N/A',
-                'anexo' => $norma->anexo,
-                'palavras_chave' => $norma->palavrasChave->take(3)->map(function($pc) {
-                    return ['id' => $pc->id, 'palavra_chave' => $pc->palavra_chave];
-                }),
-                'palavras_chave_restantes' => $norma->palavrasChave->count() > 3 ? 
-                    $norma->palavrasChave->count() - 3 : 0
-            ];
-        });
-        
-        return response()->json([
-            'normas' => $formattedNormas,
-            'pagination' => [
-                'total' => $normas->total(),
-                'per_page' => $normas->perPage(),
-                'current_page' => $normas->currentPage(),
-                'last_page' => $normas->lastPage(),
-                'from' => $normas->firstItem(),
-                'to' => $normas->lastItem()
-            ]
-        ]);
-    } catch (\Exception $e) {
-        \Log::error('Erro ao listar normas via Ajax: ' . $e->getMessage());
-        \Log::error($e->getTraceAsString());
-        return response()->json([
-            'error' => 'Erro ao carregar normas: ' . $e->getMessage(),
-            'trace' => config('app.debug') ? $e->getTraceAsString() : null
-        ], 500);
+        return $filters;
     }
-}
 
     /**
      * Exibe o formulário para criar uma nova norma
@@ -495,19 +571,19 @@ use Illuminate\Support\Facades\Storage;
             
             DB::commit();
             
-        // Determinar mensagem de sucesso
-        $mensagemFinal = count($mensagens) > 0 ? implode(' ', $mensagens) : 'Nenhuma alteração foi realizada.';
+            // Determinar mensagem de sucesso
+            $mensagemFinal = count($mensagens) > 0 ? implode(' ', $mensagens) : 'Nenhuma alteração foi realizada.';
 
-        // Redirecionar de acordo com o tipo de operação
-        if (isset($request->delete_palavra_chave) || isset($request->add_palavra_chave) || !empty($request->novas_palavras_chave)) {
-            // Se foi uma operação em palavras-chave, redireciona de volta para a tela de edição
-            return redirect()->route('normas.norma_edit', ['id' => $id])
-                            ->with('success', $mensagemFinal);
-        } else {
-            // Se foi uma edição normal, redireciona para a lista
-            return redirect()->route('normas.norma_list')
-                            ->with('success', $mensagemFinal);
-        }
+            // Redirecionar de acordo com o tipo de operação
+            if (isset($request->delete_palavra_chave) || isset($request->add_palavra_chave) || !empty($request->novas_palavras_chave)) {
+                // Se foi uma operação em palavras-chave, redireciona de volta para a tela de edição
+                return redirect()->route('normas.norma_edit', ['id' => $id])
+                                ->with('success', $mensagemFinal);
+            } else {
+                // Se foi uma edição normal, redireciona para a lista
+                return redirect()->route('normas.norma_list')
+                                ->with('success', $mensagemFinal);
+            }
             
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             DB::rollBack();
@@ -541,77 +617,6 @@ use Illuminate\Support\Facades\Storage;
         } catch (\Exception $e) {
             Log::error('Erro ao remover norma: ' . $e->getMessage());
             return back()->withErrors(['Erro ao remover norma. Por favor, tente novamente.']);
-        }
-    }
-
-    /**
-     * Exibe a interface de pesquisa de normas
-     *
-     * @param Request $request
-     * @return \Illuminate\View\View
-     */
-    public function search(Request $request)
-    {
-        try {
-            $tipo = Tipo::where('status', true)
-                ->orderBy('tipo')
-                ->get();
-
-            $orgao = Orgao::where('status', true)
-                ->orderBy('orgao')
-                ->get();
-
-            // Iniciar a query base
-            $query = Norma::with(['publicidade', 'orgao', 'tipo', 'palavrasChave'])
-                ->ativas()
-                ->orderBy('data', 'desc');
-
-            // Aplicar filtros
-            if ($request->filled('norma')) {
-                $query->where('descricao', 'ILIKE', "%{$request->norma}%");
-            }
-            
-            if ($request->filled('resumo')) {
-                $query->where('resumo', 'ILIKE', "%{$request->resumo}%");
-            }
-            
-            if ($request->filled('orgao')) {
-                $query->porOrgao($request->orgao);
-            }
-            
-            if ($request->filled('tipo')) {
-                $query->porTipo($request->tipo);
-            }
-            
-            if ($request->filled('palavra_chave')) {
-                $query->porPalavraChave($request->palavra_chave);
-            }
-            
-            if ($request->filled('descricao')) {
-                $termos = explode(' ', $request->descricao);
-                foreach ($termos as $termo) {
-                    $termo = trim($termo);
-                    if (!empty($termo)) {
-                        $query->where('descricao', 'ILIKE', "%{$termo}%");
-                    }
-                }
-            }
-            
-            // Para conjuntos muito grandes, podemos usar paginação
-            $temFiltros = $request->filled('norma') || $request->filled('resumo') || 
-                        $request->filled('orgao') || $request->filled('tipo') || 
-                        $request->filled('palavra_chave') || $request->filled('descricao');
-                        
-            if ($temFiltros) {
-                $norma_pesquisa = $query->get();
-            } else {
-                $norma_pesquisa = $query->paginate(100);
-            }
-            
-            return view('normas.norma_pesquisa', compact('norma_pesquisa', 'tipo', 'orgao'));
-        } catch (\Exception $e) {
-            Log::error('Erro na pesquisa de normas: ' . $e->getMessage());
-            return back()->withErrors(['Erro ao realizar pesquisa. Por favor, tente novamente.']);
         }
     }
 }
