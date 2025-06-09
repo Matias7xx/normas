@@ -23,6 +23,7 @@ class Norma extends Model
         'tipo_id',
         'orgao_id',
         'anexo',
+        'vigente',
         'status'
     ];
 
@@ -34,6 +35,19 @@ class Norma extends Model
         'data' => 'date',
         'status' => 'boolean',
     ];
+
+    const VIGENTE_VIGENTE = 'VIGENTE';
+    const VIGENTE_NAO_VIGENTE = 'NÃO VIGENTE';
+    const VIGENTE_EM_ANALISE = 'EM ANÁLISE';
+
+    public static function getVigenteOptions()
+    {
+        return [
+            self::VIGENTE_VIGENTE => 'VIGENTE',
+            self::VIGENTE_NAO_VIGENTE => 'NÃO VIGENTE',
+            self::VIGENTE_EM_ANALISE => 'EM ANÁLISE'
+        ];
+    }
 
     // Relacionamentos
 
@@ -72,13 +86,23 @@ class Norma extends Model
      */
     
     public function getAnexoUrlAttribute()
-    {
-        if (!$this->anexo) {
-            return null;
-        }
-        
-        return Storage::url('public/normas/' . $this->anexo);
+{
+    if (!$this->anexo) {
+        return null;
     }
+    
+    // Verifica se o arquivo existe antes de retornar a URL
+    if (Storage::disk('public')->exists('normas/' . $this->anexo)) {
+        return asset('storage/normas/' . $this->anexo);
+    }
+    
+    return null;
+}
+
+public function hasAnexo()
+{
+    return $this->anexo && Storage::disk('public')->exists('normas/' . $this->anexo);
+}
     
     public function getDataFormatadaAttribute()
     {
@@ -94,6 +118,37 @@ class Norma extends Model
     {
         return \Illuminate\Support\Str::limit($this->resumo, $length, '...');
     }
+
+    /**
+     * Accessor para retornar a classe CSS baseada no status de vigência
+     */
+    public function getVigenteClassAttribute()
+    {
+        switch ($this->vigente) {
+            case self::VIGENTE_VIGENTE:
+                return 'badge-success';
+            case self::VIGENTE_NAO_VIGENTE:
+                return 'badge-danger';
+            case self::VIGENTE_EM_ANALISE:
+                return 'badge-warning';
+            default:
+                return 'badge-secondary';
+        }
+    }
+
+    public function getVigenteIconAttribute()
+    {
+        switch ($this->vigente) {
+            case self::VIGENTE_VIGENTE:
+                return 'fas fa-check-circle';
+            case self::VIGENTE_NAO_VIGENTE:
+                return 'fas fa-times-circle';
+            case self::VIGENTE_EM_ANALISE:
+                return 'fas fa-clock';
+            default:
+                return 'fas fa-question-circle';
+        }
+    }
     
     /**
      * Scopes Aprimorados
@@ -102,6 +157,30 @@ class Norma extends Model
     public function scopeAtivas($query)
     {
         return $query->where('status', true);
+    }
+    
+    public function scopeVigentes($query)
+    {
+        return $query->where('vigente', self::VIGENTE_VIGENTE);
+    }
+    
+    public function scopeNaoVigentes($query)
+    {
+        return $query->where('vigente', self::VIGENTE_NAO_VIGENTE);
+    }
+    
+    public function scopeEmAnalise($query)
+    {
+        return $query->where('vigente', self::VIGENTE_EM_ANALISE);
+    }
+
+    public function scopePorVigencia($query, $vigencia)
+    {
+        if (empty($vigencia)) {
+            return $query;
+        }
+        
+        return $query->where('vigente', $vigencia);
     }
     
     public function scopePorPalavraChave($query, $palavraChave)
@@ -218,6 +297,10 @@ class Norma extends Model
         if (!empty($filtros['orgao_id'])) {
             $query->porOrgao($filtros['orgao_id']);
         }
+
+        if (!empty($filtros['vigente'])) {
+            $query->porVigencia($filtros['vigente']);
+        }
         
         if (!empty($filtros['palavra_chave'])) {
             $query->porPalavraChave($filtros['palavra_chave']);
@@ -277,18 +360,36 @@ class Norma extends Model
                     ->orderBy('orgaos.orgao', $direcao)
                     ->select('normas.*');
     }
+
+    public function scopeOrdenadoPorVigencia($query, $direcao = 'asc')
+    {
+        // Ordem personalizada: VIGENTE, EM ANÁLISE, NÃO VIGENTE
+        $order = $direcao === 'desc' ? 'desc' : 'asc';
+        
+        return $query->orderByRaw("
+            CASE vigente 
+                WHEN 'VIGENTE' THEN 1 
+                WHEN 'EM ANÁLISE' THEN 2 
+                WHEN 'NÃO VIGENTE' THEN 3 
+                ELSE 4 
+            END " . $order
+        );
+    }
     
     /**
      * Métodos utilitários estáticos
      */
     
     /**
-     * Obtém estatísticas rápidas
+     * Obtém estatísticas rápidas incluindo status de vigência
      */
     public static function obterEstatisticas()
     {
         return [
             'total' => self::ativas()->count(),
+            'vigentes' => self::ativas()->vigentes()->count(),
+            'nao_vigentes' => self::ativas()->naoVigentes()->count(),
+            'em_analise' => self::ativas()->emAnalise()->count(),
             'este_mes' => self::ativas()->esteMes()->count(),
             'este_ano' => self::ativas()->esteAno()->count(),
             'recentes' => self::ativas()->recentes(7)->count()
@@ -342,5 +443,29 @@ class Norma extends Model
         }
         
         return $this->data->diffInYears(now());
+    }
+
+    /**
+     * Verifica se a norma está vigente
+     */
+    public function isVigente()
+    {
+        return $this->vigente === self::VIGENTE_VIGENTE;
+    }
+
+    /**
+     * Verifica se a norma não está vigente
+     */
+    public function isNaoVigente()
+    {
+        return $this->vigente === self::VIGENTE_NAO_VIGENTE;
+    }
+
+    /**
+     * Verifica se a norma está em análise
+     */
+    public function isEmAnalise()
+    {
+        return $this->vigente === self::VIGENTE_EM_ANALISE;
     }
 }

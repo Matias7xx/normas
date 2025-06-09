@@ -22,7 +22,25 @@
             @endforeach
         </select>
     </div>
-    <div class="col-md-4">
+    <div class="col-md-2">
+        <label class="section-form-label">Status de Vigência</label>
+        <select class="section-form-select {{ $errors->has('vigente') ? 'border-error' : '' }}"
+            name="vigente" id="vigente">
+            <option value="">Selecione...</option>
+            @foreach (\App\Models\Norma::getVigenteOptions() as $value => $label)
+                <option value="{{ $value }}" {{ $value == $norma->vigente ? 'selected' : '' }}>
+                    {{ $label }}
+                </option>
+            @endforeach
+        </select>
+        <small class="form-text text-muted">
+            Status atual: 
+            <span class="badge {{ $norma->vigente_class }}">
+                <i class="{{ $norma->vigente_icon }} mr-1"></i>{{ $norma->vigente }}
+            </span>
+        </small>
+    </div>
+    <div class="col-md-3">
         <label class="section-form-label">Tipos de normas</label>
         <select class="section-form-select {{ $errors->has('tipo') ? 'border-error' : '' }}" name="tipo"
             id="tipo">
@@ -34,7 +52,7 @@
             @endforeach
         </select>
     </div>
-    <div class="col-md-4">
+    <div class="col-md-3">
         <label class="section-form-label">Órgãos</label>
         <select class="section-form-select {{ $errors->has('orgao') ? 'border-error' : '' }}" name="orgao"
             id="orgao">
@@ -60,9 +78,11 @@
             <input type="file" class="section-form-input {{ $errors->has('anexo') ? 'border-error' : '' }}"
                 name="anexo" id="anexo" accept=".pdf">
             <div class="input-group-append">
-                <a href='javascript:abrirPagina("../../storage/normas/{{ $norma->anexo }}",600,600);' class="btn btn-danger">
-                    <i class='fas fa-file-pdf'></i> Exibir Anexo
-                </a>
+            <a href="{{ asset('storage/normas/' . $norma->anexo) }}" 
+                target="_blank" 
+                class="btn btn-danger">
+                <i class='fas fa-file-pdf'></i> Exibir Anexo
+            </a>
             </div>
         </div>
         <small class="form-text text-muted">Somente arquivos PDF (máx. 10MB)</small>
@@ -134,6 +154,7 @@
                                 <h5 class="card-title" style="color: white;">Palavras-chave vinculadas</h5>
                             </div>
                             <div class="card-body" style="height: 350px; overflow-y: auto;">
+
                                 <table class="table table-bordered table-striped">
                                     <thead>
                                         <tr>
@@ -289,6 +310,21 @@
     
     #palavras_vinculadas {
         background-color: #404040;
+    }
+
+    /* Estilos para o campo vigente */
+    #vigente {
+        /* border: 2px solid #404040; */
+    }
+
+    #vigente:focus {
+        border-color: #404040;
+        box-shadow: 0 0 0 0.1rem #404040;
+    }
+
+    /* Alert de status de vigência */
+    .alert-info {
+        border-left: 4px solid #404040;
     }
 </style>
 

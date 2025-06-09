@@ -25,7 +25,6 @@
  $endYear = $currentYear;
 @endphp
 
-
 <script src="{{ asset('js/normas.js') }}"></script>
 @endsection
 
@@ -61,7 +60,7 @@
             <div class="card-body">
                 <!-- Pesquisa e Filtros Básicos -->
                 <div class="row mb-3">
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label for="search_term" class="form-label font-weight-bold">
                             <i class="fas fa-search mr-1"></i> Pesquisa Geral
                         </label>
@@ -83,7 +82,7 @@
                         <small class="form-text text-muted">Busca em descrição, resumo e palavras-chave</small>
                     </div>
                     
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <label for="tipo_id" class="form-label font-weight-bold">
                             <i class="fas fa-tags mr-1"></i> Tipo de Norma
                         </label>
@@ -97,7 +96,7 @@
                         </select>
                     </div>
                     
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <label for="orgao_id" class="form-label font-weight-bold">
                             <i class="fas fa-building mr-1"></i> Órgão
                         </label>
@@ -110,8 +109,20 @@
                             @endforeach
                         </select>
                     </div>
-                    
+
                     <div class="col-md-2">
+                        <label for="vigente" class="form-label font-weight-bold">
+                            <i class="fas fa-gavel mr-1"></i> Status de Vigência
+                        </label>
+                        <select class="form-control" id="vigente" name="vigente" data-placeholder="Todos os status">
+                            <option value=""></option>
+                            @foreach(\App\Models\Norma::getVigenteOptions() as $value => $label)
+                                <option value="{{ $value }}">{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-3">
                         <label class="form-label font-weight-bold">
                             <i class="fas fa-calendar-alt mr-1"></i> Período
                         </label>
@@ -276,10 +287,10 @@
                         <select id="sort-select" class="form-control form-control-sm mr-2" style="width: auto;">
                             <option value="data-desc" selected>Mais Recentes</option>
                             <option value="data-asc">Mais Antigas</option>
+                            <option value="vigente-asc">Vigente</option>
+                            <option value="vigente-desc">Não Vigente</option>
                             <option value="id-desc">ID (Maior para Menor)</option>
                             <option value="id-asc">ID (Menor para Maior)</option>
-                            <option value="tipo-asc">Tipo (A-Z)</option>
-                            <option value="tipo-desc">Tipo (Z-A)</option>
                         </select>
                     </div>
                 </div>
@@ -301,25 +312,31 @@
                                                 <i class="fas fa-sort text-muted ml-1" style="font-size: 0.8rem;"></i>
                                             </div>
                                         </th>
-                                        <th width="10%" class="sortable border-0" data-field="tipo" style="cursor: pointer;">
+                                        <th width="8%" class="sortable border-0" data-field="tipo" style="cursor: pointer;">
                                             <div class="d-flex align-items-center">
                                                 Tipo 
                                                 <i class="fas fa-sort text-muted ml-1" style="font-size: 0.8rem;"></i>
                                             </div>
                                         </th>
-                                        <th width="10%" class="sortable border-0" data-field="data" style="cursor: pointer;">
+                                        <th width="8%" class="sortable border-0" data-field="data" style="cursor: pointer;">
                                             <div class="d-flex align-items-center">
                                                 Data 
                                                 <i class="fas fa-sort text-muted ml-1" style="font-size: 0.8rem;"></i>
                                             </div>
                                         </th>
-                                        <th width="25%" class="sortable border-0" data-field="descricao" style="cursor: pointer;">
+                                        <th width="12%" class="sortable border-0" data-field="vigente" style="cursor: pointer;">
+                                            <div class="d-flex align-items-center">
+                                                Vigência 
+                                                <i class="fas fa-sort text-muted ml-1" style="font-size: 0.8rem;"></i>
+                                            </div>
+                                        </th>
+                                        <th width="22%" class="sortable border-0" data-field="descricao" style="cursor: pointer;">
                                             <div class="d-flex align-items-center">
                                                 Norma 
                                                 <i class="fas fa-sort text-muted ml-1" style="font-size: 0.8rem;"></i>
                                             </div>
                                         </th>
-                                        <th width="30%" class="sortable border-0" data-field="resumo" style="cursor: pointer;">
+                                        <th width="25%" class="sortable border-0" data-field="resumo" style="cursor: pointer;">
                                             <div class="d-flex align-items-center">
                                                 Resumo 
                                                 <i class="fas fa-sort text-muted ml-1" style="font-size: 0.8rem;"></i>
@@ -336,7 +353,7 @@
                                 </thead>
                                 <tbody id="normas-body">
                                     <tr>
-                                        <td colspan="7" class="text-center py-4">
+                                        <td colspan="8" class="text-center py-4">
                                             <i class="fas fa-spinner fa-spin mr-2"></i> Carregando normas...
                                         </td>
                                     </tr>
@@ -443,110 +460,6 @@
         transition: all 0.2s ease;
     }
     
-    .table tbody tr:hover {
-        background-color: rgba(0, 123, 255, 0.05);
-        transform: scale(1.01);
-    }
-    
-    /* Botões de ação aprimorados */
-    .btn-xs {
-        padding: 0.375rem 0.5rem;
-        font-size: 0.8rem;
-        line-height: 1.4;
-        border-radius: 6px;
-        margin: 0 2px;
-        transition: all 0.2s ease;
-    }
-    
-    .action-buttons {
-        display: flex;
-        justify-content: center;
-        gap: 8px;
-        flex-wrap: wrap;
-    }
-    
-    .action-buttons .btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-    }
-    
-    /* Filtros rápidos */
-    .quick-filters .btn {
-        margin: 2px;
-        border-radius: 20px;
-        font-size: 0.85rem;
-        transition: all 0.3s ease;
-    }
-    
-    .quick-filters .btn.active {
-        background-color: #007bff;
-        color: white;
-        transform: scale(1.05);
-    }
-    
-    /* Select2 customizado */
-    .select2-container--default .select2-selection--single {
-        height: calc(1.5em + 0.75rem + 2px) !important;
-        border: 1px solid #ced4da;
-        border-radius: 6px;
-    }
-    
-    .select2-container--default .select2-selection--single .select2-selection__rendered {
-        line-height: calc(1.5em + 0.75rem) !important;
-        padding-left: 12px;
-    }
-    
-    /* Badges personalizados */
-    .badge {
-        font-weight: 500;
-        letter-spacing: 0.3px;
-        border-radius: 6px;
-        font-size: 0.75rem;
-    }
-    
-    .badge-light {
-        background-color: #f8f9fa;
-        color: #495057;
-        border: 1px solid #dee2e6;
-    }
-    
-    /* Paginação */
-    .pagination {
-        margin: 0;
-    }
-    
-    .page-link {
-        padding: 0.5rem 0.75rem;
-        color: #007bff;
-        background-color: #fff;
-        border: 1px solid #dee2e6;
-        border-radius: 6px;
-        margin: 0 2px;
-        transition: all 0.2s ease;
-    }
-    
-    .page-item.active .page-link {
-        z-index: 3;
-        color: #fff;
-        background-color: #007bff;
-        border-color: #007bff;
-        transform: scale(1.1);
-    }
-    
-    .page-link:hover {
-        color: #0056b3;
-        background-color: #e9ecef;
-        border-color: #dee2e6;
-        transform: translateY(-1px);
-    }
-    
-    /* Ordenação */
-    .sortable:hover {
-        background-color: rgba(0, 123, 255, 0.1);
-        border-radius: 6px;
-        transition: all 0.2s ease;
-    }
-    
     .sort-asc .fa-sort:before {
         content: "\f0de"; /* fa-sort-up */
         color: #007bff;
@@ -646,5 +559,177 @@
         color: white;
         transform: scale(1.05);
     }
+
+    /* Estilos específicos para badges de vigência com ícones */
+    .vigencia-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .vigencia-badge i {
+        font-size: 0.8rem;
+    }
+
+    /* Hover effect para as linhas da tabela com base na vigência */
+    /* .table tbody tr.norma-vigente:hover {
+        background-color: rgba(40, 167, 69, 0.1);
+    }
+
+    .table tbody tr.norma-nao-vigente:hover {
+        background-color: rgba(220, 53, 69, 0.1);
+    }
+
+    .table tbody tr.norma-em-analise:hover {
+        background-color: rgba(255, 193, 7, 0.1);
+    } */
+
+    .table-responsive {
+    -ms-overflow-style: none; /* IE e Edge */
+    scrollbar-width: none; /* Firefox */
+}
+
+    .table-responsive::-webkit-scrollbar {
+    display: none; /* Chrome, Safari e Opera */
+}
+
+    @endsections  ease;
+    
+    .table tbody tr:hover {
+        background-color: rgba(0, 123, 255, 0.05);
+        transform: scale(1.01);
+    }
+    
+    /* Botões de ação aprimorados */
+    .btn-xs {
+        padding: 0.375rem 0.5rem;
+        font-size: 0.8rem;
+        line-height: 1.4;
+        border-radius: 6px;
+        margin: 0 2px;
+        transition: all 0.2s ease;
+    }
+    
+    .action-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 2px;
+        flex-wrap: wrap;
+    }
+    
+    .action-buttons .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+    
+    /* Badges para status de vigência */
+    .badge-vigente {
+        background-color: #28a745;
+        color: white;
+        font-size: 0.75rem;
+        padding: 6px 10px;
+        border-radius: 15px;
+        font-weight: 500;
+    }
+    
+    .badge-nao-vigente {
+        background-color: #dc3545;
+        color: white;
+        font-size: 0.75rem;
+        padding: 6px 10px;
+        border-radius: 15px;
+        font-weight: 500;
+    }
+    
+    .badge-em-analise {
+        background-color: #ffc107;
+        color: #212529;
+        font-size: 0.75rem;
+        padding: 6px 10px;
+        border-radius: 15px;
+        font-weight: 500;
+    }
+    
+    /* Filtros rápidos */
+    .quick-filters .btn {
+        margin: 2px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        transition: all 0.3s ease;
+    }
+    
+    .quick-filters .btn.active {
+        background-color: #007bff;
+        color: white;
+        transform: scale(1.05);
+    }
+    
+    /* Select2 */
+    .select2-container--default .select2-selection--single {
+        height: calc(1.5em + 0.75rem + 2px) !important;
+        border: 1px solid #ced4da;
+        border-radius: 6px;
+    }
+    
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: calc(1.5em + 0.75rem) !important;
+        padding-left: 12px;
+    }
+    
+    /* Badges personalizados */
+    .badge {
+        font-weight: 500;
+        letter-spacing: 0.3px;
+        border-radius: 6px;
+        font-size: 0.75rem;
+    }
+    
+    .badge-light {
+        background-color: #f8f9fa;
+        color: #495057;
+        border: 1px solid #dee2e6;
+    }
+    
+    /* Paginação */
+    .pagination {
+        margin: 0;
+    }
+    
+    .page-link {
+        padding: 0.5rem 0.75rem;
+        color: #007bff;
+        background-color: #fff;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        margin: 0 2px;
+        transition: all 0.2s ease;
+    }
+    
+    .page-item.active .page-link {
+        z-index: 3;
+        color: #fff;
+        background-color: #007bff;
+        border-color: #007bff;
+        transform: scale(1.1);
+    }
+    
+    .page-link:hover {
+        color: #0056b3;
+        background-color: #e9ecef;
+        border-color: #dee2e6;
+        transform: translateY(-1px);
+    }
+    
+    /* Ordenação */
+    .sortable:hover {
+        background-color: rgba(0, 123, 255, 0.1);
+        border-radius: 6px;
+        transition: all 0.2
+    }
 </style>
-@endsection

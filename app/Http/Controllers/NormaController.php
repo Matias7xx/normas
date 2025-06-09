@@ -89,6 +89,11 @@ class NormaController extends Controller
             if ($request->filled('orgao_id')) {
                 $query->where('orgao_id', $request->orgao_id);
             }
+
+            // Filtro por vigência
+            if ($request->filled('vigente')) {
+                $query->where('vigente', $request->vigente);
+            }
             
             if ($request->filled('data_inicio')) {
                 try {
@@ -145,6 +150,18 @@ class NormaController extends Controller
                         ->orderBy('tipos.tipo', $orderDir)
                         ->select('normas.*'); // Garantir que apenas colunas de normas sejam selecionadas
                     break;
+
+                case 'vigente':
+                    // Ordenação personalizada para vigência
+                    $query->orderByRaw("
+                        CASE vigente 
+                            WHEN 'VIGENTE' THEN 1 
+                            WHEN 'EM ANÁLISE' THEN 2 
+                            WHEN 'NÃO VIGENTE' THEN 3 
+                            ELSE 4 
+                        END " . $orderDir
+                    );
+                    break;
                     
                 default:
                     // Ordenação padrão por data (mais recentes primeiro)
@@ -167,7 +184,11 @@ class NormaController extends Controller
                     'resumo' => $norma->resumo,
                     'orgao' => $norma->orgao->orgao ?? 'N/A',
                     'tipo' => $norma->tipo->tipo ?? 'N/A',
+                    'vigente' => $norma->vigente,
+                    'vigente_class' => $norma->vigente_class,
+                    'vigente_icon' => $norma->vigente_icon,
                     'anexo' => $norma->anexo,
+                    'anexo_url' => asset('storage/normas/' . $norma->anexo), // URL completa
                     'palavras_chave' => $norma->palavrasChave->take(3)->map(function($pc) {
                         return ['id' => $pc->id, 'palavra_chave' => $pc->palavra_chave];
                     }),
@@ -190,6 +211,7 @@ class NormaController extends Controller
                 'debug' => [
                     'data_inicio' => $request->data_inicio,
                     'data_fim' => $request->data_fim,
+                    'vigente' => $request->vigente,
                     'total_encontrado' => $normas->total()
                 ]
             ]);
@@ -225,6 +247,10 @@ class NormaController extends Controller
             if ($orgao) {
                 $filters[] = 'Órgão: ' . $orgao->orgao;
             }
+        }
+
+        if ($request->filled('vigente')) {
+            $filters[] = 'Vigência: ' . $request->vigente;
         }
         
         if ($request->filled('data_inicio')) {
@@ -321,6 +347,7 @@ class NormaController extends Controller
                 'publicidade_id' => $request->publicidade,
                 'tipo_id' => $request->tipo,
                 'orgao_id' => $request->orgao,
+                'vigente' => $request->vigente ?? Norma::VIGENTE_VIGENTE,
                 'status' => true
             ]);
             
@@ -544,6 +571,12 @@ class NormaController extends Controller
             
             if ($request->has('orgao')) {
                 $norma->orgao_id = $request->orgao;
+                $atualizouNorma = true;
+            }
+
+            // Atualizar status de vigência
+            if ($request->has('vigente') && in_array($request->vigente, array_keys(Norma::getVigenteOptions()))) {
+                $norma->vigente = $request->vigente;
                 $atualizouNorma = true;
             }
             

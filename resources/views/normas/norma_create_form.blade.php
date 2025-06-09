@@ -16,7 +16,19 @@
             @endforeach
         </select>
     </div>
-    <div class="col-md-4">
+    <div class="col-md-2">
+        <label class="section-form-label">Vigência <span class="text-danger">*</span></label>
+        <select class="section-form-select {{ $errors->has('vigente') ? 'border-error' : '' }}"
+            name="vigente" id="vigente">
+            <option value="">Selecione...</option>
+            @foreach (\App\Models\Norma::getVigenteOptions() as $value => $label)
+                <option value="{{ $value }}" {{ $value == 'EM ANÁLISE' ? 'selected' : '' }}>
+                    {{ $label }}
+                </option>
+            @endforeach
+        </select>
+    </div>
+    <div class="col-md-3">
         <label class="section-form-label">Tipos de normas</label>
         <select class="section-form-select {{ $errors->has('tipo') ? 'border-error' : '' }}"
             name="tipo" id="tipo">
@@ -28,7 +40,7 @@
             @endforeach
         </select>
     </div>
-    <div class="col-md-4">
+    <div class="col-md-3">
         <label class="section-form-label">Órgãos</label>
         <select class="section-form-select {{ $errors->has('orgao') ? 'border-error' : '' }}"
             name="orgao" id="orgao">
@@ -111,7 +123,7 @@
                     </div>
 
                     <div class="col-md-6">
-                        <div class="card card-secondary h-100">
+                        <div class="card card-secondary h-50">
                             <div class="card-header" id="como_funciona" style="padding: 10px; bg-secondary;">
                                 <h5 class="card-title" style="color: white;">Como funciona</h5>
                             </div>
@@ -148,87 +160,6 @@
 <style>
     /*Estilos específicos para o formulário de normas */
     .select2-container--default .select2-selection--multiple .select2-selection__choice {
-        background-color: #17a2b8;
-        border-color: #404040;
-        color: white;
-        padding: 5px 10px;
-        margin-top: 5px;
-    }
-    
-    .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
-        color: white;
-        margin-right: 5px;
-    }
-    
-    .palavra-chave-tag {
-        display: inline-block;
-        margin: 5px;
-        padding: 8px 12px !important;
-        border-radius: 4px;
-    }
-    
-    .palavra-chave-tag .remover-palavra-chave {
-        margin-left: 8px;
-        opacity: 0.8;
-    }
-    
-    .palavra-chave-tag .remover-palavra-chave:hover {
-        opacity: 1;
-    }
-    
-    /*Altura mínima para o contêiner de palavras-chave mesmo se estiver vazio */
-    #palavras_chave_container {
-        min-height: 60px;
-    }
-    
-    /*Melhora o espaçamento geral */
-    .section-form-label {
-        font-weight: 600;
-        margin-bottom: 8px;
-    }
-    
-    /*Espaçamento para o botão Adicionar */
-    #btn_add_palavra_chave {
-        height: 100%;
-    }
-    
-    /*Efeito de foco nos campos */
-    .section-form-input:focus, .section-form-select:focus {
-        border-color: #404040;
-        box-shadow: 0 0 0 0.1rem #404040;
-    }
-    
-    /*Estilo para campos com erro */
-    .border-error {
-        border-color: #dc3545 !important;
-    }
-    
-    .select2-container--default .select2-search--inline .select2-search__field {
-        min-width: 200px;
-        height: 38px;
-        padding: 8px;
-    }
-
-    .select2-container--default .select2-results__option--highlighted[aria-selected] {
-        background-color: #404040;
-    }
-
-    .select2-container--default .select2-results__option {
-        padding: 8px 12px;
-    }
-
-    .select2-container--default .select2-selection--multiple {
-        border-radius: 4px;
-        border-color: #ced4da;
-        min-height: 42px;
-    }
-
-    .select2-container--default.select2-container--focus .select2-selection--multiple {
-        border-color: #404040;
-        box-shadow: 0 0 0 0.1rem #404040;
-    }
-
-    .select2-container--default .select2-selection--multiple .select2-selection__choice {
         background-color: #bea55a;
         color: white;
         padding: 5px 10px;
@@ -254,6 +185,21 @@
 
     #como_funciona {
         background-color: #404040;
+    }
+
+    /* Estilos para campo vigente */
+    #vigente {
+        /* border: 2px solid #404040; */
+    }
+
+    #vigente:focus {
+        border-color: #404040;
+        box-shadow: 0 0 0 0.1rem #404040;
+    }
+
+    /* Alert de status de vigência */
+    .alert-info {
+        border-left: 4px solid #404040;
     }
 </style>
 
@@ -400,6 +346,20 @@
                     return false;
                 }
                 
+                //Verificar se campo vigente foi preenchido
+                if (!$("#vigente").val()) {
+                    $(document).Toasts('create', {
+                        title: "Atenção!",
+                        class: 'bg-danger',
+                        autohide: true,
+                        delay: 5000,
+                        position: 'topRight',
+                        body: "O campo 'Status de Vigência' é obrigatório."
+                    });
+                    $("#vigente").focus();
+                    return false;
+                }
+                
                 //Verificar se o formulário pode ser enviado se houver novas palavras-chave
                 if (novasPalavrasChave.length > 0) {
                     //Verificar se há palavras-chave curtas demais
@@ -422,3 +382,100 @@
         });
     });
 </script>
+
+<style> {
+        background-color: #17a2b8;
+        border-color: #404040;
+        color: white;
+        padding: 5px 10px;
+        margin-top: 5px;
+    }
+    
+    .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+        color: white;
+        margin-right: 5px;
+    }
+    
+    .palavra-chave-tag {
+        display: inline-block;
+        margin: 5px;
+        padding: 8px 12px !important;
+        border-radius: 4px;
+    }
+    
+    .palavra-chave-tag .remover-palavra-chave {
+        margin-left: 8px;
+        opacity: 0.8;
+    }
+    
+    .palavra-chave-tag .remover-palavra-chave:hover {
+        opacity: 1;
+    }
+    
+    /*Altura mínima para o contêiner de palavras-chave mesmo se estiver vazio */
+    #palavras_chave_container {
+        min-height: 60px;
+    }
+    
+    /*Melhora o espaçamento geral */
+    .section-form-label {
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+    
+    /*Espaçamento para o botão Adicionar */
+    #btn_add_palavra_chave {
+        height: 100%;
+    }
+    
+    /*Efeito de foco nos campos */
+    .section-form-input:focus, .section-form-select:focus {
+        border-color: #404040;
+        box-shadow: 0 0 0 0.1rem #404040;
+    }
+    
+    /*Estilo para campos com erro */
+    .border-error {
+        border-color: #dc3545 !important;
+    }
+    
+    .select2-container--default .select2-search--inline .select2-search__field {
+        min-width: 200px;
+        height: 38px;
+        padding: 8px;
+    }
+
+    .select2-container--default .select2-results__option--highlighted[aria-selected] {
+        background-color: #404040;
+    }
+
+    .select2-container--default .select2-results__option {
+        padding: 8px 12px;
+    }
+
+    .select2-container--default .select2-selection--multiple {
+        border-radius: 4px;
+        border-color: #ced4da;
+        min-height: 42px;
+    }
+
+    .select2-container--default.select2-container--focus .select2-selection--multiple {
+        border-color: #404040;
+        box-shadow: 0 0 0 0.1rem #404040;
+    }
+
+    .select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
+        color: #f8f9fa;
+    }
+
+    .select2-dropdown {
+        border-color: #ced4da;
+        box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+    }
+    
+    #palavras_vinculadas {
+        background-color: #404040;
+    }
+
+</style>
+    
