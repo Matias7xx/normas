@@ -17,7 +17,7 @@ class AdminController extends Controller
   }
   public function listRoles()
   {
-    $roles = Role::with('permissions')->orderBy('name')->get();
+    $roles = Role::with('permissions')->orderBy('id', 'asc')->get();
     $permissions = Permission::orderBy('name')->get();
     return view('admin.list-roles')->with('roles', $roles)->with('permissions', $permissions);
   }
@@ -68,4 +68,39 @@ class AdminController extends Controller
 
     return back()->withSucesso('Permissão '.$permission->name.' cadastrada com sucesso!');
   }
+
+  public function deleteRole($id)
+{
+    try {
+        $role = Role::findOrFail($id);
+        
+        // Verificar se é um role crítico (root ou admin principal)
+        if (in_array($role->id, [1, 2, 3])) {
+            return redirect()->back()->withErrors(['Não é possível excluir roles críticos do sistema (Root ou Admin principal).']);
+        }
+        
+        // Verificar se há usuários usando este role
+        $usersCount = User::where('role_id', $id)->count();
+        if ($usersCount > 0) {
+            return redirect()->back()->withErrors(["Não é possível excluir este perfil. Existem {$usersCount} usuário(s) utilizando este perfil."]);
+        }
+        
+        // Armazenar o nome para a mensagem de sucesso
+        $roleName = $role->name;
+        
+        // Remover associações com permissões
+        $role->permissions()->detach();
+        
+        // Excluir o role
+        $role->delete();
+        
+        return redirect()->route('admin.listrole')->with('success', "Perfil '{$roleName}' excluído com sucesso!");
+        
+    } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+        return redirect()->back()->withErrors(['Perfil não encontrado.']);
+    } catch (\Exception $e) {
+        \Illuminate\Support\Facades\Log::error('Erro ao excluir role: ' . $e->getMessage());
+        return redirect()->back()->withErrors(['Erro interno no servidor. Tente novamente.']);
+    }
+}
 }

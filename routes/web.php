@@ -42,6 +42,7 @@ Route::middleware([Authenticate::class])->group(function() {
         Route::post('/update-role/{id}', [AdminController::class, 'updateRole'])->name('admin.updaterole');
         Route::post('/add-permission', [AdminController::class, 'addPermission'])->name('admin.addpermission');
         Route::get('/list-permissions', [AdminController::class, 'listPermissions'])->name('admin.listpermission');
+        Route::get('/delete-role/{id}', [AdminController::class, 'deleteRole'])->name('admin.deleterole');
     });
 
     //Rotas para o módulo de normas

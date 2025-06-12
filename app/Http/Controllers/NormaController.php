@@ -70,14 +70,8 @@ class NormaController extends Controller
             
             // Aplicar filtros de pesquisa
             if ($request->filled('search_term')) {
-                $searchTerm = trim($request->search_term);
-                $query->where(function($q) use ($searchTerm) {
-                    $q->where('descricao', 'ILIKE', "%{$searchTerm}%")
-                    ->orWhere('resumo', 'ILIKE', "%{$searchTerm}%")
-                    ->orWhereHas('palavrasChave', function($subq) use ($searchTerm) {
-                        $subq->where('palavra_chave', 'ILIKE', "%{$searchTerm}%");
-                    });
-                });
+            $searchTerm = trim($request->search_term);
+            $query = $this->applySearchWithRelevance($query, $searchTerm);
             }
             
             // Filtro por tipo
@@ -652,4 +646,69 @@ class NormaController extends Controller
             return back()->withErrors(['Erro ao remover norma. Por favor, tente novamente.']);
         }
     }
+
+    //Busca com relevância (pesquisas exatas aparecem primeiro)
+    private function applySearchWithRelevance($query, $searchTerm)
+{
+    $searchTerm = trim($searchTerm);
+    
+    if (empty($searchTerm)) {
+        return $query;
+    }
+    
+    // Dividir em palavras e filtrar palavras muito pequenas
+    $words = array_filter(array_map('trim', explode(' ', $searchTerm)), function($word) {
+        return strlen($word) >= 2;
+    });
+    
+    if (empty($words)) {
+        return $query;
+    }
+    
+    // Criar subquery para calcular relevância
+    $relevanceSelect = $this->buildRelevanceScore($words, $searchTerm);
+    
+    return $query->select('normas.*')
+                ->selectRaw("({$relevanceSelect}) as relevance_score")
+                ->where(function($q) use ($words, $searchTerm) {
+                    // Busca nos campos principais
+                    foreach ($words as $word) {
+                        $q->where(function($wordQuery) use ($word) {
+                            $wordQuery->where('descricao', 'ILIKE', "%{$word}%")
+                                     ->orWhere('resumo', 'ILIKE', "%{$word}%");
+                        });
+                    }
+                    
+                    // busca nas palavras-chave
+                    $q->orWhereHas('palavrasChave', function($subq) use ($words) {
+                        foreach ($words as $word) {
+                            $subq->where('palavra_chave', 'ILIKE', "%{$word}%");
+                        }
+                    });
+                })
+                ->orderByRaw('relevance_score DESC')
+                ->orderBy('data', 'desc');
+}
+
+/**
+ * Constrói a query de score de relevância
+ */
+private function buildRelevanceScore($words, $fullTerm)
+{
+    $scoreQueries = [];
+    
+    // Score para frase exata (busca primeiro)
+    $scoreQueries[] = "CASE WHEN descricao ILIKE '%{$fullTerm}%' THEN 10 ELSE 0 END";
+    $scoreQueries[] = "CASE WHEN resumo ILIKE '%{$fullTerm}%' THEN 8 ELSE 0 END";
+    
+    // Score para palavras individuais
+    foreach ($words as $index => $word) {
+        $weight = max(1, 5 - $index); // Primeiras palavras têm peso maior
+        $scoreQueries[] = "CASE WHEN descricao ILIKE '%{$word}%' THEN {$weight} ELSE 0 END";
+        $scoreQueries[] = "CASE WHEN resumo ILIKE '%{$word}%' THEN " . ($weight - 1) . " ELSE 0 END";
+    }
+    
+    return implode(' + ', $scoreQueries);
+}
+
 }
