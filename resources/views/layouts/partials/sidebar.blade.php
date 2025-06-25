@@ -1,31 +1,21 @@
 <!-- Main Sidebar Container -->
-<aside class="main-sidebar elevation-4" style="background: linear-gradient(135deg, #1a1a1a 0%, #2c2c2c 100%);">
+<aside class="main-sidebar elevation-4" style="background: #1a1a1a;">
 
     <!-- Sidebar -->
     <div class="sidebar">
-        <!-- Sidebar user panel -->
         <div class="user-panel mt-3 pb-3 mb-3 d-flex" style="border-bottom: 1px solid #404040;">
-            <div class="image">
-                @if (Auth::user()->cpf)
-                    <img src="https://sistemas.pc.pb.gov.br/media/servidor/funcionais/{{ Auth::user()->cpf }}_SERVIDOR_F.jpg" 
-                        class="img-circle elevation-2" alt="User Image"
-                        style="border: 2px solid #bea55a;"
-                        onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                @endif
-                <div class="img-circle elevation-2 align-items-center justify-content-center"
-                    style="width: 34px; height: 34px; background: linear-gradient(45deg, #bea55a, #d4b86a); border: 2px solid #bea55a; {{ Auth::user()->cpf ? 'display: none;' : 'display: flex;' }}">
-                    <i class="fas fa-user text-dark"></i>
-                </div>
-            </div>
-            <div class="info">
-                <a href="#" class="d-block font-weight-bold" style="font-size: 0.9rem; color: #ffffff;">
-                    {{ Auth::user() ? Auth::user()->matricula : '' }}
-                </a>
-                <a href="#" class="d-block" style="font-size: 0.8rem; color: #cccccc;">
-                    {{ Auth::user() ? Str::limit(Auth::user()->name, 25) : '' }}
-                </a>
-            </div>
+    <li class="nav-item d-flex align-items-center ml-3" style="width: 100%;">
+        <img src="/images/brasao_pcpb.png" alt="Logo PCPB" width="35px" class="mr-2" style="opacity: .9; brightness(1.1) flex-shrink: 0;"/>
+        <div style="min-width: 0; flex: 1;">
+            <h4 class="mb-0 font-weight-bold" style="color: #d8d8d8; font-size: 1.15rem; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                Biblioteca de Normas
+            </h4>
+            <small style="color: #6c757d; font-size: 1.0rem; line-height: 0.90; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                Polícia Civil da Paraíba
+            </small>
         </div>
+    </li>
+</div>
 
         <!-- Sidebar Search Form -->
         <div class="form-inline px-3 mb-3">
@@ -205,20 +195,19 @@
 <style>
 /* Sidebar Styling */
 .main-sidebar .nav-link {
-    border-radius: 8px;
-    margin: 2px 8px;
+    border-radius: 2px 8px;
     transition: all 0.3s ease;
     background-color: transparent;
 }
 
 .main-sidebar .nav-link:hover {
-    background-color: rgba(190, 165, 90, 0.1) !important;
+    background-color: #c1a85a !important;
     transform: translateX(5px);
     box-shadow: 0 2px 8px rgba(190, 165, 90, 0.2);
 }
 
 .main-sidebar .nav-link.active {
-    background: rgba(190, 165, 90, 0.1) !important;
+    background: #c1a85a !important;
     color: #fff !important;
     font-weight: bold;
     box-shadow: 0 4px 12px rgba(190, 165, 90, 0.3);
@@ -235,20 +224,20 @@
 .main-sidebar .nav-treeview .nav-link {
     padding-left: 3rem;
     font-size: 0.9rem;
-    background-color: rgba(0, 0, 0, 0.1);
+    background-color: #1a1a1a;
     margin: 1px 8px;
 }
 
 .main-sidebar .nav-treeview .nav-link:hover {
-    background-color: rgba(190, 165, 90, 0.15) !important;
-    border-left: 3px solid #bea55a;
+    background-color: #c1a85a !important;
+    border-left: 3px solid black;
     margin-left: 8px;
 }
 
 .main-sidebar .nav-header {
     padding: 1rem 1rem 0.5rem 1rem;
     margin-bottom: 0.5rem;
-    background-color: rgba(0, 0, 0, 0.1);
+    background-color: #1a1a1a;
     border-radius: 6px;
     margin: 0.5rem 8px;
 }
@@ -261,7 +250,7 @@
 
 /* User panel enhancements */
 .user-panel .info a:hover {
-    color: #bea55a !important;
+    color: #c1a85a !important;
 }
 
 /* Badge styling */
@@ -271,7 +260,7 @@
 }
 
 .badge-info {
-    background-color: #bea55a;
+    background-color: #c1a85a;
     color: #fff;
 }
 
@@ -285,12 +274,12 @@
 }
 
 .sidebar::-webkit-scrollbar-thumb {
-    background: #bea55a;
+    background: #c1a85a;
     border-radius: 3px;
 }
 
 .sidebar::-webkit-scrollbar-thumb:hover {
-    background: #d4b86a;
+    background: #c1a85a;
 }
 
 /* Menu item text colors */
@@ -309,19 +298,19 @@
 
 /* Active menu background for parent items */
 .main-sidebar .nav-item.has-treeview.menu-open > .nav-link {
-    background-color: rgba(190, 165, 90, 0.15) !important;
+    background-color: #c1a85a !important;
 }
 
 /* Search input styling */
 .form-control-sidebar {
-    background-color: #2c2c2c !important;
+    background-color: #1a1a1a !important;
     border: 1px solid #404040 !important;
     color: #ffffff !important;
 }
 
 .form-control-sidebar:focus {
-    border-color: #bea55a !important;
+    border-color: #c1a85a !important;
     box-shadow: 0 0 0 0.2rem rgba(190, 165, 90, 0.25) !important;
-    background-color: #2c2c2c !important;
+    background-color: #1a1a1a !important;
 }
 </style>

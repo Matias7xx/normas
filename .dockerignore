@@ -1,0 +1,51 @@
+# .dockerignore
+
+# Node modules (serão instalados no container)
+node_modules/
+npm-debug.log*
+
+# Builds locais (serão gerados no container)
+public/js/
+public/css/
+public/build/
+public/build-public/
+public/hot
+public/mix-manifest.json
+
+# IMPORTANTE: Excluir binários específicos de plataforma
+node_modules/.bin/
+node_modules/esbuild/
+node_modules/@esbuild/
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Git
+.git/
+.gitignore
+
+# Env files (usar apenas .env.example)
+.env
+.env.local
+.env.backup
+
+# Storage (será criado no container)
+storage/logs/
+storage/framework/cache/
+storage/framework/sessions/
+storage/framework/views/
+
+# Vendor (será instalado no container)
+vendor/
+
+# Testing
+tests/
+phpunit.xml

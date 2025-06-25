@@ -1,19 +1,19 @@
 <!-- Navbar -->
-<nav class="main-header navbar navbar-expand navbar-light" style="background: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%); border-bottom: 3px solid #bea55a;">
+<nav class="main-header navbar navbar-expand navbar-light" style="background: #1a1a1a; border-bottom: 3px solid #bea55a;">
     <!-- Left navbar links -->
     <ul class="navbar-nav">
         <li class="nav-item">
-            <a class="nav-link" data-widget="pushmenu" href="#" role="button" style="color: #495057;">
+            <a class="nav-link" data-widget="pushmenu" href="#" role="button" style="color: #bac1c9;">
                 <i class="fas fa-bars"></i>
             </a>
         </li>
-        <li class="nav-item d-flex align-items-center ml-3">
+        {{-- <li class="nav-item d-flex align-items-center ml-3">
             <img src="/images/brasao_pcpb.png" alt="Logo PCPB" width="35px" class="mr-2" style="opacity: .9"/>
             <div>
-                <h4 class="mb-0 font-weight-bold" style="color: #343a40;">Biblioteca de Normas</h4>
+                <h4 class="mb-0 font-weight-bold" style="color: #fdfeff;">Biblioteca de Normas</h4>
                 <small style="color: #6c757d;">Polícia Civil da Paraíba</small>
             </div>
-        </li>
+        </li> --}}
     </ul>
 
     <!-- Right navbar links -->
@@ -22,7 +22,7 @@
         <!-- Fullscreen -->
         <li class="nav-item">
             <a class="nav-link" data-widget="fullscreen" href="#" role="button" 
-               data-toggle="tooltip" title="Tela cheia" style="color: #495057;">
+               data-toggle="tooltip" title="Tela cheia" style="color: #bac1c9;">
                 <i class="fas fa-expand-arrows-alt"></i>
             </a>
         </li>
@@ -37,10 +37,10 @@
                     <i class="fas fa-user text-dark"></i>
                 </div>
                 <div class="d-none d-lg-block text-right">
-                    <div class="font-weight-bold" style="font-size: 0.85rem; color: #343a40;">
+                    <div class="font-weight-bold" style="font-size: 0.85rem; color: #c1c5c9;">
                         {{ Auth::user() ? Auth::user()->name : '' }}
                     </div>
-                    <small style="font-size: 0.75rem; color: #6c757d;">
+                    <small style="font-size: 0.75rem; color: #b0b6bb;">
                         Mat: {{ Auth::user() ? Auth::user()->matricula : '' }}
                     </small>
                 </div>

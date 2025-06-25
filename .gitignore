@@ -1,16 +1,163 @@
+# Dependencies
 /node_modules
+/vendor
+
+# Laravel
+/bootstrap/compiled.php
+/app/storage/
+/storage/*.key
+/storage/logs/
+/storage/framework/cache/
+/storage/framework/sessions/
+/storage/framework/testing/
+/storage/framework/views/
+/storage/app/public/
+/storage/debugbar/
+
+# Public - Assets compilados (serão gerados no build)
 /public/hot
 /public/storage
-/storage/*.key
-/vendor
+/public/js/
+/public/css/
+/public/mix-manifest.json
+/public/build/
+/public/build-public/
+
+# Environment files
 .env
 .env.backup
+.env.local
+.env.production
+.env.staging
+.env.testing
+
+# Testing
 .phpunit.result.cache
-docker-compose.override.yml
-Homestead.json
-Homestead.yaml
-npm-debug.log
-yarn-error.log
+/tests/Coverage/
+phpunit.xml
+/.phpunit.cache
+
+# IDEs
 /.idea
 /.vscode
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Docker
 /.docker/dbdata
+/.docker/logs
+docker-compose.override.yml
+*.pid
+
+# Laravel specific
+Homestead.json
+Homestead.yaml
+auth.json
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+
+# nyc test coverage
+.nyc_output
+
+# Dependency directories
+jspm_packages/
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Microbundle cache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# parcel-bundler cache (https://parceljs.org/)
+.cache
+.parcel-cache
+
+# Next.js build output
+.next
+
+# Nuxt.js build / generate output
+.nuxt
+dist
+
+# Gatsby files
+.cache/
+public
+
+# Storybook build outputs
+.out
+.storybook-out
+
+# Temporary folders
+tmp/
+temp/
+
+# Laravel Mix
+/public/mix-manifest.json
+
+# Laravel Nova
+/nova
+
+# Laravel Horizon
+/public/vendor/horizon
+
+# Backups
+*.backup
+*.bak
+*.orig
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Custom - Projeto específico
+/custom.ini

@@ -137,7 +137,7 @@ class NormasManager {
         if (startComplete) {
             this.toggleEndDateFields(true);
             this.showToast('Info', 'Campos de data fim liberados. Agora você pode definir o período final.', 'info');
-        } else {
+        } /* else {
             this.toggleEndDateFields(false);
             
             const inicioMes = $('#data_inicio_mes').val();
@@ -148,7 +148,7 @@ class NormasManager {
             } else if (!inicioMes && inicioAno) {
                 this.showToast('Atenção', 'Selecione também o mês para completar a data de início.', 'warning');
             }
-        }
+        } */
         
         this.updateDateFilters();
     }
@@ -160,11 +160,11 @@ class NormasManager {
             const fimMes = $('#data_fim_mes').val();
             const fimAno = $('#data_fim_ano').val();
             
-            if (fimMes && !fimAno) {
+           /*  if (fimMes && !fimAno) {
                 this.showToast('Atenção', 'Selecione também o ano para completar a data de fim.', 'warning');
             } else if (!fimMes && fimAno) {
                 this.showToast('Atenção', 'Selecione também o mês para completar a data de fim.', 'warning');
-            }
+            } */
         }
         
         this.updateDateFilters();

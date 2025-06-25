@@ -15,7 +15,23 @@ use App\Models\PalavraChave;
 use App\Models\Tipo;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/norma_public_search', [NormaSearchPublicController::class, 'search'])->name('norma_public_search');
+
+// TESTE - Rota temporária para a nova home
+Route::get('/teste-vue', function () {
+    return \Inertia\Inertia::render('Home', [
+        'stats' => [
+            'total_normas' => 150,
+            'normas_vigentes' => 120,
+            'tipos_count' => 8,
+        ]
+    ]);
+});
+
+// Rota principal da consulta pública
+Route::get('/consulta', [NormaSearchPublicController::class, 'search'])->name('norma_public_search');
+
+// rota AJAX para a consulta pública
+Route::get('/norma_public_search_ajax', [NormaSearchPublicController::class, 'searchAjax'])->name('norma_public_search_ajax');
 
 Route::middleware([Authenticate::class])->group(function() {
 
