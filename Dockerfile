@@ -1,42 +1,50 @@
-FROM php:8.2.0-fpm-alpine
+FROM php:8.2-fpm-alpine
 
-# Atualizar e instalar dependências
-RUN apk update && apk upgrade
-RUN apk add php php-fpm php-opcache
-RUN apk add --no-cache openssl nodejs npm postgresql-dev bash libpng-dev libzip-dev
+# Instalar dependências básicas
+RUN apk update && apk add --no-cache \
+    nodejs \
+    npm \
+    postgresql-dev \
+    bash \
+    libpng-dev \
+    libzip-dev \
+    freetype-dev \
+    libjpeg-turbo-dev \
+    curl
 
-# Instalar extensões PHP
-RUN docker-php-ext-install bcmath pdo pdo_pgsql mysqli pdo_mysql gd zip && docker-php-ext-enable pdo_pgsql pdo_mysql mysqli
-
-# Instalar Yarn globalmente
-RUN npm install --global yarn
-
-# Definir diretório de trabalho
-WORKDIR /var/www
-
-# Remover html padrão e criar link simbólico
-RUN rm -rf /var/www/html
-RUN ln -s public html
+# Instalar extensões PHP essenciais
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg && \
+    docker-php-ext-install pdo pdo_pgsql gd zip
 
 # Instalar Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Copiar código
-COPY . /var/www
+# Definir diretório
+WORKDIR /var/www
 
-# Instalar dependências PHP
-RUN composer install --no-dev --optimize-autoloader
+# Copiar e instalar dependências PHP
+COPY composer.json composer.lock ./
+RUN composer install --no-scripts --no-autoloader
 
-# Instalar dependências Node.js
+# Copiar e instalar dependências Node
+COPY package.json package-lock.json ./
 RUN npm install
 
-# Build dos assets com Laravel Mix (admin + público)
-RUN npm run production
+# Copiar todo o código
+COPY . .
+
+# Finalizar composer
+RUN composer dump-autoload
+
+# Criar diretórios
+RUN mkdir -p storage/logs storage/framework/{cache,sessions,views} bootstrap/cache public/js public/css
 
 # Permissões
-RUN chmod -R 777 /var/www/storage
-RUN chmod -R 755 /var/www/public
+RUN chown -R www-data:www-data storage bootstrap/cache && \
+    chmod -R 755 storage bootstrap/cache
+
+# Build
+RUN npm run production || echo "Build falhou, será executado depois"
 
 EXPOSE 9000
-
-ENTRYPOINT [ "php-fpm" ]
+CMD ["php-fpm"]

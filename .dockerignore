@@ -3,49 +3,68 @@
 # Node modules (serão instalados no container)
 node_modules/
 npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
 # Builds locais (serão gerados no container)
 public/js/
 public/css/
 public/build/
-public/build-public/
-public/hot
 public/mix-manifest.json
-
-# IMPORTANTE: Excluir binários específicos de plataforma
-node_modules/.bin/
-node_modules/esbuild/
-node_modules/@esbuild/
-
-# Logs
-*.log
-
-# OS files
-.DS_Store
-Thumbs.db
-
-# IDE
-.vscode/
-.idea/
-
-# Git
-.git/
-.gitignore
-
-# Env files (usar apenas .env.example)
-.env
-.env.local
-.env.backup
-
-# Storage (será criado no container)
-storage/logs/
-storage/framework/cache/
-storage/framework/sessions/
-storage/framework/views/
+public/hot
 
 # Vendor (será instalado no container)
 vendor/
 
+# Storage que será criado no container
+storage/logs/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+storage/app/*
+!storage/app/public/.gitignore
+
+# Bootstrap cache
+bootstrap/cache/*
+!bootstrap/cache/.gitignore
+
+# Environment files (usar .env do container)
+.env
+.env.local
+.env.backup
+.env.example
+
+# OS files
+.DS_Store
+Thumbs.db
+.DS_Store?
+._*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Docker
+.docker/
+docker-compose.yml
+docker-compose.override.yml
+Dockerfile
+
 # Testing
 tests/
 phpunit.xml
+.phpunit.result.cache
+
+# Documentation
+README.md
+*.md
+
+# Outros
+*.log

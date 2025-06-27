@@ -22,7 +22,7 @@
             <div class="col-md-6 text-right">
                 <div class="mb-1">
                     <span class="badge badge-outline-light mr-2" style="border: 1px solid #bea55a; color: #bea55a;">
-                        <i class="fas fa-code mr-1"></i> Versão 1.0.0
+                        <i class="fas fa-code mr-1"></i> Versão 2.0.0
                     </span>
                     <span class="badge badge-outline-light" style="border: 1px solid #bea55a; color: #bea55a;">
                         <i class="fas fa-server mr-1"></i> DITI/DG-PCPB

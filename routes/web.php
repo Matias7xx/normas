@@ -14,34 +14,46 @@ use App\Models\Orgao;
 use App\Models\PalavraChave;
 use App\Models\Tipo;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\PublicController;
 
+// ROTAS PÚBLICAS (Vue 3 + Inertia.js)
 
-// TESTE - Rota temporária para a nova home
-Route::get('/teste-vue', function () {
-    return \Inertia\Inertia::render('Home', [
-        'stats' => [
-            'total_normas' => 150,
-            'normas_vigentes' => 120,
-            'tipos_count' => 8,
-        ]
-    ]);
-});
+// Página inicial pública
+Route::get('/', [PublicController::class, 'home'])->name('public.home');
 
-// Rota principal da consulta pública
-Route::get('/consulta', [NormaSearchPublicController::class, 'search'])->name('norma_public_search');
+// Consulta de normas
+Route::get('/consulta', [PublicController::class, 'consulta'])->name('public.consulta');
 
-// rota AJAX para a consulta pública
-Route::get('/norma_public_search_ajax', [NormaSearchPublicController::class, 'searchAjax'])->name('norma_public_search_ajax');
+// Visualização de norma específica
+Route::get('/norma/{id}', [PublicController::class, 'normaView'])->name('public.norma.view');
+
+// Visualização de PDF da norma (com iframe)
+Route::get('/norma/{id}/view', [PublicController::class, 'viewNorma'])->name('public.norma.pdf.view');
+
+// Download da norma
+Route::get('/norma/{id}/download', [PublicController::class, 'downloadNorma'])->name('public.norma.download');
+
+// API para busca de normas (AJAX)
+Route::get('/api/normas/search', [PublicController::class, 'searchApi'])->name('api.normas.search');
+
+// API para obter dados das páginas
+Route::get('/api/stats', [PublicController::class, 'getStats'])->name('api.stats');
+Route::get('/api/tipos', [PublicController::class, 'getTipos'])->name('api.tipos');
+Route::get('/api/orgaos', [PublicController::class, 'getOrgaos'])->name('api.orgaos');
+
+//Search com blade
+//Route::get('/consulta-lista', [NormaSearchPublicController::class, 'search'])->name('norma_public_search');
+
+// rota AJAX para a consulta pública com BLADE
+//Route::get('/norma_public_search_ajax', [NormaSearchPublicController::class, 'searchAjax'])->name('norma_public_search_ajax');
+
+// ÁREA ADMINISTRATIVA
 
 Route::middleware([Authenticate::class])->group(function() {
 
-    // Route::get('/', [HomeController::class, 'home'])->name('home_2');
-    // Route::get('/home', [HomeController::class, 'home'])->name('home');
-
-    Route::get('/', [NormaController::class, 'index'])->name('home');
     Route::get('/home', [NormaController::class, 'index'])->name('home');
 
-    // =====================  USERS   ============================
+    // =====================  USUÁRIOS   ============================
     Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'root']], function(){
         Route::get('/users', [UserController::class, 'index'])->name('user.index');
         Route::get('/users/list/{id}',[UserController::class, 'userTaskList'])->name('user.list');
@@ -61,36 +73,33 @@ Route::middleware([Authenticate::class])->group(function() {
         Route::get('/delete-role/{id}', [AdminController::class, 'deleteRole'])->name('admin.deleterole');
     });
 
-    //Rotas para o módulo de normas
-Route::group(['prefix' => 'normas', 'middleware' => ['auth']], function(){
-    //Listagem e pesquisa
-    //Carregar as normas com Ajax
-    Route::get('/ajax', [NormaController::class, 'getNormasAjax'])->name('normas.ajax');
-    Route::get('/norma_list', [NormaController::class, 'index'])->name('normas.norma_list');
-    /* Route::get('/norma_search', [NormaController::class, 'search'])->name('normas.norma_search'); */
+    // =====================  NORMAS   ============================
+    Route::group(['prefix' => 'normas', 'middleware' => ['auth']], function(){
+        // Listagem e pesquisa
+        Route::get('/ajax', [NormaController::class, 'getNormasAjax'])->name('normas.ajax');
+        Route::get('/norma_list', [NormaController::class, 'index'])->name('normas.norma_list');
     });
     
     Route::group(['prefix' => 'normas', 'middleware' => ['auth', 'admin']], function(){
-        //Criação
+        // Criação
         Route::get('/norma_create', [NormaController::class, 'create'])->name('normas.norma_create');
         Route::post('/norma_store', [NormaController::class, 'store'])->name('normas.norma_store');
         
-        //Edição
+        // Edição
         Route::get('/norma_edit/{id}', [NormaController::class, 'edit'])->name('normas.norma_edit');
         Route::post('/norma_update/{id}', [NormaController::class, 'update'])->name('normas.norma_update');
         
-        //Exclusão (soft delete)
+        // Exclusão (soft delete)
         Route::delete('/norma_destroy/{id}', [NormaController::class, 'destroy'])->name('normas.norma_destroy');
-});
+    });
 
-    // =====================  ORGAOS   ============================
+    // =====================  ÓRGÃOS   ============================
     Route::group(['prefix' => 'orgaos', 'middleware' => ['auth', 'admin']], function(){
         Route::get('/orgao_list', [OrgaoController::class, 'show'])->name('orgaos.orgao_list');
         Route::get('/orgao_create', [OrgaoController::class, 'create'])->name('orgaos.orgao_create');
         Route::post('/orgao_store', [OrgaoController::class, 'store'])->name('orgaos.orgao_store');
         Route::post('/orgao_update/{id}', [OrgaoController::class, 'update'])->name('orgaos.orgao_update');
         Route::get('/orgao_edit/{id}', [OrgaoController::class, 'edit'])->name('orgaos.orgao_edit');
-
     });
 
     // =====================  TIPOS   ============================
@@ -100,7 +109,6 @@ Route::group(['prefix' => 'normas', 'middleware' => ['auth']], function(){
         Route::post('/tipo_store', [TipoController::class, 'store'])->name('tipos.tipo_store');
         Route::get('/tipo_edit/{id}', [TipoController::class, 'edit'])->name('tipos.tipo_edit');
         Route::post('/tipo_update/{id}', [TipoController::class, 'update'])->name('tipos.tipo_update');
-
     });
 
     // =====================  PALAVRAS CHAVES   ============================
@@ -111,16 +119,16 @@ Route::group(['prefix' => 'normas', 'middleware' => ['auth']], function(){
         Route::get('/palavras_chaves_edit/{id}', [PalavraChaveController::class, 'edit'])->name('palavras_chaves.palavras_chaves_edit');
         Route::post('/palavras_chaves_update/{id}', [PalavraChaveController::class, 'update'])->name('palavras_chaves.palavras_chaves_update');
 
-    // Desvincular palavra-chave de uma norma
-    Route::get('/desvincular/{palavra_chave_id}/{norma_id}', [PalavraChaveController::class, 'desvincular'])
-    ->name('palavras_chaves.desvincular');
+        // Desvincular palavra-chave de uma norma
+        Route::get('/desvincular/{palavra_chave_id}/{norma_id}', [PalavraChaveController::class, 'desvincular'])
+        ->name('palavras_chaves.desvincular');
 
-    // Excluir palavra-chave permanentemente
-    Route::get('/excluir/{id}', [PalavraChaveController::class, 'destroy'])
-    ->name('palavras_chaves.excluir');
+        // Excluir palavra-chave permanentemente
+        Route::get('/excluir/{id}', [PalavraChaveController::class, 'destroy'])
+        ->name('palavras_chaves.excluir');
 
-    // Obter todas as normas vinculadas a uma palavra-chave (para o modal)
-    Route::get('/normas-vinculadas/{id}', [PalavraChaveController::class, 'normasVinculadas'])
-    ->name('palavras_chaves.normas_vinculadas');
+        // Obter todas as normas vinculadas a uma palavra-chave (para o modal)
+        Route::get('/normas-vinculadas/{id}', [PalavraChaveController::class, 'normasVinculadas'])
+        ->name('palavras_chaves.normas_vinculadas');
     });
 });
