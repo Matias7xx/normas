@@ -25,7 +25,7 @@
         <div class="hidden md:flex items-center space-x-6">
           <Link 
             href="/" 
-            :class="isActive('/') ? 'text-yellow-500' : 'text-gray-300 hover:text-yellow-500'"
+            :class="isActive('/') ? 'text-[#c1a85a]' : 'text-gray-300 hover:text-[#c1a85a]'"
             class="nav-link transition-colors duration-300 flex items-center px-3 py-2"
             title="Página Inicial"
           >
@@ -35,7 +35,7 @@
           
           <Link 
             href="/consulta" 
-            :class="isActive('/consulta') ? 'text-yellow-500' : 'text-gray-300 hover:text-yellow-500'"
+            :class="isActive('/consulta') ? 'text-[#c1a85a]' : 'text-gray-300 hover:text-[#c1a85a]'"
             class="nav-link transition-colors duration-300 flex items-center px-3 py-2"
             title="Consultar Normas"
           >
@@ -45,7 +45,7 @@
           
           <button 
             @click="$emit('show-help')"
-            class="nav-link text-gray-300 hover:text-yellow-500 transition-colors duration-300 flex items-center px-3 py-2"
+            class="nav-link text-gray-300 hover:text-[#c1a85a] transition-colors duration-300 flex items-center px-3 py-2"
             title="Ajuda"
           >
             <i class="fas fa-question-circle mr-2"></i>
@@ -54,7 +54,7 @@
           
           <a
             href="/login" 
-            class="bg-[#9c8642] hover:bg-[#776735] text-gray-900 px-4 py-2 rounded-lg font-medium transition-all duration-300 hover:scale-105 shadow-md flex items-center"
+            class="bg-[#9c8642] hover:bg-[#8d793f] text-gray-900 px-4 py-2 rounded-lg font-medium transition-all duration-300 hover:scale-105 shadow-md flex items-center"
             title="Área Administrativa"
           >
             <i class="fas fa-cog mr-2"></i>
@@ -172,7 +172,7 @@ const isActive = (route) => {
   height: 2px;
   bottom: -2px;
   left: 50%;
-  background-color: #eab308;
+  background-color: #c1a85a;
   transition: all 0.3s ease;
   transform: translateX(-50%);
 }

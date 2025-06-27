@@ -246,7 +246,7 @@
                 </div>
                 
                 <!-- Botões de Ação -->
-                <div class="row">
+                <div class="row mt-2">
                     <div class="col-md-12">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>

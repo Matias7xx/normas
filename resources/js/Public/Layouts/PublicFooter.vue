@@ -63,15 +63,15 @@ const lastUpdate = computed(() => {
       <div class="border-t border-gray-200 py-4">
         <div class="flex justify-center items-center flex-wrap gap-6 text-sm text-gray-600">
           <div class="flex items-center hover:text-[#c1a85a] transition-colors duration-300">
-            <i class="fas fa-users mr-2 text-yellow-600"></i>
+            <i class="fas fa-users mr-2 text-[#c1a85a]"></i>
             {{ stats?.usuarios_ativos || '---' }} Usuários Ativos
           </div>
           <div class="flex items-center hover:text-[#c1a85a] transition-colors duration-300">
-            <i class="fas fa-file-alt mr-2 text-yellow-600"></i>
+            <i class="fas fa-file-alt mr-2 text-[#c1a85a]"></i>
             {{ stats?.normas_cadastradas || '---' }} Normas Cadastradas
           </div>
           <div class="flex items-center hover:text-[#c1a85a] transition-colors duration-300">
-            <i class="fas fa-clock mr-2 text-yellow-600"></i>
+            <i class="fas fa-clock mr-2 text-[#c1a85a]"></i>
             Última Atualização: {{ lastUpdate }}
           </div>
         </div>

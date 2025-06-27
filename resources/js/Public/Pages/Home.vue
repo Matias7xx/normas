@@ -60,7 +60,7 @@
           </div>
 
           <div class="bg-white rounded-lg shadow-md p-6 text-center hover:shadow-lg transition-shadow duration-300">
-            <div class="text-4xl font-bold text-green-600 mb-2">
+            <div class="text-4xl font-bold text-blue-600 mb-2">
               {{ animatedStats.normas_vigentes }}
             </div>
             <div class="text-gray-600 font-medium">Normas Vigentes</div>
@@ -68,7 +68,7 @@
           </div>
 
           <div class="bg-white rounded-lg shadow-md p-6 text-center hover:shadow-lg transition-shadow duration-300">
-            <div class="text-4xl font-bold text-purple-600 mb-2">
+            <div class="text-4xl font-bold text-blue-600 mb-2">
               {{ animatedStats.tipos_count }}
             </div>
             <div class="text-gray-600 font-medium">Tipos de Normas</div>
@@ -76,7 +76,7 @@
           </div>
 
           <div class="bg-white rounded-lg shadow-md p-6 text-center hover:shadow-lg transition-shadow duration-300">
-            <div class="text-4xl font-bold text-orange-600 mb-2">
+            <div class="text-4xl font-bold text-blue-600 mb-2">
               {{ animatedStats.orgaos_count }}
             </div>
             <div class="text-gray-600 font-medium">Órgãos</div>
@@ -87,7 +87,7 @@
     </section>
 
     <!-- Pesquisa Rápida -->
-    <section class="py-16 bg-white">
+    <section class="py-16">
       <div class="max-w-4xl mx-auto px-4">
         <div class="text-center mb-8">
           <h2 class="text-3xl font-bold text-gray-900 mb-4">
@@ -98,7 +98,7 @@
           </p>
         </div>
 
-        <div class="bg-gray-50 rounded-lg p-8">
+        <div class="bg-white shadow-lg rounded-lg p-8">
           <form @submit.prevent="realizarBuscaRapida" class="space-y-4">
             <div class="flex flex-col sm:flex-row gap-4">
               <input
@@ -168,10 +168,12 @@ const animatedStats = ref({
 
 const sugestoesBusca = [
   'portaria',
-  'regulamento',
+  'cvli',
   'instrução normativa',
-  'procedimento',
-  'circular'
+  'deam',
+  'edital',
+  'sesds',
+  'superintendência'
 ]
 
 const realizarBuscaRapida = () => {

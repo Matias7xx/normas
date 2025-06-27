@@ -55,7 +55,7 @@
                 <a class="dropdown-item" href="{{ route('logout') }}"
                    onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
                    style="background-color: transparent; color: #495057;">
-                    <i class="fas fa-sign-out-alt mr-2 text-danger"></i> Sair
+                    <i class="fas fa-sign-out-alt mr-2 text-danger"></i> Logout
                 </a>
             </div>
         </li>

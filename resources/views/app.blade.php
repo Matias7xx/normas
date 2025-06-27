@@ -7,6 +7,8 @@
     
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="{{ asset('images/logo-pc.png') }}">
+
+    <link rel="stylesheet" href="{{asset('/plugins/fontawesome-free/css/all.min.css')}}">
     
     <!-- Meta tags -->
     <meta name="description" content="Sistema de Consulta de Normas - Polícia Civil da Paraíba">

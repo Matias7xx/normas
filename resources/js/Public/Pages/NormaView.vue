@@ -36,99 +36,91 @@
 
     <!-- Conteúdo da norma -->
     <section class="max-w-7xl mx-auto px-4 py-8">
-
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        <!-- Informações Básicas -->
-        <div class="bg-white rounded-lg shadow-md p-6">
-          <h2 class="text-lg font-semibold text-gray-900 mb-4 bg-gray-50 p-3 rounded-lg">
-            Informações Básicas
-          </h2>
-          <div class="space-y-4 border-t border-gray-200">
-            <div v-if="norma?.descricao">
-              <span class="font-medium text-gray-700 block">Documento</span>
-              <div class="text-gray-900 font-medium">{{ norma?.descricao }}</div>
-            </div>
-            
-            <div v-if="norma?.numero_norma">
-              <span class="font-medium text-gray-700 block">Número</span>
-              <div class="text-gray-900">{{ norma.numero_norma }}</div>
-            </div>
-            
-            <div v-if="norma?.data">
-              <span class="font-medium text-gray-700 block">Data</span>
-              <div class="text-gray-900">{{ formatarData(norma.data) }}</div>
-            </div>
-            
-            <div v-if="norma?.orgao">
-              <span class="font-medium text-gray-700 block">Órgão</span>
-              <div class="text-gray-900">{{ norma.orgao.orgao }}</div>
-            </div>
-            
-            <div v-if="norma?.data_publicacao">
-              <span class="font-medium text-gray-700 block">Publicação</span>
-              <div class="text-gray-900">{{ formatarData(norma.data_publicacao) }} - DOEPB</div>
-            </div>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <!-- Informações Básicas -->
+      <div class="bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4 bg-gray-50 p-3 rounded-lg">
+          Informações Básicas
+        </h2>
+        <div class="border-t border-gray-200">
+          <div class="grid grid-cols-2 gap-4 py-2" v-if="norma?.descricao">
+            <span class="font-medium text-gray-700">Documento</span>
+            <div class="text-gray-900 font-medium">{{ norma?.descricao }}</div>
           </div>
-        </div>
-
-        <!-- Classificação Documental -->
-        <div class="bg-white rounded-lg shadow-md p-6">
-          <h2 class="text-lg font-semibold text-gray-900 mb-4 bg-gray-50 p-3 rounded-lg">
-            Classificação Documental
-          </h2>
-          <div class="space-y-4 border-t border-gray-200">
-            <div v-if="norma?.vigente">
-              <span class="font-medium text-gray-700 block">Status</span>
-              <div :class="getVigenciaTextClass(norma.vigente)">
-                <i :class="getVigenciaIcon(norma.vigente)" class="mr-1"></i>
-                {{ norma.vigente }}
-              </div>
-            </div>
-            
-            <div v-if="norma?.tipo">
-              <span class="font-medium text-gray-700 block">Tipo Normativo</span>
-              <div class="text-gray-900">{{ norma.tipo.tipo }}</div>
-            </div>
-            
-            <div v-if="norma?.data_vigencia">
-              <span class="font-medium text-gray-700 block">Vigência</span>
-              <div class="text-gray-900">{{ formatarData(norma.data_vigencia) }}</div>
-            </div>
-            
-            <div v-if="norma?.data_revogacao">
-              <span class="font-medium text-gray-700 block">Revogação</span>
-              <div class="text-red-600 font-medium">{{ formatarData(norma.data_revogacao) }}</div>
-            </div>
+          <div class="grid grid-cols-2 gap-4 py-2" v-if="norma?.numero_norma">
+            <span class="font-medium text-gray-700">Número</span>
+            <div class="text-gray-900">{{ norma.numero_norma }}</div>
           </div>
-        </div>
-
-        <!-- Ementa -->
-        <div class="bg-white rounded-lg shadow-md p-6">
-          <h2 class="text-lg font-semibold text-gray-900 mb-4 bg-gray-50 p-3 rounded-lg">
-            Ementa
-          </h2>
-          <!-- Resumo -->
-          <div v-if="norma?.resumo" class="mt-4 pt-4 border-t border-gray-200">
-            <div class="text-gray-600 leading-relaxed">
-              {{ norma.resumo }}
-            </div>
+          <div class="grid grid-cols-2 gap-4 py-2" v-if="norma?.data">
+            <span class="font-medium text-gray-700">Data</span>
+            <div class="text-gray-900">{{ formatarData(norma.data) }}</div>
           </div>
-          
-          <!-- Palavras-chave (se houver) -->
-          <div v-if="norma?.palavrasChave && norma.palavrasChave.length > 0" class="mt-4 pt-4 border-t border-gray-200">
-            <span class="font-medium text-gray-700 block mb-2">Palavras-chave</span>
-            <div class="flex flex-wrap gap-1">
-              <span
-                v-for="palavra in norma.palavrasChave"
-                :key="palavra?.id || Math.random()"
-                class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-medium"
-              >
-                {{ palavra?.palavra_chave || palavra?.palavra }}
-              </span>
-            </div>
+          <div class="grid grid-cols-2 gap-4 py-2" v-if="norma?.orgao">
+            <span class="font-medium text-gray-700">Órgão</span>
+            <div class="text-gray-900">{{ norma.orgao.orgao }}</div>
+          </div>
+          <div class="grid grid-cols-2 gap-4 py-2" v-if="norma?.data_publicacao">
+            <span class="font-medium text-gray-700">Publicação</span>
+            <div class="text-gray-900">{{ formatarData(norma.data_publicacao) }} - DOEPB</div>
           </div>
         </div>
       </div>
+
+      <!-- Classificação Documental -->
+      <div class="bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4 bg-gray-50 p-3 rounded-lg">
+          Classificação Documental
+        </h2>
+        <div class="border-t border-gray-200">
+          <div class="grid grid-cols-2 gap-4 py-2" v-if="norma?.vigente">
+            <span class="font-medium text-gray-700">Status</span>
+            <div :class="getVigenciaTextClass(norma.vigente)">
+              <i :class="getVigenciaIcon(norma.vigente)" class="mr-1"></i>
+              {{ norma.vigente }}
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4 py-2" v-if="norma?.tipo">
+            <span class="font-medium text-gray-700">Tipo Normativo</span>
+            <div class="text-gray-900">{{ norma.tipo.tipo }}</div>
+          </div>
+          <div class="grid grid-cols-2 gap-4 py-2" v-if="norma?.data_vigencia">
+            <span class="font-medium text-gray-700">Vigência</span>
+            <div class="text-gray-900">{{ formatarData(norma.data_vigencia) }}</div>
+          </div>
+          <div class="grid grid-cols-2 gap-4 py-2" v-if="norma?.data_revogacao">
+            <span class="font-medium text-gray-700">Revogação</span>
+            <div class="text-red-600 font-medium">{{ formatarData(norma.data_revogacao) }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ementa -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+      <h2 class="text-lg font-semibold text-gray-900 mb-4 bg-gray-50 p-3 rounded-lg">
+        Ementa
+      </h2>
+      <!-- Resumo -->
+      <div v-if="norma?.resumo" class="mt-4 pt-4 border-t border-gray-200">
+        <div class="text-gray-600 leading-relaxed">
+          {{ norma.resumo }}
+        </div>
+      </div>
+      
+      <!-- Palavras-chave (se houver) -->
+      <div v-if="norma?.palavrasChave && norma.palavrasChave.length > 0" class="mt-4 pt-4 border-t border-gray-200">
+        <span class="font-medium text-gray-700 block mb-2">Palavras-chave</span>
+        <div class="flex flex-wrap gap-1">
+          <span
+            v-for="palavra in norma.palavrasChave"
+            :key="palavra?.id || Math.random()"
+            class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-medium"
+          >
+            {{ palavra?.palavra_chave || palavra?.palavra }}
+          </span>
+        </div>
+      </div>
+    </div>
 
       <!-- Visualizador de PDF -->
       <div class="bg-white rounded-lg shadow-md p-6 mb-8">

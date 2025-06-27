@@ -77,7 +77,7 @@
 
                 <button type="submit" class="btn-login" id="loginBtn">
                     <i class="fas fa-sign-in-alt"></i>
-                    Entrar no Sistema
+                    Login
                 </button>
             </form>
         </div>

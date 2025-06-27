@@ -7,11 +7,11 @@
       <div class="max-w-7xl mx-auto px-4">
         <div class="text-center">
           <h1 class="text-3xl md:text-4xl font-bold mb-4">
-            <i class="fas fa-search mr-3"></i>
+            <!-- <i class="fas fa-search mr-3"></i> -->
             Consulta Pública de Normas
           </h1>
           <p class="text-xl text-blue-100 max-w-2xl mx-auto">
-            Pesquise por descrição, resumo ou palavra-chave da norma jurídica
+            Pesquise por descrição, resumo ou palavra-chave da norma
           </p>
         </div>
       </div>
@@ -110,29 +110,29 @@
           </div>
 
           <!-- Filtros de data -->
-          <div v-if="mostrarFiltrosData" class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
+          <div v-if="mostrarFiltrosData" class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-lg">
             <div>
               <label for="data_inicio" class="block text-sm font-medium text-gray-700 mb-2">
-                <i class="fas fa-calendar-alt mr-2 text-purple-600"></i>
+                <i class="fas fa-calendar-alt mr-2 text-blue-600"></i>
                 Data Início
               </label>
               <input
                 id="data_inicio"
                 v-model="form.data_inicio"
                 type="date"
-                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
             <div>
               <label for="data_fim" class="block text-sm font-medium text-gray-700 mb-2">
-                <i class="fas fa-calendar-alt mr-2 text-purple-600"></i>
+                <i class="fas fa-calendar-alt mr-2 text-blue-600"></i>
                 Data Fim
               </label>
               <input
                 id="data_fim"
                 v-model="form.data_fim"
                 type="date"
-                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
           </div>
@@ -327,7 +327,7 @@
 
       <!-- Estado inicial -->
       <div v-else class="text-center py-12">
-        <div class="bg-blue-50 rounded-lg p-8">
+        <div class="p-8">
           <i class="fas fa-search text-4xl text-blue-600 mb-4"></i>
           <h3 class="text-xl font-semibold text-gray-700 mb-2">
             Pronto para buscar

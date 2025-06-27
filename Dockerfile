@@ -43,8 +43,11 @@ RUN mkdir -p storage/logs storage/framework/{cache,sessions,views} bootstrap/cac
 RUN chown -R www-data:www-data storage bootstrap/cache && \
     chmod -R 755 storage bootstrap/cache
 
+# Gerar o symlink do storage
+RUN php artisan storage:link --no-interaction
+
 # Build
-RUN npm run production || echo "Build falhou, será executado depois"
+RUN npm run production
 
 EXPOSE 9000
 CMD ["php-fpm"]
