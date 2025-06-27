@@ -9,6 +9,7 @@ use App\Models\Tipo;
 use App\Models\Orgao;
 use App\Models\User;
 use App\Models\PalavraChave;
+use Carbon\Carbon;
 
 class PublicController extends Controller
 {
@@ -40,8 +41,11 @@ class PublicController extends Controller
 
         $normas = null;
         
-        // Se há parâmetros de busca, realizar a consulta
-        if ($request->anyFilled(['search_term', 'tipo_id', 'orgao_id', 'vigente', 'data_inicio', 'data_fim'])) {
+        // Verificar se é uma busca ativa (quando clica no botão buscar)
+        $isBusca = $request->has('busca') || $request->anyFilled(['search_term', 'tipo_id', 'orgao_id', 'vigente', 'data_inicio', 'data_fim']);
+        
+        // Se há parâmetros de busca OU se clicou em buscar, realizar a consulta
+        if ($isBusca) {
             $normas = $this->performSearch($request);
         }
 
@@ -181,26 +185,32 @@ class PublicController extends Controller
         return response()->json($orgaos);
     }
 
-    /**
-     * Realizar busca de normas
-     */
+    //Realizar busca de normas com sistema de relevância
     private function performSearch(Request $request)
     {
-        $query = Norma::query()
-            ->with(['tipo', 'orgao', 'palavrasChave'])
-            ->where('status', true);
+        // Base query com eager loading
+        $query = Norma::with([
+            'tipo:id,tipo', 
+            'orgao:id,orgao', 
+            'palavrasChave:id,palavra_chave'
+        ])
+        ->where('status', true);
 
-        // Busca por termo
-        if ($request->filled('search_term')) {
-            $term = $request->search_term;
-            $query->where(function($q) use ($term) {
-                $q->where('descricao', 'LIKE', "%{$term}%")
-                  ->orWhere('resumo', 'LIKE', "%{$term}%")
-                  ->orWhere('numero_norma', 'LIKE', "%{$term}%")
-                  ->orWhereHas('palavrasChave', function($pq) use ($term) {
-                      $pq->where('palavra_chave', 'LIKE', "%{$term}%");
-                  });
-            });
+        // Verificar se há algum filtro ativo
+        $hasFilters = $request->anyFilled(['search_term', 'tipo_id', 'orgao_id', 'vigente', 'data_inicio', 'data_fim']);
+        
+        // Se não há filtros, mostrar todas as normas ativas ordenadas por data
+        if (!$hasFilters) {
+            $query->orderBy('data', 'desc')->orderBy('id', 'desc');
+        } else {
+            // Aplicar filtros de pesquisa com relevância apenas se há termo de busca
+            if ($request->filled('search_term')) {
+                $searchTerm = trim($request->search_term);
+                $query = $this->applySearchWithRelevance($query, $searchTerm);
+            } else {
+                // Se há outros filtros mas não termo de busca, aplicar ordenação padrão
+                $query->orderBy('data', 'desc')->orderBy('id', 'desc');
+            }
         }
 
         // Filtro por tipo
@@ -220,15 +230,22 @@ class PublicController extends Controller
 
         // Filtro por data
         if ($request->filled('data_inicio')) {
-            $query->where('data', '>=', $request->data_inicio);
+            try {
+                $dataInicio = Carbon::createFromFormat('Y-m-d', $request->data_inicio)->startOfDay();
+                $query->where('data', '>=', $dataInicio);
+            } catch (\Exception $e) {
+                // Se erro na conversão de data, ignorar filtro
+            }
         }
 
         if ($request->filled('data_fim')) {
-            $query->where('data', '<=', $request->data_fim);
+            try {
+                $dataFim = Carbon::createFromFormat('Y-m-d', $request->data_fim)->endOfDay();
+                $query->where('data', '<=', $dataFim);
+            } catch (\Exception $e) {
+                // Se erro na conversão de data, ignorar filtro
+            }
         }
-
-        // Ordenação
-        $query->orderBy('data', 'desc');
 
         // Paginação
         $normas = $query->paginate(10);
@@ -249,6 +266,70 @@ class PublicController extends Controller
         });
 
         return $normas;
+    }
+
+    //Aplicar busca com sistema de relevância
+    private function applySearchWithRelevance($query, $searchTerm)
+    {
+        $searchTerm = trim($searchTerm);
+        
+        if (empty($searchTerm)) {
+            return $query;
+        }
+        
+        // Dividir em palavras e filtrar palavras muito pequenas
+        $words = array_filter(array_map('trim', explode(' ', $searchTerm)), function($word) {
+            return strlen($word) >= 2;
+        });
+        
+        if (empty($words)) {
+            return $query;
+        }
+        
+        // Criar subquery para calcular relevância
+        $relevanceSelect = $this->buildRelevanceScore($words, $searchTerm);
+        
+        return $query->select('normas.*')
+                    ->selectRaw("({$relevanceSelect}) as relevance_score")
+                    ->where(function($q) use ($words, $searchTerm) {
+                        // Busca nos campos principais
+                        foreach ($words as $word) {
+                            $q->where(function($wordQuery) use ($word) {
+                                $wordQuery->where('descricao', 'ILIKE', "%{$word}%")
+                                         ->orWhere('resumo', 'ILIKE', "%{$word}%");
+                            });
+                        }
+                        
+                        // Busca nas palavras-chave
+                        $q->orWhereHas('palavrasChave', function($subq) use ($words) {
+                            foreach ($words as $word) {
+                                $subq->where('palavra_chave', 'ILIKE', "%{$word}%");
+                            }
+                        });
+                    })
+                    ->orderByRaw('relevance_score DESC')
+                    ->orderBy('data', 'desc');
+    }
+
+    /**
+     * Constrói a query de score de relevância
+     */
+    private function buildRelevanceScore($words, $fullTerm)
+    {
+        $scoreQueries = [];
+        
+        // Score para frase exata (busca primeiro)
+        $scoreQueries[] = "CASE WHEN descricao ILIKE '%{$fullTerm}%' THEN 10 ELSE 0 END";
+        $scoreQueries[] = "CASE WHEN resumo ILIKE '%{$fullTerm}%' THEN 8 ELSE 0 END";
+        
+        // Score para palavras individuais
+        foreach ($words as $index => $word) {
+            $weight = max(1, 5 - $index); // Primeiras palavras têm peso maior
+            $scoreQueries[] = "CASE WHEN descricao ILIKE '%{$word}%' THEN {$weight} ELSE 0 END";
+            $scoreQueries[] = "CASE WHEN resumo ILIKE '%{$word}%' THEN " . ($weight - 1) . " ELSE 0 END";
+        }
+        
+        return implode(' + ', $scoreQueries);
     }
 
     /**

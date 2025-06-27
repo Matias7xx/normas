@@ -104,7 +104,7 @@
                 class="w-full bg-gray-600 hover:bg-gray-700 text-white px-4 py-3 rounded-lg font-medium transition-all duration-300 flex items-center justify-center"
               >
                 <i class="fas fa-calendar mr-2"></i>
-                Filtro por Data
+                Filtrar por Data
               </button>
             </div>
           </div>
@@ -146,7 +146,7 @@
             >
               <i v-if="carregando" class="fas fa-spinner fa-spin mr-2"></i>
               <i v-else class="fas fa-search mr-2"></i>
-              {{ carregando ? 'Buscando...' : 'Buscar Normas' }}
+              {{ carregando ? 'Consultando...' : 'Consultar' }}
             </button>
             
             <button
@@ -335,10 +335,6 @@
           <p class="text-gray-600 mb-4">
             Use os filtros acima para encontrar as normas que você precisa.
           </p>
-          <p class="text-sm text-gray-500">
-            Por padrão, são exibidas apenas normas <strong>VIGENTES</strong>. 
-            Use os filtros para encontrar normas específicas.
-          </p>
         </div>
       </div>
     </section>
@@ -431,9 +427,38 @@ const paginasVisiveis = computed(() => {
 const buscarNormas = () => {
   carregando.value = true
   
-  router.get('/consulta', form.value, {
+  // Adicionar parâmetro 'busca=1' para indicar que é uma busca ativa
+  const params = { ...form.value, busca: 1 }
+  
+  router.get('/consulta', params, {
     preserveState: true,
     preserveScroll: true,
+    onFinish: () => {
+      carregando.value = false
+    },
+    onError: (errors) => {
+      console.error('Erro na busca:', errors)
+      carregando.value = false
+    }
+  })
+}
+
+const buscarTodasNormas = () => {
+  carregando.value = true
+  
+  // Limpar todos os filtros e fazer busca
+  form.value = {
+    search_term: '',
+    tipo_id: '',
+    orgao_id: '',
+    vigente: '',
+    data_inicio: '',
+    data_fim: ''
+  }
+  
+  // Fazer busca com parâmetro indicando que é busca ativa
+  router.get('/consulta', { busca: 1 }, {
+    preserveState: true,
     onFinish: () => {
       carregando.value = false
     },
@@ -485,7 +510,7 @@ const formatarData = (data) => {
 const irParaPagina = (pagina) => {
   if (pagina === '...' || pagina === props.normas?.current_page || !pagina) return
   
-  const params = { ...form.value, page: pagina }
+  const params = { ...form.value, page: pagina, busca: 1 }
   
   router.get('/consulta', params, {
     preserveState: true,
