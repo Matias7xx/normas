@@ -57,166 +57,171 @@ class NormaController extends Controller
      * @return \Illuminate\Http\JsonResponse
      */
     public function getNormasAjax(Request $request)
-    {
-        try {   
-            // Base query com eager loading otimizado
-            $query = Norma::with([
-                'publicidade:id,publicidade', 
-                'orgao:id,orgao', 
-                'tipo:id,tipo', 
-                'palavrasChave:id,palavra_chave'
-            ])
-            ->ativas();
-            
-            // Aplicar filtros de pesquisa
-            if ($request->filled('search_term')) {
-            $searchTerm = trim($request->search_term);
-            $query = $this->applySearchWithRelevance($query, $searchTerm);
-            }
-            
-            // Filtro por tipo
-            if ($request->filled('tipo_id')) {
-                $query->where('tipo_id', $request->tipo_id);
-            }
-            
-            // Filtro por órgão
-            if ($request->filled('orgao_id')) {
-                $query->where('orgao_id', $request->orgao_id);
-            }
-
-            // Filtro por vigência
-            if ($request->filled('vigente')) {
-                $query->where('vigente', $request->vigente);
-            }
-            
-            if ($request->filled('data_inicio')) {
-                try {
-                    $dataInicio = Carbon::createFromFormat('Y-m-d', $request->data_inicio)->startOfDay();
-                    $query->where('data', '>=', $dataInicio);
-                } catch (\Exception $e) {
-                }
-            }
-            
-            if ($request->filled('data_fim')) {
-                try {
-                    $dataFim = Carbon::createFromFormat('Y-m-d', $request->data_fim)->endOfDay();
-                    $query->where('data', '<=', $dataFim);
-                } catch (\Exception $e) {
-                }
-            }
-                        
-            // Tratamento de ordenação
-            $orderBy = $request->input('order_by', 'data');
-            $orderDir = $request->input('order_dir', 'desc');
-            
-            // Validar direção de ordenação
-            $orderDir = in_array(strtolower($orderDir), ['asc', 'desc']) ? strtolower($orderDir) : 'desc';
-            
-            // Aplicar ordenação baseada no campo
-            switch ($orderBy) {
-                case 'id':
-                    $query->orderBy('id', $orderDir);
-                    break;
-                    
-                case 'data':
-                    $query->orderBy('data', $orderDir)
-                        ->orderBy('id', $orderDir); // Ordenação secundária por ID
-                    break;
-                    
-                case 'descricao':
-                    $query->orderBy('descricao', $orderDir);
-                    break;
-                    
-                case 'resumo':
-                    $query->orderBy('resumo', $orderDir);
-                    break;
-                    
-                case 'orgao':
-                    // Ordenar pelo nome do órgão usando join
-                    $query->join('orgaos', 'normas.orgao_id', '=', 'orgaos.id')
-                        ->orderBy('orgaos.orgao', $orderDir)
-                        ->select('normas.*'); // Garantir que apenas colunas de normas sejam selecionadas
-                    break;
-                    
-                case 'tipo':
-                    // Ordenar pelo nome do tipo usando join
-                    $query->join('tipos', 'normas.tipo_id', '=', 'tipos.id')
-                        ->orderBy('tipos.tipo', $orderDir)
-                        ->select('normas.*'); // Garantir que apenas colunas de normas sejam selecionadas
-                    break;
-
-                case 'vigente':
-                    // Ordenação personalizada para vigência
-                    $query->orderByRaw("
-                        CASE vigente 
-                            WHEN 'VIGENTE' THEN 1 
-                            WHEN 'EM ANÁLISE' THEN 2 
-                            WHEN 'NÃO VIGENTE' THEN 3 
-                            ELSE 4 
-                        END " . $orderDir
-                    );
-                    break;
-                    
-                default:
-                    // Ordenação padrão por data (mais recentes primeiro)
-                    $query->orderBy('data', 'desc')->orderBy('id', 'desc');
-                    break;
-            }
-            
-            // Paginação
-            $perPage = $request->input('per_page', 15);
-            $perPage = in_array($perPage, [10, 15, 25, 50]) ? $perPage : 15; // Validar valores permitidos
-            
-            $normas = $query->paginate($perPage);
-            
-            // Preparar dados para exibição
-            $formattedNormas = $normas->map(function($norma) {
-                return [
-                    'id' => $norma->id,
-                    'data' => $norma->data ? $norma->data->format('d/m/Y') : null,
-                    'descricao' => $norma->descricao,
-                    'resumo' => $norma->resumo,
-                    'orgao' => $norma->orgao->orgao ?? 'N/A',
-                    'tipo' => $norma->tipo->tipo ?? 'N/A',
-                    'vigente' => $norma->vigente,
-                    'vigente_class' => $norma->vigente_class,
-                    'vigente_icon' => $norma->vigente_icon,
-                    'anexo' => $norma->anexo,
-                    'anexo_url' => asset('storage/normas/' . $norma->anexo), // URL completa
-                    'palavras_chave' => $norma->palavrasChave->take(3)->map(function($pc) {
-                        return ['id' => $pc->id, 'palavra_chave' => $pc->palavra_chave];
-                    }),
-                    'palavras_chave_restantes' => $norma->palavrasChave->count() > 3 ? 
-                        $norma->palavrasChave->count() - 3 : 0
-                ];
-            });
-            
-            return response()->json([
-                'normas' => $formattedNormas,
-                'pagination' => [
-                    'total' => $normas->total(),
-                    'per_page' => $normas->perPage(),
-                    'current_page' => $normas->currentPage(),
-                    'last_page' => $normas->lastPage(),
-                    'from' => $normas->firstItem(),
-                    'to' => $normas->lastItem()
-                ],
-                'filters_applied' => $this->getAppliedFiltersInfo($request),
-                'debug' => [
-                    'data_inicio' => $request->data_inicio,
-                    'data_fim' => $request->data_fim,
-                    'vigente' => $request->vigente,
-                    'total_encontrado' => $normas->total()
-                ]
-            ]);
-            
-        } catch (\Exception $e) {            
-            return response()->json([
-                'error' => 'Erro ao carregar normas: ' . $e->getMessage(),
-                'trace' => config('app.debug') ? $e->getTraceAsString() : null
-            ], 500);
+{
+    try {   
+        // Base query com eager loading otimizado
+        $query = Norma::with([
+            'publicidade:id,publicidade', 
+            'orgao:id,orgao', 
+            'tipo:id,tipo', 
+            'palavrasChave:id,palavra_chave',
+            'usuario:id,name,matricula' // Necessário para auditoria
+        ])
+        ->ativas();
+        
+        // Aplicar filtros de pesquisa
+        if ($request->filled('search_term')) {
+        $searchTerm = trim($request->search_term);
+        $query = $this->applySearchWithRelevance($query, $searchTerm);
         }
+        
+        // Filtro por tipo
+        if ($request->filled('tipo_id')) {
+            $query->where('tipo_id', $request->tipo_id);
+        }
+        
+        // Filtro por órgão
+        if ($request->filled('orgao_id')) {
+            $query->where('orgao_id', $request->orgao_id);
+        }
+
+        // Filtro por vigência
+        if ($request->filled('vigente')) {
+            $query->where('vigente', $request->vigente);
+        }
+        
+        if ($request->filled('data_inicio')) {
+            try {
+                $dataInicio = Carbon::createFromFormat('Y-m-d', $request->data_inicio)->startOfDay();
+                $query->where('data', '>=', $dataInicio);
+            } catch (\Exception $e) {
+            }
+        }
+        
+        if ($request->filled('data_fim')) {
+            try {
+                $dataFim = Carbon::createFromFormat('Y-m-d', $request->data_fim)->endOfDay();
+                $query->where('data', '<=', $dataFim);
+            } catch (\Exception $e) {
+            }
+        }
+                    
+        // Tratamento de ordenação
+        $orderBy = $request->input('order_by', 'data');
+        $orderDir = $request->input('order_dir', 'desc');
+        
+        // Validar direção de ordenação
+        $orderDir = in_array(strtolower($orderDir), ['asc', 'desc']) ? 
+            strtolower($orderDir) : 'desc';
+        
+        // Aplicar ordenação baseada no campo
+        switch ($orderBy) {
+            case 'id':
+                $query->orderBy('id', $orderDir);
+                break;
+            case 'data':
+                $query->orderBy('data', $orderDir)->orderBy('id', 'desc');
+                break;
+            case 'descricao':
+                $query->orderBy('descricao', $orderDir);
+                break;
+            case 'resumo':
+                $query->orderBy('resumo', $orderDir);
+                break;
+            case 'vigente':
+                $query->orderByRaw(
+                    "CASE 
+                        WHEN vigente = 'VIGENTE' THEN 1 
+                        WHEN vigente = 'EM ANÁLISE' THEN 2 
+                        WHEN vigente = 'NÃO VIGENTE' THEN 3 
+                        ELSE 4 
+                    END " . $orderDir
+                );
+                break;
+            case 'orgao':
+                $query->join('orgaos', 'normas.orgao_id', '=', 'orgaos.id')
+                      ->orderBy('orgaos.orgao', $orderDir)
+                      ->select('normas.*');
+                break;
+            case 'tipo':
+                $query->join('tipos', 'normas.tipo_id', '=', 'tipos.id')
+                      ->orderBy('tipos.tipo', $orderDir)
+                      ->select('normas.*');
+                break;
+            default:
+                $query->orderBy('data', 'desc')->orderBy('id', 'desc');
+                break;
+        }
+        
+        // Paginação
+        $perPage = $request->input('per_page', 15);
+        $perPage = in_array($perPage, [10, 15, 25, 50]) ? $perPage : 15;
+        
+        $normas = $query->paginate($perPage);
+        
+        // Verificar se o usuário atual tem role_id = 2 (gestor) ou 1 (root) para mostrar auditoria
+        $showAudit = in_array(auth()->user()->role_id, [1, 2]);
+        
+        // Preparar dados para exibição
+        $formattedNormas = $normas->map(function($norma) use ($showAudit) {
+            $normaData = [
+                'id' => $norma->id,
+                'data' => $norma->data ? $norma->data->format('d/m/Y') : null,
+                'descricao' => $norma->descricao,
+                'resumo' => $norma->resumo,
+                'orgao' => $norma->orgao->orgao ?? 'N/A',
+                'tipo' => $norma->tipo->tipo ?? 'N/A',
+                'vigente' => $norma->vigente,
+                'vigente_class' => $norma->vigente_class,
+                'vigente_icon' => $norma->vigente_icon,
+                'anexo' => $norma->anexo,
+                'anexo_url' => asset('storage/normas/' . $norma->anexo),
+                'palavras_chave' => $norma->palavrasChave->take(3)->map(function($pc) {
+                    return ['id' => $pc->id, 'palavra_chave' => $pc->palavra_chave];
+                }),
+                'palavras_chave_restantes' => $norma->palavrasChave->count() > 3 ? 
+                    $norma->palavrasChave->count() - 3 : 0
+            ];
+            
+            // Adicionar informações de auditoria apenas se o usuário tiver permissão
+            if ($showAudit && $norma->usuario) {
+                $normaData['auditoria'] = [
+                    'usuario_nome' => $norma->usuario->name,
+                    'usuario_matricula' => $norma->usuario->matricula,
+                    'data_cadastro' => $norma->created_at ? $norma->created_at->format('d/m/Y H:i') : null
+                ];
+            }
+            
+            return $normaData;
+        });
+        
+        return response()->json([
+            'normas' => $formattedNormas,
+            'pagination' => [
+                'total' => $normas->total(),
+                'per_page' => $normas->perPage(),
+                'current_page' => $normas->currentPage(),
+                'last_page' => $normas->lastPage(),
+                'from' => $normas->firstItem(),
+                'to' => $normas->lastItem()
+            ],
+            'filters_applied' => $this->getAppliedFiltersInfo($request),
+            'show_audit' => $showAudit, // Informar ao frontend se deve mostrar auditoria
+            'debug' => [
+                'data_inicio' => $request->data_inicio,
+                'data_fim' => $request->data_fim,
+                'vigente' => $request->vigente,
+                'total_encontrado' => $normas->total()
+            ]
+        ]);
+        
+    } catch (\Exception $e) {            
+        return response()->json([
+            'error' => 'Erro ao carregar normas: ' . $e->getMessage(),
+            'trace' => config('app.debug') ? $e->getTraceAsString() : null
+        ], 500);
     }
+}
     
     /**
      * Retorna informações sobre os filtros aplicados

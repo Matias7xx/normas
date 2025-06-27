@@ -468,4 +468,14 @@ public function hasAnexo()
     {
         return $this->vigente === self::VIGENTE_EM_ANALISE;
     }
+
+    public function getAuditoriaInfo()
+    {
+        return [
+            'usuario_nome' => $this->usuario ? $this->usuario->name : 'Usuário não encontrado',
+            'usuario_matricula' => $this->usuario ? $this->usuario->matricula : null,
+            'data_cadastro' => $this->created_at ? $this->created_at->format('d/m/Y H:i') : null,
+            'data_atualizacao' => $this->updated_at ? $this->updated_at->format('d/m/Y H:i') : null
+        ];
+    }
 }

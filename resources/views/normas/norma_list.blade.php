@@ -691,7 +691,7 @@
     }
     
     .badge-light {
-        background-color: #f8f9fa;
+        background-color: #faf8f9;
         color: #495057;
         border: 1px solid #dee2e6;
     }
@@ -732,4 +732,80 @@
         border-radius: 6px;
         transition: all 0.2
     }
+
+    /* Badge de auditoria */
+.auditoria-badge {
+    background-color: #faf8f9 !important;
+    color: #495057 !important;
+    font-size: 0.75rem !important;
+    padding: 3px 6px !important;
+    border-radius: 10px !important;
+    font-weight: 500 !important;
+    transition: all 0.2s ease;
+    cursor: help !important;
+    border: 1px solid #dee2e6;
+    letter-spacing: 0.3px;
+}
+
+/* .auditoria-badge:hover {
+    background-color: #138496 !important;
+    transform: scale(1.05);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+} */
+
+.auditoria-badge i {
+    font-size: 0.7rem;
+    margin-right: 2px;
+}
+
+/* apresentação das badges na coluna da norma */
+.badge-info.auditoria-badge {
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Tooltip customizado para a badge de auditoria */
+.auditoria-badge[title]:hover:after {
+    content: attr(title);
+    position: absolute;
+    z-index: 1000;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #333;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+.auditoria-badge[title]:hover:before {
+    content: '';
+    position: absolute;
+    z-index: 1000;
+    bottom: 120%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: #333;
+}
+
+/* Responsividade para badges em telas menores */
+@media (max-width: 768px) {
+    .auditoria-badge {
+        font-size: 0.6rem !important;
+        padding: 2px 4px !important;
+        max-width: 120px;
+    }
+    
+    .auditoria-badge i {
+        display: none; /* Ocultar ícone em telas pequenas */
+    }
+}
 </style>

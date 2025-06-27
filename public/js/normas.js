@@ -605,6 +605,7 @@ class NormasManager {
         
         normas.forEach(norma => {
             const palavrasChaveHtml = this.renderPalavrasChave(norma.palavras_chave, norma.palavras_chave_restantes);
+            const auditoriaHtml = norma.auditoria ? this.renderAuditoriaBadge(norma.auditoria) : '';
             const acoesHtml = this.renderAcoes(norma);
             const vigenciaHtml = this.renderVigencia(norma.vigente);
             
@@ -637,6 +638,7 @@ class NormasManager {
                         <div class="text-truncate-custom" title="${norma.descricao}">
                             ${norma.descricao}
                         </div>
+                        ${auditoriaHtml}
                     </td>
                     <td>
                         <div class="text-truncate-custom" title="${norma.resumo}">
@@ -656,6 +658,11 @@ class NormasManager {
             `;
             
             tbody.append(row);
+            
+            // Inicializar tooltips após renderizar as normas
+            setTimeout(() => {
+                $('[data-toggle="tooltip"]').tooltip();
+            }, 100);
         });
     }
     
@@ -715,6 +722,26 @@ class NormasManager {
         html += '</div>';
         return html;
     }
+
+    renderAuditoriaBadge(auditoria) {
+    if (!auditoria) {
+        return '';
+    }
+
+    const tooltipText = `Cadastrado por: ${auditoria.usuario_nome} (Mat: ${auditoria.usuario_matricula}) em ${auditoria.data_cadastro}`;
+    
+    return `
+        <div class="mt-1">
+            <span class="badge badge-info auditoria-badge" 
+                  title="${tooltipText}" 
+                  data-toggle="tooltip" 
+                  data-placement="top">
+                <i class="fas fa-user-edit"></i>
+                ${auditoria.usuario_nome}
+            </span>
+        </div>
+    `;
+}
     
     renderAcoes(norma) {
         let html = `
