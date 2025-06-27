@@ -31,7 +31,7 @@
               class="bg-transparent border-2 border-white hover:bg-white hover:text-blue-800 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-300 flex items-center"
             >
               <i class="fas fa-chart-bar mr-3"></i>
-              Ver Estatísticas
+              Estatísticas
             </button>
           </div>
         </div>
@@ -91,7 +91,7 @@
       <div class="max-w-4xl mx-auto px-4">
         <div class="text-center mb-8">
           <h2 class="text-3xl font-bold text-gray-900 mb-4">
-            Busca Rápida
+            Consulta Rápida
           </h2>
           <p class="text-lg text-gray-600">
             Encontre rapidamente a norma que você precisa
@@ -104,7 +104,7 @@
               <input
                 v-model="buscaRapida"
                 type="text"
-                placeholder="Digite o termo de busca (ex: portaria, regulamento, procedimento...)"
+                placeholder="Digite o termo de consulta (ex: portaria, regulamento, procedimento...)"
                 class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300"
               />
               <button
@@ -114,7 +114,7 @@
               >
                 <i v-if="carregandoBusca" class="fas fa-spinner fa-spin mr-2"></i>
                 <i v-else class="fas fa-search mr-2"></i>
-                {{ carregandoBusca ? 'Buscando...' : 'Buscar' }}
+                {{ carregandoBusca ? 'Consultando...' : 'Consultar' }}
               </button>
             </div>
           </form>
