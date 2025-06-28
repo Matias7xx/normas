@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CreateNormaRequest;
+use App\Http\Requests\UpdateNormaRequest;
 use App\Models\Norma;
 use App\Models\NormaChave;
 use App\Models\Orgao;
@@ -328,7 +329,9 @@ class NormaController extends Controller
         try {
             // Validar arquivo
             if (!$request->hasFile('anexo') || !$request->file('anexo')->isValid()) {
-                return back()->withErrors(['anexo' => 'Erro ao fazer o upload do arquivo!']);
+                return back()
+                    ->withInput()
+                    ->withErrors(['anexo' => 'Erro ao fazer o upload do arquivo!']);
             }
             
             // Processar e armazenar o arquivo
@@ -414,18 +417,20 @@ class NormaController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Erro ao cadastrar norma: ' . $e->getMessage());
-            return back()->withInput()->withErrors(['Erro ao cadastrar norma: ' . $e->getMessage()]);
+            return back()
+                ->withInput()
+                ->withErrors(['Erro ao cadastrar norma: ' . $e->getMessage()]);
         }
     }
 
     /**
      * Atualiza uma norma existente
      *
-     * @param Request $request
+     * @param UpdateNormaRequest $request
      * @param int $id
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function update(Request $request, $id)
+    public function update(UpdateNormaRequest $request, $id)
     {
         DB::beginTransaction();
         try {
@@ -437,7 +442,7 @@ class NormaController extends Controller
             $mensagens = []; // Para armazenar mensagens de sucesso
 
             // Processar exclusão de palavra-chave (se solicitado)
-            if (isset($request->delete_palavra_chave)) {
+            if ($request->has('delete_palavra_chave')) {
                 $normaChave = NormaChave::where('norma_id', $id)
                     ->where('palavra_chave_id', $request->delete_palavra_chave)
                     ->where('status', true)
@@ -607,7 +612,7 @@ class NormaController extends Controller
             $mensagemFinal = count($mensagens) > 0 ? implode(' ', $mensagens) : 'Nenhuma alteração foi realizada.';
 
             // Redirecionar de acordo com o tipo de operação
-            if (isset($request->delete_palavra_chave) || isset($request->add_palavra_chave) || !empty($request->novas_palavras_chave)) {
+            if ($request->has('delete_palavra_chave') || $request->has('add_palavra_chave') || $request->has('novas_palavras_chave')) {
                 // Se foi uma operação em palavras-chave, redireciona de volta para a tela de edição
                 return redirect()->route('normas.norma_edit', ['id' => $id])
                                 ->with('success', $mensagemFinal);
@@ -623,7 +628,9 @@ class NormaController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Erro ao atualizar norma: ' . $e->getMessage());
-            return back()->withErrors(['Erro ao atualizar norma: ' . $e->getMessage()]);
+            return back()
+                ->withInput()
+                ->withErrors(['Erro ao atualizar norma: ' . $e->getMessage()]);
         }
     }
     
