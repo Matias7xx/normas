@@ -28,7 +28,7 @@ class NormaController extends Controller
     public function index(Request $request)
     {   
         try {
-            $servidor = Servidor::where('matricula', Auth::user()->matricula)->first();
+            /* $servidor = Servidor::where('matricula', Auth::user()->matricula)->first(); */
             
             // Obter listas para filtros
             $tipos = Tipo::where('status', true)->orderBy('tipo')->get();
@@ -44,7 +44,7 @@ class NormaController extends Controller
                 'isAdmin' => in_array($user->role_id, [1, 2, 3])
             ];
             
-            return view('normas.norma_list', compact('servidor', 'tipos', 'orgaos', 'userPermissions'));
+            return view('normas.norma_list', compact( 'tipos', 'orgaos', 'userPermissions'));
             
         } catch (\Exception $e) {
             Log::error('Erro ao listar normas: ' . $e->getMessage());
