@@ -1,8 +1,12 @@
 #!/bin/bash
 
-# Ajustar permissões
-chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
-chmod -R 775 /var/www/storage /var/www/bootstrap/cache
+# Verificar se tabelas já existem
+if php artisan migrate:status | grep -q "Migration table not found"; then
+    echo "Primeira execução - criando tabelas..."
+    php artisan migrate --force
+    php artisan db:seed --force
+else
+    echo "Banco já configurado - pulando migrations."
+fi
 
-# Iniciar PHP-FPM
 exec php-fpm

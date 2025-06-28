@@ -7,7 +7,7 @@ yarn-debug.log*
 yarn-error.log*
 
 # Builds locais (serão gerados no container)
-public/js/
+#public/js/
 public/css/
 public/build/
 public/mix-manifest.json
@@ -29,10 +29,10 @@ bootstrap/cache/*
 !bootstrap/cache/.gitignore
 
 # Environment files (usar .env do container)
-.env
-.env.local
-.env.backup
-.env.example
+#.env
+#.env.local
+#.env.backup
+#.env.example
 
 # OS files
 .DS_Store

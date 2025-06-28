@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Models\Norma;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Validator;
 
 class CreateNormaRequest extends FormRequest
 {
@@ -31,12 +32,38 @@ class CreateNormaRequest extends FormRequest
             'orgao' => 'required|exists:orgaos,id',
             'anexo' => 'required|file|mimes:pdf|max:20480', // 20MB máximo
             'descricao' => 'required|string|min:10|max:255',
-            'resumo' => 'required|string|min:10|max:255',
+            'resumo' => 'required|string|min:10|max:1000',
             'vigente' => 'required|in:' . implode(',', array_keys(Norma::getVigenteOptions())),
             'palavras_chave' => 'nullable|array',
             'palavras_chave.*' => 'exists:palavra_chaves,id',
             'novas_palavras_chave' => 'nullable|string'
         ];
+    }
+
+    /**
+     * Configure the validator instance.
+     *
+     * @param  \Illuminate\Validation\Validator  $validator
+     * @return void
+     */
+    public function withValidator(Validator $validator)
+    {
+        $validator->after(function ($validator) {
+            // Verifica se pelo menos uma das opções de palavras-chave foi preenchida
+            $palavrasChaveExistentes = $this->input('palavras_chave', []);
+            $novasPalavrasChave = $this->input('novas_palavras_chave', '');
+
+            // Limpa string de novas palavras chave (remove espaços vazios)
+            $novasPalavrasChaveLimpa = trim($novasPalavrasChave);
+
+            // Se não tem palavras existentes selecionadas E não tem novas palavras
+            if (empty($palavrasChaveExistentes) && empty($novasPalavrasChaveLimpa)) {
+                $validator->errors()->add(
+                    'palavras_chave', 
+                    'É obrigatório selecionar pelo menos uma palavra-chave existente ou criar uma nova palavra-chave.'
+                );
+            }
+        });
     }
 
     /**
@@ -70,13 +97,15 @@ class CreateNormaRequest extends FormRequest
             
             'resumo.required' => 'O campo Resumo é obrigatório.',
             'resumo.min' => 'O resumo deve ter pelo menos 10 caracteres.',
-            'resumo.max' => 'O resumo não pode ter mais de 255 caracteres.',
+            'resumo.max' => 'O resumo não pode ter mais de 1000 caracteres.',
             
             'vigente.required' => 'O campo Status de Vigência é obrigatório.',
             'vigente.in' => 'O status de vigência selecionado é inválido.',
             
             'palavras_chave.array' => 'As palavras-chave devem ser um array.',
             'palavras_chave.*.exists' => 'Uma ou mais palavras-chave selecionadas são inválidas.',
+            
+            'novas_palavras_chave.string' => 'As novas palavras-chave devem ser um texto válido.',
         ];
     }
 
