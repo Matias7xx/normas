@@ -39,6 +39,20 @@
                                 Nova Especificação
                             </a>
                         </div>
+                        <div class="col-auto ms-auto">
+                            <!-- Seletor de itens por página -->
+                            <form method="GET" class="d-flex align-items-center">
+                                <label for="per_page" class="form-label me-2 mb-0 text-muted small">
+                                    <i class="fas fa-list me-1"></i>Por página:
+                                </label>
+                                <select name="per_page" id="per_page" class="form-select form-select-sm" style="width: auto;" onchange="this.form.submit()">
+                                    <option value="10" {{ request('per_page') == 10 ? 'selected' : '' }}>10</option>
+                                    <option value="15" {{ request('per_page', 15) == 15 ? 'selected' : '' }}>15</option>
+                                    <option value="25" {{ request('per_page') == 25 ? 'selected' : '' }}>25</option>
+                                    <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50</option>
+                                </select>
+                            </form>
+                        </div>
                     </div>
                 </div>
 
@@ -62,6 +76,15 @@
                     @endif
 
                     @if($especificacoes->count() > 0)
+                        <!-- paginação -->
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="text-muted small">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Exibindo {{ $especificacoes->firstItem() }} a {{ $especificacoes->lastItem() }} 
+                                de {{ $especificacoes->total() }} especificações
+                            </div>
+                        </div>
+
                         <div class="table-responsive">
                             <table class="table table-hover table-striped align-middle">
                                 <thead class="table-dark">
@@ -136,6 +159,11 @@
                                 </tbody>
                             </table>
                         </div>
+
+                        <!-- Paginação -->
+                        <div class="d-flex justify-content-center mt-4">
+                            {{ $especificacoes->appends(request()->query())->links('pagination::bootstrap-4') }}
+                        </div>
                     @else
                         <div class="text-center py-5">
                             <i class="fas fa-file-pdf fa-3x text-muted mb-3"></i>
@@ -154,8 +182,8 @@
 </div>
 
 <!-- Modal de Confirmação de Exclusão -->
-<div class="modal fade" id="modalExclusao" tabindex="-1" role="dialog" aria-labelledby="modalExclusaoLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
+<div class="modal fade" id="modalExclusao" tabindex="-1" aria-labelledby="modalExclusaoLabel" aria-hidden="true">
+    <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header bg-danger text-white">
                 <h5 class="modal-title" id="modalExclusaoLabel">
@@ -190,24 +218,68 @@
 
 @section('scripts')
 <script>
+// Variável global para o modal
+let modalExclusaoInstance = null;
+
+// Função para confirmar exclusão
 function confirmarExclusao(id, nome) {
-    document.getElementById('nomeEspecificacao').textContent = nome;
-   document.getElementById('btnConfirmarExclusao').href = '{{ route("especificacoes.excluir", "") }}/' + id;
+    // Inicializar modal se não existir
+    if (!modalExclusaoInstance) {
+        modalExclusaoInstance = new bootstrap.Modal(document.getElementById('modalExclusao'), {
+            backdrop: true,
+            keyboard: true
+        });
+    }
     
-    var modal = new bootstrap.Modal(document.getElementById('modalExclusao'));
-    modal.show();
+    // Preencher dados
+    document.getElementById('nomeEspecificacao').textContent = nome;
+    document.getElementById('btnConfirmarExclusao').href = '{{ route("especificacoes.excluir", "") }}/' + id;
+    
+    // Mostrar modal
+    modalExclusaoInstance.show();
 }
 
-// Esconder alertas após 5 segundos
+// Event listeners quando o DOM estiver carregado
 document.addEventListener('DOMContentLoaded', function() {
+    // Auto-hide alertas após 5 segundos
     const alerts = document.querySelectorAll('.alert');
     alerts.forEach(function(alert) {
         setTimeout(function() {
             if (alert && alert.classList.contains('show')) {
-                bootstrap.Alert.getInstance(alert)?.close();
+                let alertInstance = bootstrap.Alert.getInstance(alert);
+                if (alertInstance) {
+                    alertInstance.close();
+                } else {
+                    alert.style.display = 'none';
+                }
             }
         }, 5000);
     });
+    
+    // Event listener para ESC key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modalExclusaoInstance) {
+            modalExclusaoInstance.hide();
+        }
+    });
+    
+    // Event listeners para botões de fechar
+    document.addEventListener('click', function(e) {
+        if (e.target.matches('[data-bs-dismiss="modal"], [data-dismiss="modal"]') || 
+            e.target.closest('[data-bs-dismiss="modal"], [data-dismiss="modal"]')) {
+            if (modalExclusaoInstance) {
+                modalExclusaoInstance.hide();
+            }
+        }
+    });
+    
+    // Limpar instância quando modal é fechado
+    const modalExclusaoEl = document.getElementById('modalExclusao');
+    if (modalExclusaoEl) {
+        modalExclusaoEl.addEventListener('hidden.bs.modal', function() {
+            modalExclusaoInstance = null;
+        });
+    }
 });
 </script>
 @endsection
@@ -277,5 +349,33 @@ document.addEventListener('DOMContentLoaded', function() {
             font-size: 0.7rem;
             padding: 0.25rem 0.4rem;
         }
+    }
+
+    /* Estilo para paginação */
+    .pagination {
+        margin-bottom: 0;
+    }
+    
+    .pagination .page-link {
+        color: #6c757d;
+        border-color: #dee2e6;
+    }
+    
+    .pagination .page-item.active .page-link {
+        background-color: #404040;
+        border-color: #404040;
+    }
+    
+    .pagination .page-link:hover {
+        color: #404040;
+        background-color: #e9ecef;
+    }
+
+    .modal-backdrop {
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+    
+    .modal-dialog {
+        margin-top: 3rem;
     }
 </style>

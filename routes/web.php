@@ -112,6 +112,7 @@ Route::middleware([Authenticate::class])->group(function() {
         Route::post('/orgao_store', [OrgaoController::class, 'store'])->name('orgaos.orgao_store');
         Route::post('/orgao_update/{id}', [OrgaoController::class, 'update'])->name('orgaos.orgao_update');
         Route::get('/orgao_edit/{id}', [OrgaoController::class, 'edit'])->name('orgaos.orgao_edit');
+        Route::get('/excluir/{id}', [OrgaoController::class, 'destroy'])->name('orgaos.excluir');
     });
 
     // =====================  ESPECIFICAÇÕES ADMINISTRATIVAS  ============================
@@ -137,6 +138,7 @@ Route::middleware([Authenticate::class])->group(function() {
         Route::post('/tipo_store', [TipoController::class, 'store'])->name('tipos.tipo_store');
         Route::get('/tipo_edit/{id}', [TipoController::class, 'edit'])->name('tipos.tipo_edit');
         Route::post('/tipo_update/{id}', [TipoController::class, 'update'])->name('tipos.tipo_update');
+        Route::get('/excluir/{id}', [TipoController::class, 'destroy'])->name('tipos.excluir');
     });
 
     // =====================  PALAVRAS CHAVES   ============================
@@ -158,5 +160,8 @@ Route::middleware([Authenticate::class])->group(function() {
         // Obter todas as normas vinculadas a uma palavra-chave (para o modal)
         Route::get('/normas-vinculadas/{id}', [PalavraChaveController::class, 'normasVinculadas'])
         ->name('palavras_chaves.normas_vinculadas');
+
+        Route::get('/estatisticas', [PalavraChaveController::class, 'estatisticas'])
+        ->name('palavras_chaves.estatisticas');
     });
 });

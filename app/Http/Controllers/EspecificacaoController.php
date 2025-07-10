@@ -14,18 +14,25 @@ class EspecificacaoController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         try {
+            // Paginação (padrão 15)
+            $perPage = $request->input('per_page', 15);
+            $perPage = in_array($perPage, [10, 15, 25, 50]) ? $perPage : 15;
+
             $especificacoes = Especificacao::where('status', true)
                 ->with('usuario')
                 ->orderBy('nome')
-                ->get();
+                ->paginate($perPage);
+
+            // Manter parâmetros na URL da paginação
+            $especificacoes->appends($request->only(['per_page']));
 
             return view('especificacoes.especificacoes_list', compact('especificacoes'));
         } catch (\Exception $e) {
             Log::error('Erro ao carregar especificações: ' . $e->getMessage());
-            $especificacoes = collect([]);
+            $especificacoes = collect([])->paginate(15);
             return view('especificacoes.especificacoes_list', compact('especificacoes'))
                 ->withErrors(['Erro ao carregar especificações: ' . $e->getMessage()]);
         }
