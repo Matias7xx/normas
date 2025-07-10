@@ -8,6 +8,7 @@ use App\Models\Norma;
 use App\Models\Tipo;
 use App\Models\Orgao;
 use App\Models\User;
+use App\Models\Especificacao;
 use App\Models\PalavraChave;
 use Carbon\Carbon;
 
@@ -351,6 +352,97 @@ class PublicController extends Controller
                 ->where('vigente', 'NÃO VIGENTE')->count(),
         ];
     }
+
+    public function especificacoes()
+{
+    try {
+        // Buscar especificações ativas com dados do usuário
+        $especificacoes = Especificacao::where('status', true)
+            ->with('usuario:id,name')
+            ->orderBy('nome')
+            ->get()
+            ->map(function ($especificacao) {
+                return [
+                    'id' => $especificacao->id,
+                    'nome' => $especificacao->nome,
+                    'arquivo' => $especificacao->arquivo,
+                    'created_at' => $especificacao->created_at,
+                    'updated_at' => $especificacao->updated_at,
+                    'usuario' => $especificacao->usuario ? [
+                        'id' => $especificacao->usuario->id,
+                        'name' => $especificacao->usuario->name
+                    ] : null
+                ];
+            });
+
+        return Inertia::render('Especificacoes', [
+            'especificacoes' => $especificacoes,
+            'stats' => $this->getSystemStats()
+        ]);
+
+    } catch (\Exception $e) {
+        
+        return Inertia::render('Especificacoes', [
+            'especificacoes' => [],
+            'error' => 'Erro ao carregar especificações técnicas'
+        ]);
+    }
+}
+
+/**
+ * Download público de especificação
+ */
+public function downloadEspecificacao($id)
+{
+    try {
+        $especificacao = Especificacao::where('status', true)
+            ->findOrFail($id);
+        
+        if (!$especificacao->arquivo) {
+            abort(404, 'Arquivo não encontrado');
+        }
+
+        $filePath = storage_path('app/public/especificacoes/' . $especificacao->arquivo);
+        
+        if (!file_exists($filePath)) {
+            abort(404, 'Arquivo não encontrado no servidor');
+        }
+
+        return response()->download($filePath, $especificacao->nome . '.pdf');
+
+    } catch (\Exception $e) {
+        abort(404, 'Arquivo não encontrado');
+    }
+}
+
+/**
+ * Visualizar PDF público de especificação
+ */
+public function viewEspecificacao($id)
+{
+    try {
+        $especificacao = Especificacao::where('status', true)
+            ->findOrFail($id);
+        
+        if (!$especificacao->arquivo) {
+            abort(404, 'Arquivo não encontrado');
+        }
+
+        $filePath = storage_path('app/public/especificacoes/' . $especificacao->arquivo);
+        
+        if (!file_exists($filePath)) {
+            abort(404, 'Arquivo não encontrado no servidor');
+        }
+
+        return response()->file($filePath, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="' . $especificacao->nome . '.pdf"'
+        ]);
+
+    } catch (\Exception $e) {
+        abort(404, 'Arquivo não encontrado');
+    }
+}
 }
 
 /**

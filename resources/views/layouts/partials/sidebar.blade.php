@@ -186,6 +186,31 @@
                         </li>
                     </ul>
                 </li>
+
+                {{-- Área de Especificações --}}
+                <li class="nav-item has-treeview">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon fas fa-tools" style="color: #bea55a;"></i>
+                        <p style="color: #ffffff;">
+                            Especificações
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="{{ route('especificacoes.especificacoes_list') }}" class="nav-link">
+                                <i class="far fa-circle nav-icon" style="color: #bea55a;"></i>
+                                <p style="color: #cccccc;">Listar Especificações</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('especificacoes.especificacoes_create') }}" class="nav-link">
+                                <i class="far fa-circle nav-icon" style="color: #bea55a;"></i>
+                                <p style="color: #cccccc;">Nova Especificação</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
                 @endcan
             </ul>
         </nav>
@@ -296,9 +321,23 @@
     color: #ffffff !important;
 }
 
+/* ÍCONES FICAM BRANCOS NO HOVER */
+.main-sidebar .nav-link:hover i {
+    color: #ffffff !important;
+}
+
+/* ÍCONES DOS SUBITENS FICAM BRANCOS NO HOVER */
+.main-sidebar .nav-treeview .nav-link:hover i {
+    color: #ffffff !important;
+}
+
 /* Active menu background for parent items */
 .main-sidebar .nav-item.has-treeview.menu-open > .nav-link {
     background-color: #c1a85a !important;
+}
+
+.main-sidebar .nav-item.has-treeview.menu-open > .nav-link i {
+    color: #ffffff !important;
 }
 
 /* Search input styling */

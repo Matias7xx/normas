@@ -42,6 +42,16 @@
             <i class="fas fa-search mr-2"></i>
             <span>Consultar</span>
           </Link>
+
+          <Link 
+            href="/especificacoes" 
+            :class="isActive('/especificacoes') ? 'text-[#c1a85a]' : 'text-gray-300 hover:text-[#c1a85a]'"
+            class="nav-link transition-colors duration-300 flex items-center px-3 py-2"
+            title="Especificações Técnicas"
+          >
+            <i class="fas fa-tools mr-2"></i>
+            <span>Especificações Técnicas</span>
+          </Link>
           
           <button 
             @click="$emit('show-help')"
@@ -97,6 +107,16 @@
           >
             <i class="fas fa-search mr-3"></i>
             Consultar
+          </Link>
+
+          <Link 
+            href="/especificacoes" 
+            :class="isActive('/especificacoes') ? 'text-yellow-500 bg-gray-800' : 'text-gray-300 hover:text-yellow-500 hover:bg-gray-800'"
+            class="px-3 py-2 rounded transition-colors duration-300 flex items-center"
+            @click="mobileMenuOpen = false"
+          >
+            <i class="fas fa-tools mr-3"></i>
+            Especificações Técnicas
           </Link>
           
           <button 

@@ -63,6 +63,9 @@
             <strong>Filtros:</strong> Use os filtros avançados para refinar sua busca.
           </p>
           <p>
+            <strong>Especificações Técnicas:</strong> Documentos que definem os requisitos mínimos para equipamentos utilizados nas atividades da Polícia Civil da Paraíba.
+          </p>
+          <p>
             <strong>Área Administrativa:</strong> Acesso restrito para gestão do sistema.
           </p>
         </div>

@@ -9,6 +9,7 @@ use App\Http\Controllers\NormaSearchPublicController;
 use App\Http\Controllers\OrgaoController;
 use App\Http\Controllers\PalavraChaveController;
 use App\Http\Controllers\TipoController;
+use App\Http\Controllers\EspecificacaoController;
 use App\Http\Middleware\Authenticate;
 use App\Models\Orgao;
 use App\Models\PalavraChave;
@@ -16,7 +17,7 @@ use App\Models\Tipo;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PublicController;
 
-// ROTAS PÚBLICAS (Vue 3 + Inertia.js)
+// ==================== ROTAS PÚBLICAS (Vue 3 + Inertia.js) ====================
 
 // Página inicial pública
 Route::get('/', [PublicController::class, 'home'])->name('public.home');
@@ -41,13 +42,24 @@ Route::get('/api/stats', [PublicController::class, 'getStats'])->name('api.stats
 Route::get('/api/tipos', [PublicController::class, 'getTipos'])->name('api.tipos');
 Route::get('/api/orgaos', [PublicController::class, 'getOrgaos'])->name('api.orgaos');
 
+// ==================== ESPECIFICAÇÕES TÉCNICAS - ROTAS PÚBLICAS ====================
+
+// Página pública de especificações
+Route::get('/especificacoes', [PublicController::class, 'especificacoes'])->name('public.especificacoes');
+
+// Download público de especificação
+Route::get('/especificacao/download/{id}', [PublicController::class, 'downloadEspecificacao'])->name('public.especificacoes.download');
+
+// Visualização pública de PDF de especificação
+Route::get('/especificacao/view/{id}', [PublicController::class, 'viewEspecificacao'])->name('public.especificacoes.view');
+
 //Search com blade
 //Route::get('/consulta-lista', [NormaSearchPublicController::class, 'search'])->name('norma_public_search');
 
 // rota AJAX para a consulta pública com BLADE
 //Route::get('/norma_public_search_ajax', [NormaSearchPublicController::class, 'searchAjax'])->name('norma_public_search_ajax');
 
-// ÁREA ADMINISTRATIVA
+// ==================== ÁREA ADMINISTRATIVA ====================
 
 Route::middleware([Authenticate::class])->group(function() {
 
@@ -100,6 +112,22 @@ Route::middleware([Authenticate::class])->group(function() {
         Route::post('/orgao_store', [OrgaoController::class, 'store'])->name('orgaos.orgao_store');
         Route::post('/orgao_update/{id}', [OrgaoController::class, 'update'])->name('orgaos.orgao_update');
         Route::get('/orgao_edit/{id}', [OrgaoController::class, 'edit'])->name('orgaos.orgao_edit');
+    });
+
+    // =====================  ESPECIFICAÇÕES ADMINISTRATIVAS  ============================
+    Route::group(['prefix' => 'especificacoes', 'middleware' => ['auth', 'admin']], function(){
+        Route::get('/especificacoes_list', [EspecificacaoController::class, 'index'])->name('especificacoes.especificacoes_list');
+        Route::get('/especificacoes_create', [EspecificacaoController::class, 'create'])->name('especificacoes.especificacoes_create');
+        Route::post('/especificacoes_store', [EspecificacaoController::class, 'store'])->name('especificacoes.especificacoes_store');
+        Route::get('/especificacoes_edit/{id}', [EspecificacaoController::class, 'edit'])->name('especificacoes.especificacoes_edit');
+        Route::post('/especificacoes_update/{id}', [EspecificacaoController::class, 'update'])->name('especificacoes.especificacoes_update');
+        
+        // Excluir especificação (soft delete)
+        Route::get('/excluir/{id}', [EspecificacaoController::class, 'destroy'])->name('especificacoes.excluir');
+        
+        // Download e visualização de arquivos (área administrativa)
+        Route::get('/download/{id}', [EspecificacaoController::class, 'download'])->name('especificacoes.download');
+        Route::get('/view/{id}', [EspecificacaoController::class, 'view'])->name('especificacoes.view');
     });
 
     // =====================  TIPOS   ============================
