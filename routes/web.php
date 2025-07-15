@@ -1,21 +1,19 @@
 <?php
 
-use App\Http\Controllers\HomeController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\DocumentoController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\NormaController;
-use App\Http\Controllers\NormaSearchPublicController;
 use App\Http\Controllers\OrgaoController;
 use App\Http\Controllers\PalavraChaveController;
 use App\Http\Controllers\TipoController;
 use App\Http\Controllers\EspecificacaoController;
+use App\Http\Controllers\NormaFileController;
 use App\Http\Middleware\Authenticate;
-use App\Models\Orgao;
-use App\Models\PalavraChave;
-use App\Models\Tipo;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PublicController;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+use App\Helpers\StorageHelper;
 
 // ==================== ROTAS PÚBLICAS (Vue 3 + Inertia.js) ====================
 
@@ -65,6 +63,63 @@ Route::middleware([Authenticate::class])->group(function() {
 
     Route::get('/home', [NormaController::class, 'index'])->name('home');
 
+    //Rota para servir as imagens do minIO
+    Route::get('/foto-usuario/{cpf?}', function($cpf = null) {
+        Log::info("=== DEBUG ROTA FOTO ===");
+        Log::info("CPF recebido: " . ($cpf ?? 'null'));
+        
+        if (!Auth::check()) {
+            Log::warning("Usuário não autenticado");
+            return abort(404);
+        }
+        
+        // Se não passou CPF, usa o do usuário logado
+        if (!$cpf) {
+            $cpf = str_replace(['.', '-'], '', Auth::user()->cpf ?? '');
+            Log::info("CPF do usuário logado: {$cpf}");
+        }
+        
+        $nomeArquivo = "{$cpf}_F.jpg";
+        Log::info("Nome do arquivo: {$nomeArquivo}");
+        
+        try {
+            // DEBUG: Configuração do disco
+            $diskConfig = config('filesystems.disks.s3');
+            Log::info("Configuração do disco:", $diskConfig);
+            
+            // Usar o disco s3 (bucket funcionais)
+            $exists = StorageHelper::fotos()->exists($nomeArquivo);
+            Log::info("Arquivo existe: " . ($exists ? 'SIM' : 'NÃO'));
+            
+            if ($exists) {
+                $conteudo = StorageHelper::fotos()->get($nomeArquivo);
+                $tamanho = strlen($conteudo);
+                Log::info("Arquivo encontrado - Tamanho: {$tamanho} bytes");
+                
+                return response($conteudo, 200)
+                    ->header('Content-Type', 'image/jpg')
+                    ->header('Cache-Control', 'public, max-age=3600'); // Cache por 1 hora
+            } else {
+                // DEBUG: Listar o que tem no bucket
+                try {
+                    $files = Storage::disk('s3')->allFiles();
+                    Log::info("Arquivos no bucket:", $files);
+                } catch (\Exception $e) {
+                    Log::error("Erro ao listar arquivos: " . $e->getMessage());
+                }
+                
+                Log::warning("Arquivo não encontrado: {$nomeArquivo}");
+                return abort(404);
+            }
+            
+        } catch (\Exception $e) {
+            Log::error("Erro na rota de foto: " . $e->getMessage());
+            Log::error("Stack trace: " . $e->getTraceAsString());
+            return abort(500);
+        }
+        
+    })->name('foto.usuario');
+
     // =====================  USUÁRIOS   ============================
     Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'root']], function(){
         Route::get('/users', [UserController::class, 'index'])->name('user.index');
@@ -90,6 +145,10 @@ Route::middleware([Authenticate::class])->group(function() {
         // Listagem e pesquisa
         Route::get('/ajax', [NormaController::class, 'getNormasAjax'])->name('normas.ajax');
         Route::get('/norma_list', [NormaController::class, 'index'])->name('normas.norma_list');
+
+        // ROTAS para arquivos no MinIO
+        Route::get('/view/{id}', [NormaFileController::class, 'view'])->name('normas.view');
+        Route::get('/download/{id}', [NormaFileController::class, 'download'])->name('normas.download');
     });
     
     Route::group(['prefix' => 'normas', 'middleware' => ['auth', 'admin']], function(){

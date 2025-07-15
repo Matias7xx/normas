@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Auth;
 
 class CreateUserRequest extends FormRequest
 {
@@ -14,11 +15,13 @@ class CreateUserRequest extends FormRequest
      */
     public function authorize()
     {
-        if (Gate::allows('add_users')) {
+        // Se for usuário root (role_id = 1), sempre autorizar
+        if (Auth::user()->role_id == 1) {
             return true;
-          } else {
-            return false;
-          }
+        }
+        
+        // Para outros usuários, verificar a permissão add_users
+        return Gate::allows('add_users');
     }
 
     /**

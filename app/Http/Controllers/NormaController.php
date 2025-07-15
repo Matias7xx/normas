@@ -9,7 +9,6 @@ use App\Models\NormaChave;
 use App\Models\Orgao;
 use App\Models\PalavraChave;
 use App\Models\Publicidade;
-use App\Models\Rh\Servidor;
 use App\Models\Tipo;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -18,6 +17,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
+use App\Helpers\StorageHelper;
 
 class NormaController extends Controller
 {
@@ -176,7 +176,7 @@ class NormaController extends Controller
                 'vigente_class' => $norma->vigente_class,
                 'vigente_icon' => $norma->vigente_icon,
                 'anexo' => $norma->anexo,
-                'anexo_url' => asset('storage/normas/' . $norma->anexo),
+                'anexo_url' => route('normas.view', $norma->id),
                 'palavras_chave' => $norma->palavrasChave->take(3)->map(function($pc) {
                     return ['id' => $pc->id, 'palavra_chave' => $pc->palavra_chave];
                 }),
@@ -337,7 +337,8 @@ class NormaController extends Controller
             // Processar e armazenar o arquivo
             $file = $request->file('anexo');
             $nameFile = Str::uuid() . "." . $file->extension();
-            $file->storeAs('public/normas', $nameFile);
+            // BUCKET 'normas' com helper
+            $path = StorageHelper::normas()->putFileAs('/', $file, $nameFile);
             
             // Criar a norma
             $norma = Norma::create([
@@ -586,16 +587,16 @@ class NormaController extends Controller
             
             // Processar upload de arquivo (se enviado)
             if (($request->hasFile('anexo')) && ($request->file('anexo')->isValid())) {
-                // Excluir arquivo anterior
-                if ($norma->anexo && Storage::exists('public/normas/'.$norma->anexo)) {
-                    Storage::delete('public/normas/'.$norma->anexo);
+                // Excluir arquivo anterior do MinIO
+                if ($norma->anexo && StorageHelper::normas()->exists($norma->anexo)) {
+                    StorageHelper::normas()->delete($norma->anexo);
                 }
                 
                 // Criar um hash para renomear o arquivo
                 $nameFile = Str::uuid() . "." . $request->anexo->extension();
                 
-                // Salvar o arquivo com o novo nome
-                $request->file('anexo')->storeAs('public/normas', $nameFile);
+                // Salvar o arquivo no MinIO
+                StorageHelper::normas()->putFileAs('/', $request->file('anexo'), $nameFile);
                 $norma->anexo = $nameFile;
                 $atualizouNorma = true;
             }
@@ -642,19 +643,46 @@ class NormaController extends Controller
      */
     public function destroy($id)
     {
+        DB::beginTransaction();
         try {
             $norma = Norma::where('id', $id)
                 ->ativas()
                 ->firstOrFail();
             
+            // Registrar log para auditoria
+            Log::info("Iniciando soft delete da norma ID {$id} pelo usuário " . auth()->user()->id, [
+                'norma_descricao' => $norma->descricao,
+                'anexo' => $norma->anexo,
+                'usuario' => auth()->user()->name
+            ]);
+            
+            // Fazer soft delete apenas no banco (arquivo permanece no MinIO)
             $norma->status = false;
             $norma->save();
             
-            return redirect()->route('normas.norma_list')->with('success', 'Norma removida com sucesso!');
+            // Fazer soft delete das palavras-chave vinculadas também
+            NormaChave::where('norma_id', $id)
+                ->where('status', true)
+                ->update(['status' => false]);
+            
+            DB::commit();
+            
+            Log::info("Soft delete da norma ID {$id} concluído com sucesso");
+            
+            return redirect()->route('normas.norma_list')
+                ->with('success', 'Norma removida com sucesso! O arquivo foi preservado para auditoria.');
+                
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return redirect()->route('normas.norma_list')->withErrors(['Norma não encontrada.']);
+            DB::rollBack();
+            Log::warning("Tentativa de excluir norma não encontrada - ID: {$id}");
+            return redirect()->route('normas.norma_list')
+                ->withErrors(['Norma não encontrada.']);
         } catch (\Exception $e) {
-            Log::error('Erro ao remover norma: ' . $e->getMessage());
+            DB::rollBack();
+            Log::error("Erro ao remover norma ID {$id}: " . $e->getMessage(), [
+                'usuario' => auth()->user()->id,
+                'trace' => $e->getTraceAsString()
+            ]);
             return back()->withErrors(['Erro ao remover norma. Por favor, tente novamente.']);
         }
     }

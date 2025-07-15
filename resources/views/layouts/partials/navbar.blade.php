@@ -1,3 +1,23 @@
+@php
+    $fotoUsuario = null;
+    if (Auth::check()) {
+        $user = Auth::user();
+        if ($user && $user->cpf) {
+            $cpfLimpo = str_replace(['.', '-'], '', $user->cpf);
+            $nomeArquivo = "{$cpfLimpo}_F.jpg";
+            
+            try {
+                // Verificar se a foto existe no bucket 'funcionais'
+                if (App\Helpers\StorageHelper::fotos()->exists($nomeArquivo)) {
+                    $fotoUsuario = route('foto.usuario', $cpfLimpo);
+                }
+            } catch (\Exception $e) {
+                $fotoUsuario = null;
+            }
+        }
+    }
+@endphp
+
 <!-- Navbar -->
 <nav class="main-header navbar navbar-expand navbar-light" style="background: #1a1a1a; border-bottom: 3px solid #bea55a;">
     <!-- Left navbar links -->
@@ -7,13 +27,6 @@
                 <i class="fas fa-bars"></i>
             </a>
         </li>
-        {{-- <li class="nav-item d-flex align-items-center ml-3">
-            <img src="/images/brasao_pcpb.png" alt="Logo PCPB" width="35px" class="mr-2" style="opacity: .9"/>
-            <div>
-                <h4 class="mb-0 font-weight-bold" style="color: #fdfeff;">Biblioteca de Normas</h4>
-                <small style="color: #6c757d;">Polícia Civil da Paraíba</small>
-            </div>
-        </li> --}}
     </ul>
 
     <!-- Right navbar links -->
@@ -32,10 +45,18 @@
             <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" 
                id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
                style="color: #495057;">
+               
                 <div class="user-avatar mr-2 d-flex align-items-center justify-content-center rounded-circle" 
-                     style="width: 32px; height: 32px; background: linear-gradient(45deg, #bea55a, #d4b86a);">
-                    <i class="fas fa-user text-dark"></i>
+                     style="width: 42px; height: 42px; background: linear-gradient(45deg, #bea55a, #d4b86a); overflow: hidden;">
+                    {{-- ✅ USAR VARIÁVEL CARREGADA ACIMA --}}
+                    @if($fotoUsuario)
+                        <img src="{{ $fotoUsuario }}" alt="Foto do usuário" 
+                             style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%; image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges; image-rendering: optimizeQuality; filter: contrast(1.1) brightness(1.05) saturate(1.1); backface-visibility: hidden; transform: translateZ(0);">
+                    @else
+                        <i class="fas fa-user text-dark"></i>
+                    @endif
                 </div>
+                
                 <div class="d-none d-lg-block text-right">
                     <div class="font-weight-bold" style="font-size: 0.85rem; color: #c1c5c9;">
                         {{ Auth::user() ? Auth::user()->name : '' }}
@@ -45,6 +66,7 @@
                     </small>
                 </div>
             </a>
+            
             <div class="dropdown-menu dropdown-menu-right shadow-lg border-0" 
                  style="background-color: #f8f9fa; border: 1px solid #bea55a !important;">
                 <div class="dropdown-header border-bottom" style="color: #343a40; border-color: #bea55a !important;">
@@ -94,5 +116,29 @@
 
 .tooltip.bs-tooltip-bottom .arrow::before {
     border-bottom-color: #bea55a;
+}
+
+/* Estilo para a foto do usuário */
+.user-avatar img {
+    transition: transform 0.2s ease;
+    /* Otimizações para nitidez máxima */
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+    image-rendering: pixelated;
+    image-rendering: optimizeQuality;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    /* Filtros para melhorar qualidade visual */
+    filter: contrast(1.1) brightness(1.05) saturate(1.1);
+    /* Anti-aliasing */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.user-avatar:hover img {
+    transform: scale(1.05) translateZ(0);
 }
 </style>

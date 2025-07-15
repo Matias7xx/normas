@@ -9,8 +9,9 @@ use App\Models\Tipo;
 use App\Models\Orgao;
 use App\Models\User;
 use App\Models\Especificacao;
-use App\Models\PalavraChave;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Storage;
+use App\Helpers\StorageHelper;
 
 class PublicController extends Controller
 {
@@ -99,21 +100,32 @@ class PublicController extends Controller
             abort(404, 'Arquivo não encontrado');
         }
 
-        // Usar o storage disk public para localizar o arquivo
-        $filePath = storage_path('app/public/normas/' . $norma->anexo);
+        // VERIFICAR NO STORAGE LOCAL (normas antigas)
+        $localPath = storage_path('app/public/normas/' . $norma->anexo);
         
-        // Verificar se o arquivo existe
-        if (!file_exists($filePath)) {
+        if (file_exists($localPath)) {
+            // Arquivo antigo no storage local
+            return response()->file($localPath, [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'inline; filename="' . $norma->anexo . '"',
+                'Cache-Control' => 'no-cache, no-store, must-revalidate',
+                'Pragma' => 'no-cache',
+                'Expires' => '0'
+            ]);
+        }
+
+        // BUSCAR NO BUCKET 'normas' VIA HELPER
+        if (!StorageHelper::normas()->exists($norma->anexo)) {
             abort(404, 'Arquivo PDF não encontrado: ' . $norma->anexo);
         }
 
-        // Retornar o PDF com headers
-        return response()->file($filePath, [
+        // Servir do bucket 'normas'
+        $conteudo = StorageHelper::normas()->get($norma->anexo);
+        
+        return response($conteudo, 200, [
             'Content-Type' => 'application/pdf',
             'Content-Disposition' => 'inline; filename="' . $norma->anexo . '"',
-            'Cache-Control' => 'no-cache, no-store, must-revalidate',
-            'Pragma' => 'no-cache',
-            'Expires' => '0'
+            'Cache-Control' => 'public, max-age=3600',
         ]);
     }
 
@@ -128,11 +140,22 @@ class PublicController extends Controller
             abort(404, 'Arquivo não encontrado');
         }
 
-        // Usar o storage disk public para localizar o arquivo
-        $filePath = storage_path('app/public/normas/' . $norma->anexo);
+        // STORAGE LOCAL (normas antigas)
+        $localPath = storage_path('app/public/normas/' . $norma->anexo);
         
-        // Verificar se o arquivo existe
-        if (!file_exists($filePath)) {
+        if (file_exists($localPath)) {
+            // Arquivo antigo no storage local
+            $fileName = $norma->numero_norma 
+                ? sanitize_filename($norma->numero_norma) . '.pdf'
+                : sanitize_filename($norma->descricao) . '.pdf';
+
+            return response()->download($localPath, $fileName, [
+                'Content-Type' => 'application/pdf',
+            ]);
+        }
+
+        // BUSCAR NO BUCKET 'normas' VIA HELPER
+        if (!StorageHelper::normas()->exists($norma->anexo)) {
             abort(404, 'Arquivo não encontrado no servidor: ' . $norma->anexo);
         }
 
@@ -141,9 +164,13 @@ class PublicController extends Controller
             ? sanitize_filename($norma->numero_norma) . '.pdf'
             : sanitize_filename($norma->descricao) . '.pdf';
 
-        // Forçar download do arquivo
-        return response()->download($filePath, $fileName, [
+        // bucket 'normas'
+        $conteudo = StorageHelper::normas()->get($norma->anexo);
+        
+        return response($conteudo, 200, [
             'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
+            'Cache-Control' => 'no-cache, no-store, must-revalidate',
         ]);
     }
 

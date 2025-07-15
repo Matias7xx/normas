@@ -38,6 +38,7 @@ class FortifyServiceProvider extends ServiceProvider
         Fortify::loginView(function(){
             return view('auth.login');
         });
+        
         Fortify::createUsersUsing(CreateNewUser::class);
         Fortify::updateUserProfileInformationUsing(UpdateUserProfileInformation::class);
         Fortify::updateUserPasswordsUsing(UpdateUserPassword::class);
@@ -45,7 +46,6 @@ class FortifyServiceProvider extends ServiceProvider
 
         RateLimiter::for('login', function (Request $request) {
             $matricula = (string) $request->matricula;
-
             return Limit::perMinute(5)->by($matricula.$request->ip());
         });
 
@@ -54,85 +54,90 @@ class FortifyServiceProvider extends ServiceProvider
         });
 
         Fortify::authenticateUsing(function(Request $request){
-
-              //Buscar usuário pela matrícula. Trecho necessário para Login sem API
-        /* $user = User::where('matricula', $request->matricula)->first();
-        
-        //Verificar se o usuário existe e se a senha está correta
-        if ($user && Hash::check($request->password, $user->password)) {
-            return $user;
-        }
-        
-        return null; */
-        
-             try {
+            try {
+                // Tentar autenticação via API externa
                 $response = Http::withToken(env('API_TOKEN'))
-                ->post(env('API_LOGIN_URL').'/api/servidor/login', [
-                    'matricula' => $request->matricula,
-                    'senha' => $request->password
-                ]);
-                // Log::debug($response->json());
+                    ->post(env('API_LOGIN_URL').'/api/servidor/login', [
+                        'matricula' => $request->matricula,
+                        'senha' => $request->password
+                    ]);
+
                 if ($response->successful()) {
                     $usuario = $response->json();
 
+                    // Verificar se usuário já existe no banco local
                     if (User::where('matricula', $usuario['matricula'])->exists()) {
+                        // Atualizar dados do usuário existente
                         $user = User::where('matricula', $usuario['matricula'])->first();
-                        $user->status = $usuario['status'];
-                        $user->unidade_lotacao_id = $usuario['lotacao_principal'] != null ? $usuario['lotacao_principal']['codigo_unidade_lotacao'] : 340;
-                        $user->srpc = $usuario['lotacao_principal'] != null ? $usuario['lotacao_principal']['srpc'] : 0;
-                        $user->dspc = $usuario['lotacao_principal'] != null ? $usuario['lotacao_principal']['dspc'] : 0;
-                        $user->unidade_lotacao = $this->getLotacaoServidor($usuario);
-                        $user->save();
+                        $user->update([
+                            'status' => $usuario['status'],
+                            'unidade_lotacao_id' => $usuario['lotacao_principal']['codigo_unidade_lotacao'] ?? 340,
+                            'srpc' => $usuario['lotacao_principal']['srpc'] ?? 0,
+                            'dspc' => $usuario['lotacao_principal']['dspc'] ?? 0,
+                            'unidade_lotacao' => $this->getLotacaoServidor($usuario),
+                        ]);
                     } else {
-                        //dd($usuario);
+                        // Criar novo usuário
                         $user = User::create([
-                            'name'               => $usuario['nome'],
-                            'email'              => $usuario['email'] ? $usuario['email'] : $usuario['matricula'].'@pc.pb.gov.br',
-                            'matricula'          => $usuario['matricula'],
-                            'active'             => true,
-                            'password'           => bcrypt($request->password),
-                            'role_id'            => 3,
-                            'cargo_id'           => $usuario['codigo_cargo'],
-                            'cargo'              => $usuario['cargo'],
-                            'cpf'                => $usuario['cpf'],
-                            'sexo'               => $usuario['sexo'],
-                            'unidade_lotacao'    => $this->getLotacaoServidor($usuario),
-                            'unidade_lotacao_id' => $usuario['lotacao_principal'] != null ? $usuario['lotacao_principal']['codigo_unidade_lotacao'] : 340,
-                            'srpc'               => $usuario['lotacao_principal'] != null ? $usuario['lotacao_principal']['srpc'] : 0,
-                            'dspc'               => $usuario['lotacao_principal'] != null ? $usuario['lotacao_principal']['dspc'] : 0,
-                            'nivel'              => $usuario['lotacao_principal'] != null ? $usuario['lotacao_principal']['nivel'] : 0,
-                            'classe_funcional'   => $usuario['classe_funcional'],
-                            'nivel_funcional'    => $usuario['nivel'],
+                            'name' => $usuario['nome'],
+                            'email' => $usuario['email'] ?: $usuario['matricula'].'@pc.pb.gov.br',
+                            'matricula' => $usuario['matricula'],
+                            'active' => true,
+                            'password' => bcrypt($request->password),
+                            'role_id' => 4,
+                            'cargo_id' => $usuario['codigo_cargo'],
+                            'cargo' => $usuario['cargo'],
+                            'cpf' => $usuario['cpf'],
+                            'sexo' => $usuario['sexo'],
+                            'unidade_lotacao' => $this->getLotacaoServidor($usuario),
+                            'unidade_lotacao_id' => $usuario['lotacao_principal']['codigo_unidade_lotacao'] ?? 340,
+                            'srpc' => $usuario['lotacao_principal']['srpc'] ?? 0,
+                            'dspc' => $usuario['lotacao_principal']['dspc'] ?? 0,
+                            'nivel' => $usuario['lotacao_principal']['nivel'] ?? 0,
+                            'classe_funcional' => $usuario['classe_funcional'],
+                            'nivel_funcional' => $usuario['nivel'],
                         ]);
                     }
 
                     return $user;
                 } else {
-                    $user = User::where('matricula',$request->matricula)->first();
-                    if($user && Hash::check($request->password,$user->password)){
-                        return $user;
-                    }
+                    // Fallback: autenticação local se API falhar
+                    return $this->autenticacaoLocal($request);
                 }
             } catch (\Throwable $th) {
-                Log::error($th);
-                $user = User::where('matricula',$request->matricula)->first();
-                if($user && Hash::check($request->password,$user->password)){
-                    return $user;
-                }
+                // Em caso de erro na API, tentar autenticação local
+                Log::error("Erro na autenticação via API: " . $th->getMessage());
+                return $this->autenticacaoLocal($request);
             }
         });
-
     }
 
-    public function getLotacaoServidor($servidor)
+    /**
+     * Autenticação local (fallback)
+     */
+    private function autenticacaoLocal(Request $request)
+    {
+        $user = User::where('matricula', $request->matricula)->first();
+        
+        if ($user && Hash::check($request->password, $user->password)) {
+            return $user;
+        }
+        
+        return null;
+    }
+
+    /**
+     * Obter lotação do servidor baseada nos dados da API
+     */
+    private function getLotacaoServidor($servidor)
     {
         if ($servidor['lotacao_principal'] != null) {
             return $servidor['lotacao_principal']['unidade_lotacao'];
         }
         elseif (isset($servidor['orgao_cedido']) && isset($servidor['orgao_cedido']['nome'])) {
             return 'Servidor cedido a '.$servidor['orgao_cedido']['nome'];
-        } else {
-            return null;
         }
+        
+        return null;
     }
 }

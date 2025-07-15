@@ -336,6 +336,7 @@
 #resumo {
     resize: vertical;
     min-height: 80px;
+    line-height: 1.2; /* Espaçamento entre linhas */
 }
 
 #resumo-contador {

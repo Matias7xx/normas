@@ -112,7 +112,7 @@
                     <i class="fas fa-file-pdf text-danger mr-1"></i>Somente arquivos PDF (máx. 20MB)
                 </small>
                 <div class="mt-2">
-                    <a href="{{ asset('storage/normas/' . $norma->anexo) }}" 
+                    <a href="{{ route('normas.view', $norma->id) }}" 
                        target="_blank" 
                        class="btn btn-sm btn-outline-danger">
                         <i class='fas fa-file-pdf mr-1'></i>Ver Anexo Atual
@@ -358,6 +358,7 @@
 #resumo {
     resize: vertical;
     min-height: 80px;
+    line-height: 1.2; /* Espaçamento entre linhas */
 }
 
 #resumo-contador {

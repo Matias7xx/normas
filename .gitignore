@@ -162,3 +162,7 @@ temp/
 
 # Custom - Projeto específico
 /custom.ini
+
+# MinIO data directory
+/data/
+data/
