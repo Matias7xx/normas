@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 use App\Models\Norma;
 use App\Models\Orgao;
 use App\Models\Tipo;
-use App\Models\PalavraChave;
 use Inertia\Inertia;
 
 class NormaSearchPublicController extends Controller

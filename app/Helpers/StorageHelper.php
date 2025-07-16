@@ -26,7 +26,7 @@ class StorageHelper
     }
     
     /**
-     * = bucket de funcionais
+     * Bucket de fotos/funcionais
      */
     public static function fotos()
     {
@@ -34,10 +34,18 @@ class StorageHelper
     }
     
     /**
-     *  bucket de normas
+     * Bucket de normas
      */
     public static function normas()
     {
         return self::bucket(env('AWS_BUCKET_NORMAS', 'normas'));
+    }
+    
+    /**
+     * Bucket de especificações
+     */
+    public static function especificacoes()
+    {
+        return self::bucket(env('AWS_BUCKET_ESPECIFICACOES', 'especificacoes'));
     }
 }

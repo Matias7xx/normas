@@ -7,7 +7,8 @@ use App\Http\Requests\CreateEspecificacaoRequest;
 use App\Http\Requests\UpdateEspecificacaoRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use App\Helpers\StorageHelper;
 
 class EspecificacaoController extends Controller
 {
@@ -32,7 +33,7 @@ class EspecificacaoController extends Controller
             return view('especificacoes.especificacoes_list', compact('especificacoes'));
         } catch (\Exception $e) {
             Log::error('Erro ao carregar especificações: ' . $e->getMessage());
-            $especificacoes = collect([])->paginate(15);
+            $especificacoes = Especificacao::where('status', true)->paginate($perPage);
             return view('especificacoes.especificacoes_list', compact('especificacoes'))
                 ->withErrors(['Erro ao carregar especificações: ' . $e->getMessage()]);
         }
@@ -54,11 +55,15 @@ class EspecificacaoController extends Controller
         try {
             $nomeArquivo = null;
 
-            // Upload do arquivo
+            // Upload do arquivo para MinIO
             if ($request->hasFile('arquivo')) {
                 $arquivo = $request->file('arquivo');
-                $nomeArquivo = time() . '_' . $arquivo->getClientOriginalName();
-                $arquivo->storeAs('especificacoes', $nomeArquivo, 'public');
+                
+                // Gerar nome único com UUID
+                $nomeArquivo = Str::uuid() . '.' . $arquivo->getClientOriginalExtension();
+                
+                // Salvar no bucket 'especificacoes' via Helper
+                StorageHelper::especificacoes()->putFileAs('/', $arquivo, $nomeArquivo);
             }
 
             Especificacao::create([
@@ -104,15 +109,15 @@ class EspecificacaoController extends Controller
 
             // Upload do novo arquivo (se fornecido)
             if ($request->hasFile('arquivo')) {
-                // Remover arquivo antigo
-                if ($especificacao->arquivo && Storage::disk('public')->exists('especificacoes/' . $especificacao->arquivo)) {
-                    Storage::disk('public')->delete('especificacoes/' . $especificacao->arquivo);
+                // Remover arquivo antigo do MinIO
+                if ($especificacao->arquivo && StorageHelper::especificacoes()->exists($especificacao->arquivo)) {
+                    StorageHelper::especificacoes()->delete($especificacao->arquivo);
                 }
 
-                // Salvar novo arquivo
+                // Salvar novo arquivo no MinIO
                 $arquivo = $request->file('arquivo');
-                $nomeArquivo = time() . '_' . $arquivo->getClientOriginalName();
-                $arquivo->storeAs('especificacoes', $nomeArquivo, 'public');
+                $nomeArquivo = Str::uuid() . '.' . $arquivo->getClientOriginalExtension();
+                StorageHelper::especificacoes()->putFileAs('/', $arquivo, $nomeArquivo);
             }
 
             $especificacao->update([
@@ -151,7 +156,7 @@ class EspecificacaoController extends Controller
     }
 
     /**
-     * Download do arquivo PDF
+     * Download do arquivo PDF do MinIO
      */
     public function download($id)
     {
@@ -162,13 +167,24 @@ class EspecificacaoController extends Controller
                 return back()->withErrors(['Arquivo não encontrado.']);
             }
 
-            $filePath = storage_path('app/public/especificacoes/' . $especificacao->arquivo);
-            
-            if (!file_exists($filePath)) {
+            // BUSCAR NO BUCKET 'especificacoes
+            if (!StorageHelper::especificacoes()->exists($especificacao->arquivo)) {
                 return back()->withErrors(['Arquivo não encontrado no servidor.']);
             }
 
-            return response()->download($filePath, $especificacao->nome . '.pdf');
+            // Buscar arquivo do MinIO
+            $conteudo = StorageHelper::especificacoes()->get($especificacao->arquivo);
+            
+            // Gerar nome para download
+            $nomeDownload = $this->sanitize_filename($especificacao->nome) . '.pdf';
+
+            return response($conteudo, 200, [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'attachment; filename="' . $nomeDownload . '"',
+                'Cache-Control' => 'no-cache, no-store, must-revalidate',
+                'Pragma' => 'no-cache',
+                'Expires' => '0'
+            ]);
 
         } catch (\Exception $e) {
             Log::error('Erro ao fazer download da especificação: ' . $e->getMessage());
@@ -188,20 +204,35 @@ class EspecificacaoController extends Controller
                 abort(404, 'Arquivo não encontrado');
             }
 
-            $filePath = storage_path('app/public/especificacoes/' . $especificacao->arquivo);
-            
-            if (!file_exists($filePath)) {
+            // BUSCAR NO BUCKET 'especificacoes'
+            if (!StorageHelper::especificacoes()->exists($especificacao->arquivo)) {
                 abort(404, 'Arquivo não encontrado no servidor');
             }
 
-            return response()->file($filePath, [
+            // Buscar arquivo do MinIO
+            $conteudo = StorageHelper::especificacoes()->get($especificacao->arquivo);
+
+            return response($conteudo, 200, [
                 'Content-Type' => 'application/pdf',
-                'Content-Disposition' => 'inline; filename="' . $especificacao->nome . '.pdf"'
+                'Content-Disposition' => 'inline; filename="' . $especificacao->nome . '.pdf"',
+                'Cache-Control' => 'public, max-age=3600',
+                'X-Content-Type-Options' => 'nosniff',
+                'X-Frame-Options' => 'SAMEORIGIN'
             ]);
 
         } catch (\Exception $e) {
             Log::error('Erro ao visualizar especificação: ' . $e->getMessage());
             abort(404, 'Arquivo não encontrado');
         }
+    }
+
+    /**
+     * Função para sanitizar nome de arquivo
+     */
+    private function sanitize_filename($filename) {
+        // Remove caracteres especiais e substitui espaços por underscores
+        $filename = preg_replace('/[^A-Za-z0-9\-_.]/', '_', $filename);
+        $filename = preg_replace('/_+/', '_', $filename);
+        return trim($filename, '_');
     }
 }

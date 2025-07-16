@@ -10,7 +10,6 @@ use App\Models\Orgao;
 use App\Models\User;
 use App\Models\Especificacao;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Storage;
 use App\Helpers\StorageHelper;
 
 class PublicController extends Controller
@@ -100,21 +99,7 @@ class PublicController extends Controller
             abort(404, 'Arquivo não encontrado');
         }
 
-        // VERIFICAR NO STORAGE LOCAL (normas antigas)
-        $localPath = storage_path('app/public/normas/' . $norma->anexo);
-        
-        if (file_exists($localPath)) {
-            // Arquivo antigo no storage local
-            return response()->file($localPath, [
-                'Content-Type' => 'application/pdf',
-                'Content-Disposition' => 'inline; filename="' . $norma->anexo . '"',
-                'Cache-Control' => 'no-cache, no-store, must-revalidate',
-                'Pragma' => 'no-cache',
-                'Expires' => '0'
-            ]);
-        }
-
-        // BUSCAR NO BUCKET 'normas' VIA HELPER
+        // BUSCAR NO BUCKET 'normas'
         if (!StorageHelper::normas()->exists($norma->anexo)) {
             abort(404, 'Arquivo PDF não encontrado: ' . $norma->anexo);
         }
@@ -140,21 +125,7 @@ class PublicController extends Controller
             abort(404, 'Arquivo não encontrado');
         }
 
-        // STORAGE LOCAL (normas antigas)
-        $localPath = storage_path('app/public/normas/' . $norma->anexo);
-        
-        if (file_exists($localPath)) {
-            // Arquivo antigo no storage local
-            $fileName = $norma->numero_norma 
-                ? sanitize_filename($norma->numero_norma) . '.pdf'
-                : sanitize_filename($norma->descricao) . '.pdf';
-
-            return response()->download($localPath, $fileName, [
-                'Content-Type' => 'application/pdf',
-            ]);
-        }
-
-        // BUSCAR NO BUCKET 'normas' VIA HELPER
+        // BUSCAR NO BUCKET 'normas'
         if (!StorageHelper::normas()->exists($norma->anexo)) {
             abort(404, 'Arquivo não encontrado no servidor: ' . $norma->anexo);
         }
@@ -429,15 +400,25 @@ public function downloadEspecificacao($id)
             abort(404, 'Arquivo não encontrado');
         }
 
-        $filePath = storage_path('app/public/especificacoes/' . $especificacao->arquivo);
-        
-        if (!file_exists($filePath)) {
-            abort(404, 'Arquivo não encontrado no servidor');
+        // BUSCAR NO BUCKET 'especificacoes'
+        if (!StorageHelper::especificacoes()->exists($especificacao->arquivo)) {
+            abort(404, 'Arquivo não encontrado no servidor: ' . $especificacao->arquivo);
         }
 
-        return response()->download($filePath, $especificacao->nome . '.pdf');
+        // Buscar arquivo do MinIO
+        $conteudo = StorageHelper::especificacoes()->get($especificacao->arquivo);
+        
+        // Gerar nome para download
+        $nomeDownload = sanitize_filename($especificacao->nome) . '.pdf';
+
+        return response($conteudo, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . $nomeDownload . '"',
+            'Cache-Control' => 'no-cache, no-store, must-revalidate',
+        ]);
 
     } catch (\Exception $e) {
+        Log::error('Erro ao fazer download da especificação: ' . $e->getMessage());
         abort(404, 'Arquivo não encontrado');
     }
 }
@@ -455,18 +436,24 @@ public function viewEspecificacao($id)
             abort(404, 'Arquivo não encontrado');
         }
 
-        $filePath = storage_path('app/public/especificacoes/' . $especificacao->arquivo);
-        
-        if (!file_exists($filePath)) {
-            abort(404, 'Arquivo não encontrado no servidor');
+        // BUSCAR NO BUCKET 'especificacoes'
+        if (!StorageHelper::especificacoes()->exists($especificacao->arquivo)) {
+            abort(404, 'Arquivo não encontrado no servidor: ' . $especificacao->arquivo);
         }
 
-        return response()->file($filePath, [
+        // Buscar arquivo do MinIO
+        $conteudo = StorageHelper::especificacoes()->get($especificacao->arquivo);
+
+        return response($conteudo, 200, [
             'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'inline; filename="' . $especificacao->nome . '.pdf"'
+            'Content-Disposition' => 'inline; filename="' . $especificacao->nome . '.pdf"',
+            'Cache-Control' => 'public, max-age=3600',
+            'X-Content-Type-Options' => 'nosniff',
+            'X-Frame-Options' => 'SAMEORIGIN'
         ]);
 
     } catch (\Exception $e) {
+        Log::error('Erro ao visualizar especificação: ' . $e->getMessage());
         abort(404, 'Arquivo não encontrado');
     }
 }

@@ -121,7 +121,7 @@ class NormaFileController extends Controller
         }
 
         try {
-            // ✅ USAR HELPER PARA BUCKET 'normas'
+            // USAR HELPER PARA BUCKET 'normas'
             $exists = StorageHelper::normas()->exists($norma->anexo);
             $size = $exists ? StorageHelper::normas()->size($norma->anexo) : null;
             
