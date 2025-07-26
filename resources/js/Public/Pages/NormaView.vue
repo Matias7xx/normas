@@ -132,7 +132,7 @@
         <!-- Container do PDF -->
         <div class="border border-gray-300 rounded-lg overflow-hidden" style="height: 550px;">
           <iframe
-            :src="`/norma/${norma.id}/view#zoom=100`"
+            :src="`/norma/${norma.id}/view?v=${norma.updated_at}#zoom=100`"
             class="w-full h-full"
             frameborder="0"
             title="Visualizador de PDF"

@@ -37,7 +37,12 @@ class NormaFileController extends Controller
             return response($conteudo, 200, [
                 'Content-Type' => 'application/pdf',
                 'Content-Disposition' => 'inline; filename="' . $norma->anexo . '"',
-                'Cache-Control' => 'public, max-age=3600', // Cache por 1 hora
+                'Cache-Control' => 'no-cache, no-store, must-revalidate, private',
+                'Pragma' => 'no-cache',
+                'Expires' => '0',
+                'Last-Modified' => gmdate('D, d M Y H:i:s') . ' GMT',
+                'ETag' => '"' . md5($norma->updated_at) . '"',
+                'Vary' => 'Accept-Encoding, User-Agent',
                 'X-Content-Type-Options' => 'nosniff',
                 'X-Frame-Options' => 'SAMEORIGIN'
             ]);
