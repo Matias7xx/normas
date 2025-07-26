@@ -73,6 +73,10 @@
                     <strong>{{ Auth::user() ? Auth::user()->name : '' }}</strong><br>
                     <small style="color: #6c757d;">{{ Auth::user() ? Auth::user()->email : '' }}</small>
                 </div>
+                <a class="dropdown-item" href="{{ route('public.home') }}"
+                   style="background-color: transparent; color: #495057;">
+                    <i class="fas fa-home mr-2 text-primary"></i> Início
+                </a>
                 <div class="dropdown-divider" style="border-color: #dee2e6;"></div>
                 <a class="dropdown-item" href="{{ route('logout') }}"
                    onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
