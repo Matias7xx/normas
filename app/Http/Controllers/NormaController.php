@@ -642,46 +642,51 @@ class NormaController extends Controller
      */
     public function destroy($id)
     {
-        DB::beginTransaction();
         try {
-            $norma = Norma::where('id', $id)
-                ->ativas()
-                ->firstOrFail();
+            DB::beginTransaction();
             
-            // Registrar log para auditoria
-            Log::info("Iniciando soft delete da norma ID {$id} pelo usuário " . auth()->user()->id, [
-                'norma_descricao' => $norma->descricao,
-                'anexo' => $norma->anexo,
+            $norma = Norma::findOrFail($id);
+            
+            // Verificar permissões
+            if (!in_array(auth()->user()->role_id, [1, 2, 3])) {
+                return back()->withErrors(['Você não tem permissão para excluir normas.']);
+            }
+            
+            // Soft delete da norma
+            $norma->update([
+                'status' => false,
+                'deleted_at' => now()
+            ]);
+            
+            // Log da exclusão
+            Log::info('Norma excluída', [
+                'norma_id' => $id,
+                'descricao' => $norma->descricao,
                 'usuario' => auth()->user()->name
             ]);
             
-            // Fazer soft delete apenas no banco (arquivo permanece no MinIO)
-            $norma->status = false;
-            $norma->save();
-            
-            // Fazer soft delete das palavras-chave vinculadas também
-            NormaChave::where('norma_id', $id)
-                ->where('status', true)
-                ->update(['status' => false]);
-            
             DB::commit();
             
-            Log::info("Soft delete da norma ID {$id} concluído com sucesso");
+            // VERIFICAR SE VEIO DA PÁGINA DE DUPLICADAS
+            $referer = request()->headers->get('referer');
             
-            return redirect()->route('normas.norma_list')
-                ->with('success', 'Norma removida com sucesso! O arquivo foi preservado para auditoria.');
-                
+            if ($referer && str_contains($referer, '/normas/duplicadas')) {
+                // Se veio da página de duplicadas, volta para lá
+                return redirect()->route('normas.duplicadas')
+                    ->with('success', 'Norma removida com sucesso!');
+            } else {
+                // Se veio de outra página, volta para listagem normal
+                return redirect()->route('normas.norma_list')
+                    ->with('success', 'Norma removida com sucesso!');
+            }
+            
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             DB::rollBack();
             Log::warning("Tentativa de excluir norma não encontrada - ID: {$id}");
-            return redirect()->route('normas.norma_list')
-                ->withErrors(['Norma não encontrada.']);
+            return back()->withErrors(['Norma não encontrada.']);
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error("Erro ao remover norma ID {$id}: " . $e->getMessage(), [
-                'usuario' => auth()->user()->id,
-                'trace' => $e->getTraceAsString()
-            ]);
+            Log::error("Erro ao remover norma ID {$id}: " . $e->getMessage());
             return back()->withErrors(['Erro ao remover norma. Por favor, tente novamente.']);
         }
     }
@@ -748,6 +753,111 @@ private function buildRelevanceScore($words, $fullTerm)
     }
     
     return implode(' + ', $scoreQueries);
+}
+
+/**
+ * Lista normas duplicadas/similares
+ */
+public function normasDuplicadas(Request $request)
+{
+    // Verificar permissões - apenas role 1 e 2
+    if (!in_array(auth()->user()->role_id, [1, 2])) {
+        abort(403, 'Acesso negado.');
+    }
+
+    $similaridade_minima = $request->get('similaridade', 80);
+    
+    // Buscar todas as normas ativas
+    $normas = Norma::where('status', true)
+        ->with(['tipo', 'orgao'])
+        ->orderBy('data', 'desc')
+        ->get();
+
+    $duplicadas = [];
+    $ja_processadas = [];
+
+    foreach ($normas as $norma1) {
+        if (in_array($norma1->id, $ja_processadas)) {
+            continue;
+        }
+
+        $grupo = [];
+        
+        foreach ($normas as $norma2) {
+            if ($norma1->id === $norma2->id || in_array($norma2->id, $ja_processadas)) {
+                continue;
+            }
+
+            $similaridade = $this->calcularSimilaridade($norma1->descricao, $norma2->descricao);
+            
+            if ($similaridade >= $similaridade_minima) {
+                if (empty($grupo)) {
+                    $grupo[] = $norma1;
+                }
+                $grupo[] = $norma2;
+                $ja_processadas[] = $norma2->id;
+            }
+        }
+
+        if (count($grupo) > 1) {
+            $duplicadas[] = $grupo;
+            $ja_processadas[] = $norma1->id;
+        }
+    }
+
+    return view('normas.duplicadas', compact('duplicadas', 'similaridade_minima'));
+}
+
+/**
+ * Calcula similaridade entre duas descrições (função similar_text() do PHP)
+ */
+private function calcularSimilaridade($desc1, $desc2)
+{
+    // Normalizar textos
+    $texto1 = $this->normalizarTexto($desc1);
+    $texto2 = $this->normalizarTexto($desc2);
+    
+    // Se são idênticos após normalização
+    if ($texto1 === $texto2) {
+        return 100;
+    }
+    
+    // Calcular similaridade
+    $similaridade = 0;
+    similar_text($texto1, $texto2, $similaridade);
+    
+    // Verificar se faltam apenas 1-2 termos
+    $palavras1 = explode(' ', $texto1);
+    $palavras2 = explode(' ', $texto2);
+    
+    $diferenca = abs(count($palavras1) - count($palavras2));
+    
+    // Se a diferença é pequena e similaridade alta, considerar duplicata
+    if ($diferenca <= 2 && $similaridade >= 75) {
+        $similaridade = min(100, $similaridade + 10);
+    }
+    
+    return round($similaridade, 2);
+}
+
+/**
+ * Normaliza texto para comparação
+ */
+private function normalizarTexto($texto)
+{
+    // Converter para minúsculas
+    $texto = mb_strtolower($texto, 'UTF-8');
+    
+    // Remover acentos
+    $texto = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $texto);
+    
+    // Manter apenas letras, números e espaços
+    $texto = preg_replace('/[^a-z0-9\s]/', ' ', $texto);
+    
+    // Remover espaços múltiplos
+    $texto = preg_replace('/\s+/', ' ', $texto);
+    
+    return trim($texto);
 }
 
 }

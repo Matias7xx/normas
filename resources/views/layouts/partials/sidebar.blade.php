@@ -98,6 +98,16 @@
                                 <p style="color: #cccccc;">Pesquisar</p>
                             </a>
                         </li>
+                        {{-- Página para normas duplicadas --}}
+                        @if(Auth::user()->role_id == 1 || Auth::user()->role_id == 2)
+                            <li class="nav-item">
+                                <a href="{{ route('normas.duplicadas') }}" class="nav-link {{ Request::is('normas/duplicadas') ? 'active' : '' }}">
+                                    &nbsp;&nbsp;&nbsp;<i class="fas fa-copy nav-icon text-warning"></i>
+                                    <p>Duplicadas</p>
+                                </a>
+                            </li>
+                        @endif
+
                         @can('gestor')
                         <li class="nav-item">
                             <a href="{{ route('normas.norma_create') }}" class="nav-link">

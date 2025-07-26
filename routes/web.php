@@ -149,6 +149,10 @@ Route::middleware([Authenticate::class])->group(function() {
         // ROTAS para arquivos no MinIO
         Route::get('/view/{id}', [NormaFileController::class, 'view'])->name('normas.view');
         Route::get('/download/{id}', [NormaFileController::class, 'download'])->name('normas.download');
+
+       // Rota para normas duplicadas - apenas para (role 1 e 2)
+        Route::get('/duplicadas', [NormaController::class, 'normasDuplicadas'])
+        ->name('normas.duplicadas');
     });
     
     Route::group(['prefix' => 'normas', 'middleware' => ['auth', 'admin']], function(){
