@@ -350,6 +350,8 @@ class NormaController extends Controller
                 'tipo_id' => $request->tipo,
                 'orgao_id' => $request->orgao,
                 'vigente' => $request->vigente ?? Norma::VIGENTE_VIGENTE,
+                'vigencia_indeterminada' => $request->vigencia_indeterminada ?? true,
+                'data_limite_vigencia' => $request->data_limite_vigencia,
                 'status' => true
             ]);
             
@@ -581,6 +583,17 @@ class NormaController extends Controller
             // Atualizar status de vigência
             if ($request->has('vigente') && in_array($request->vigente, array_keys(Norma::getVigenteOptions()))) {
                 $norma->vigente = $request->vigente;
+                $atualizouNorma = true;
+            }
+
+            // Atualizar campos de vigência com data limite
+            if ($request->has('vigencia_indeterminada')) {
+                $norma->vigencia_indeterminada = $request->vigencia_indeterminada;
+                $atualizouNorma = true;
+            }
+
+            if ($request->has('data_limite_vigencia')) {
+                $norma->data_limite_vigencia = $request->data_limite_vigencia;
                 $atualizouNorma = true;
             }
             

@@ -24,7 +24,9 @@ class Norma extends Model
         'orgao_id',
         'anexo',
         'vigente',
-        'status'
+        'status',
+        'vigencia_indeterminada',
+        'data_limite_vigencia'
     ];
 
     /**
@@ -34,6 +36,8 @@ class Norma extends Model
     protected $casts = [
         'data' => 'date',
         'status' => 'boolean',
+        'vigencia_indeterminada' => 'boolean',
+        'data_limite_vigencia' => 'date'
     ];
 
     const VIGENTE_VIGENTE = 'VIGENTE';
@@ -478,4 +482,126 @@ public function hasAnexo()
             'data_atualizacao' => $this->updated_at ? $this->updated_at->format('d/m/Y H:i') : null
         ];
     }
+
+    /**
+ * Scope para normas com vigência programada para expirar
+ */
+public function scopeComVigenciaProgramada($query, $diasAntes = 0)
+{
+    $dataLimite = now()->addDays($diasAntes)->toDateString();
+    
+    return $query->where('vigencia_indeterminada', false)
+                 ->whereNotNull('data_limite_vigencia')
+                 ->whereDate('data_limite_vigencia', '<=', $dataLimite);
+}
+
+/**
+ * Scope para normas que devem ter o status alterado hoje
+ */
+public function scopeParaAtualizarHoje($query)
+{
+    return $query->comVigenciaProgramada(0);
+}
+
+/**
+ * Scope para normas que vão expirar nos próximos X dias
+ */
+public function scopeVencendoEm($query, $dias = 7)
+{
+    $dataInicio = now()->toDateString();
+    $dataFim = now()->addDays($dias)->toDateString();
+    
+    return $query->where('vigencia_indeterminada', false)
+                 ->whereNotNull('data_limite_vigencia')
+                 ->whereBetween('data_limite_vigencia', [$dataInicio, $dataFim]);
+}
+
+/**
+ * Verifica se a norma tem vigência programada
+ */
+public function temVigenciaProgramada()
+{
+    return !$this->vigencia_indeterminada && $this->data_limite_vigencia;
+}
+
+/**
+ * Verifica se a norma deve mudar de status hoje
+ */
+public function deveAtualizarHoje()
+{
+    if (!$this->temVigenciaProgramada()) {
+        return false;
+    }
+    
+    return $this->data_limite_vigencia->isToday() || $this->data_limite_vigencia->isPast();
+}
+
+/**
+ * Retorna quantos dias faltam para a mudança de vigência
+ */
+public function diasParaMudancaVigencia()
+{
+    if (!$this->temVigenciaProgramada()) {
+        return null;
+    }
+    
+    return now()->diffInDays($this->data_limite_vigencia, false);
+}
+
+/**
+ * Retorna o próximo status que a norma terá
+ */
+public function getProximoStatusAttribute()
+{
+    if (!$this->temVigenciaProgramada()) {
+        return null;
+    }
+    
+    switch ($this->vigente) {
+        case self::VIGENTE_VIGENTE:
+            return self::VIGENTE_NAO_VIGENTE;
+        case self::VIGENTE_NAO_VIGENTE:
+            return self::VIGENTE_VIGENTE;
+        case self::VIGENTE_EM_ANALISE:
+            return self::VIGENTE_VIGENTE;
+        default:
+            return null;
+    }
+}
+
+/**
+ * Accessor para mostrar informações de vigência programada
+ */
+public function getInfoVigenciaProgramadaAttribute()
+{
+    if (!$this->temVigenciaProgramada()) {
+        return null;
+    }
+    
+    $dias = $this->diasParaMudancaVigencia();
+    $proximoStatus = $this->proximo_status;
+    $dataFormatada = $this->data_limite_vigencia->format('d/m/Y');
+    
+    if ($dias < 0) {
+        return "Deveria ter mudado para '{$proximoStatus}' em {$dataFormatada} (" . abs($dias) . " dias atrás)";
+    } elseif ($dias == 0) {
+        return "Muda para '{$proximoStatus}' hoje ({$dataFormatada})";
+    } else {
+        return "Mudará para '{$proximoStatus}' em {$dias} dias ({$dataFormatada})";
+    }
+}
+
+/**
+ * Método estático para obter estatísticas de vigência programada
+ */
+public static function obterEstatisticasVigenciaProgramada()
+{
+    return [
+        'total_programadas' => self::ativas()->where('vigencia_indeterminada', false)->whereNotNull('data_limite_vigencia')->count(),
+        'vencendo_hoje' => self::ativas()->paraAtualizarHoje()->count(),
+        'vencendo_7_dias' => self::ativas()->vencendoEm(7)->count(),
+        'vencendo_30_dias' => self::ativas()->vencendoEm(30)->count(),
+        'atrasadas' => self::ativas()->comVigenciaProgramada(-365)->whereDate('data_limite_vigencia', '<', now())->count()
+    ];
+}
 }

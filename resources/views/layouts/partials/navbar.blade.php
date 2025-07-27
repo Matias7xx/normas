@@ -41,47 +41,46 @@
         </li>
 
         <!-- User Info -->
-        <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" 
-               id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
-               style="color: #495057;">
+        <li class="nav-item dropdown user-dropdown">
+            <a class="nav-link user-toggle d-flex align-items-center" href="#" 
+               id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                
-                <div class="user-avatar mr-2 d-flex align-items-center justify-content-center rounded-circle" 
-                     style="width: 42px; height: 42px; background: linear-gradient(45deg, #bea55a, #d4b86a); overflow: hidden;">
-                    {{-- ✅ USAR VARIÁVEL CARREGADA ACIMA --}}
+                <div class="user-avatar mr-2">
                     @if($fotoUsuario)
-                        <img src="{{ $fotoUsuario }}" alt="Foto do usuário" 
-                             style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%; image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges; image-rendering: optimizeQuality; filter: contrast(1.1) brightness(1.05) saturate(1.1); backface-visibility: hidden; transform: translateZ(0);">
+                        <img src="{{ $fotoUsuario }}" alt="Foto do usuário" class="avatar-img">
                     @else
-                        <i class="fas fa-user text-dark"></i>
+                        <div class="avatar-placeholder">
+                            <i class="fas fa-user"></i>
+                        </div>
                     @endif
                 </div>
                 
-                <div class="d-none d-lg-block text-right">
-                    <div class="font-weight-bold" style="font-size: 0.85rem; color: #c1c5c9;">
-                        {{ Auth::user() ? Auth::user()->name : '' }}
-                    </div>
-                    <small style="font-size: 0.75rem; color: #b0b6bb;">
-                        Mat: {{ Auth::user() ? Auth::user()->matricula : '' }}
-                    </small>
+                <div class="user-info d-none d-lg-block">
+                    <div class="user-name">{{ Auth::user() ? Auth::user()->name : '' }}</div>
+                    <div class="user-role">Mat: {{ Auth::user() ? Auth::user()->matricula : '' }}</div>
                 </div>
+                
+                <i class="fas fa-chevron-down ml-2 dropdown-arrow"></i>
             </a>
             
-            <div class="dropdown-menu dropdown-menu-right shadow-lg border-0" 
-                 style="background-color: #f8f9fa; border: 1px solid #bea55a !important;">
-                <div class="dropdown-header border-bottom" style="color: #343a40; border-color: #bea55a !important;">
-                    <strong>{{ Auth::user() ? Auth::user()->name : '' }}</strong><br>
-                    <small style="color: #6c757d;">{{ Auth::user() ? Auth::user()->email : '' }}</small>
-                </div>
-                <a class="dropdown-item" href="{{ route('public.home') }}"
-                   style="background-color: transparent; color: #495057;">
-                    <i class="fas fa-home mr-2 text-primary"></i> Início
+            <div class="dropdown-menu dropdown-menu-right user-dropdown-menu">
+                <!-- Home -->
+                <a class="dropdown-item" href="{{ route('public.home') }}">
+                    <div class="item-icon">
+                        <i class="fas fa-home"></i>
+                    </div>
+                    <span class="item-title">Início</span>
                 </a>
-                <div class="dropdown-divider" style="border-color: #dee2e6;"></div>
-                <a class="dropdown-item" href="{{ route('logout') }}"
-                   onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
-                   style="background-color: transparent; color: #495057;">
-                    <i class="fas fa-sign-out-alt mr-2 text-danger"></i> Logout
+
+                <div class="dropdown-divider"></div>
+
+                <!-- Logout -->
+                <a class="dropdown-item logout-item" href="{{ route('logout') }}"
+                   onclick="event.preventDefault(); if(confirm('Tem certeza que deseja sair do sistema?')) { document.getElementById('logout-form').submit(); }">
+                    <div class="item-icon">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </div>
+                    <span class="item-title">Sair</span>
                 </a>
             </div>
         </li>
@@ -93,15 +92,191 @@
 </nav>
 
 <style>
-/* Hover effects for navbar */
+:root {
+    --primary-color: #bea55a;
+    --primary-dark: #a69348;
+    --primary-light: #d4b86a;
+    --dark-bg: #1a1a1a;
+    --text-light: #c1c5c9;
+    --text-muted: #b0b6bb;
+    --danger-color: #dc3545;
+    --shadow-lg: 0 8px 25px rgba(0,0,0,0.2);
+    --border-radius: 8px;
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* DROPDOWN */
+.user-dropdown .user-toggle {
+    padding: 0.5rem 1rem;
+    border-radius: var(--border-radius);
+    border: none;
+    background: transparent;
+    color: var(--text-light) !important;
+}
+
+.user-dropdown .user-toggle:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+/* AVATAR */
+.user-avatar {
+    position: relative;
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: linear-gradient(45deg, var(--primary-color), var(--primary-light));
+    overflow: hidden;
+}
+
+.user-avatar .avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    filter: contrast(1.1) brightness(1.05) saturate(1.1);
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+    image-rendering: optimizeQuality;
+    backface-visibility: hidden;
+    transform: translateZ(0);
+}
+
+.avatar-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #1a1a1a;
+    font-size: 1.2rem;
+}
+
+/* INFORMAÇÕES DO USUÁRIO */
+.user-info {
+    text-align: right;
+    line-height: 1.2;
+}
+
+.user-name {
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: var(--text-light);
+    margin-bottom: 2px;
+}
+
+.user-role {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    opacity: 0.9;
+}
+
+/* Dropdown Arrow - Seta que gira */
+.dropdown-arrow {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    transition: var(--transition);
+}
+
+.user-toggle[aria-expanded="true"] .dropdown-arrow {
+    transform: rotate(180deg);
+    color: var(--primary-color);
+}
+
+/* MENU DROPDOWN */
+.user-dropdown-menu {
+    background: white;
+    border: none;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-lg);
+    padding: 0.5rem 0;
+    margin-top: 0.5rem;
+    min-width: 180px;
+    max-width: 200px;
+    animation: dropdownFadeIn 0.3s ease;
+}
+
+@keyframes dropdownFadeIn {
+    from { 
+        opacity: 0; 
+        transform: translateY(-10px) scale(0.95); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0) scale(1); 
+    }
+}
+
+/* ITENS DO DROPDOWN */
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    border: none;
+    background: transparent;
+    color: #495057;
+    text-decoration: none;
+    position: relative;
+}
+
+.dropdown-item:focus {
+    background: transparent;
+    color: #495057;
+    outline: none;
+    text-decoration: none;
+}
+
+.item-icon {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8f9fa;
+    border-radius: 50%;
+    margin-right: 0.75rem;
+    flex-shrink: 0;
+}
+
+.item-icon i {
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+.item-title {
+    font-weight: 500;
+    font-size: 0.875rem;
+    line-height: 1.3;
+}
+
+/* LOGOUT ITEM */
+.logout-item:focus {
+    background: transparent;
+    color: #495057;
+}
+
+/* DIVIDERS */
+.dropdown-divider {
+    margin: 0.5rem 0;
+    border-color: #e9ecef;
+}
+
+/* RESPONSIVE */
+@media (max-width: 991.98px) {
+    .user-dropdown-menu {
+        min-width: 160px;
+        right: 0 !important;
+        left: auto !important;
+    }
+}
+
+/* NAVBAR efeitos de hover */
 .navbar .nav-link:hover {
     color: #bea55a !important;
     transition: color 0.3s ease;
-}
-
-.dropdown-item:hover {
-    background-color: rgba(190, 165, 90, 0.1) !important;
-    color: #bea55a !important;
 }
 
 .navbar-search-block {
@@ -120,29 +295,5 @@
 
 .tooltip.bs-tooltip-bottom .arrow::before {
     border-bottom-color: #bea55a;
-}
-
-/* Estilo para a foto do usuário */
-.user-avatar img {
-    transition: transform 0.2s ease;
-    /* Otimizações para nitidez máxima */
-    image-rendering: -webkit-optimize-contrast;
-    image-rendering: -moz-crisp-edges;
-    image-rendering: crisp-edges;
-    image-rendering: pixelated;
-    image-rendering: optimizeQuality;
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
-    /* Filtros para melhorar qualidade visual */
-    filter: contrast(1.1) brightness(1.05) saturate(1.1);
-    /* Anti-aliasing */
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-}
-
-.user-avatar:hover img {
-    transform: scale(1.05) translateZ(0);
 }
 </style>

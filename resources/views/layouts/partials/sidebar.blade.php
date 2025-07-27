@@ -106,6 +106,13 @@
                                     <p>Duplicadas</p>
                                 </a>
                             </li>
+
+                            <li class="nav-item">
+                                <a href="{{ route('vigencia.dashboard') }}" class="nav-link {{ Request::is('vigencia/dashboard') ? 'active' : '' }}">
+                                    &nbsp;&nbsp;&nbsp;<i class="fas fa-calendar-check nav-icon text-warning"></i>
+                                    <p>Vigências</p>
+                                </a>
+                            </li>
                         @endif
 
                         @can('gestor')

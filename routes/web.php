@@ -14,6 +14,7 @@ use App\Http\Controllers\PublicController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use App\Helpers\StorageHelper;
+use App\Http\Controllers\VigenciaDashboardController;
 
 // ==================== ROTAS PÚBLICAS (Vue 3 + Inertia.js) ====================
 
@@ -227,4 +228,23 @@ Route::middleware([Authenticate::class])->group(function() {
         Route::get('/estatisticas', [PalavraChaveController::class, 'estatisticas'])
         ->name('palavras_chaves.estatisticas');
     });
+
+    // =====================  DASHBOARD DE VIGÊNCIA   ============================
+Route::group(['prefix' => 'vigencia', 'middleware' => ['auth']], function(){
+    // Dashboard de vigência - apenas para role 1 e 2
+    Route::get('/dashboard', [VigenciaDashboardController::class, 'index'])
+        ->name('vigencia.dashboard');
+    
+    // Executar atualização de vigência
+    Route::post('/executar', [VigenciaDashboardController::class, 'executarAtualizacao'])
+        ->name('vigencia.executar');
+    
+    // Atualizar norma específica
+    Route::post('/atualizar-norma/{id}', [VigenciaDashboardController::class, 'atualizarNormaEspecifica'])
+        ->name('vigencia.atualizar.norma');
+    
+    // API para dados de gráficos
+    Route::get('/dados-graficos', [VigenciaDashboardController::class, 'getDadosGraficos'])
+        ->name('vigencia.dados.graficos');
+});
 });
