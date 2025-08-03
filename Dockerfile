@@ -18,6 +18,7 @@ RUN apt-get update && apt-get install -y \
     dnsutils \
     iputils-ping \
     telnet \
+    postgresql-client \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install gd pdo pdo_pgsql zip opcache bcmath
 
@@ -82,4 +83,11 @@ RUN php artisan storage:link --no-interaction
 RUN npm run production
 
 #EXPOSE 9010
-CMD ["apache2-foreground"]
+#CMD ["apache2-foreground"]
+
+# Copiar script de entrada e dar permissão
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+# Usar o script de entrada
+CMD ["/usr/local/bin/docker-entrypoint.sh"]
