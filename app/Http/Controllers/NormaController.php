@@ -680,6 +680,13 @@ class NormaController extends Controller
             
             DB::commit();
             
+            // SEMPRE PERSISTIR FILTROS
+            if (request()->has('preserve_filters') && request()->preserve_filters == '1') {
+                // Construir URL com filtros persistidos
+                $redirectUrl = $this->buildRedirectUrlWithFilters(request());
+                return redirect($redirectUrl)->with('success', 'Norma removida com sucesso!');
+            }
+            
             // VERIFICAR SE VEIO DA PÁGINA DE DUPLICADAS
             $referer = request()->headers->get('referer');
             
@@ -702,6 +709,46 @@ class NormaController extends Controller
             Log::error("Erro ao remover norma ID {$id}: " . $e->getMessage());
             return back()->withErrors(['Erro ao remover norma. Por favor, tente novamente.']);
         }
+    }
+
+    /**
+     * Constrói URL de redirecionamento persistindo os filtros
+     */
+    private function buildRedirectUrlWithFilters($request)
+    {
+        $baseUrl = route('normas.norma_list');
+        $filters = [];
+        
+        // Coletar todos os filtros do request
+        foreach ($request->all() as $key => $value) {
+            if (str_starts_with($key, 'filter_') && !empty($value)) {
+                $filterName = str_replace('filter_', '', $key);
+                
+                // Tratamento especial para filtros de data
+                if ($filterName === 'data_inicio' && $value) {
+                    $date = \Carbon\Carbon::createFromFormat('Y-m-d', $value);
+                    $filters['data_inicio_mes'] = $date->format('m');
+                    $filters['data_inicio_ano'] = $date->format('Y');
+                } elseif ($filterName === 'data_fim' && $value) {
+                    $date = \Carbon\Carbon::createFromFormat('Y-m-d', $value);
+                    $filters['data_fim_mes'] = $date->format('m');
+                    $filters['data_fim_ano'] = $date->format('Y');
+                } else {
+                    $filters[$filterName] = $value;
+                }
+            }
+        }
+        
+        // Adicionar flag de filtros restaurados
+        $filters['restored_filters'] = '1';
+        
+        // Construir URL com query string
+        if (!empty($filters)) {
+            $queryString = http_build_query($filters);
+            return $baseUrl . '?' . $queryString;
+        }
+        
+        return $baseUrl;
     }
 
     //Busca com relevância (pesquisas exatas aparecem primeiro)

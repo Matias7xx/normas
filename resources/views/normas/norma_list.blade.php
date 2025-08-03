@@ -431,6 +431,19 @@
             </div>
         </div>
     </div>
+
+    <script>
+    // Interceptar o submit do formulário de exclusão
+    $(document).ready(function() {
+        $('#deleteForm').on('submit', function(e) {
+            // Sempre adicionar filtros ao formulário antes do submit
+            if (window.normasManager) {
+                window.normasManager.addFiltersToDeleteForm();
+            }
+        });
+    });
+    </script>
+
     @endif
 @endsection
 

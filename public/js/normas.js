@@ -136,7 +136,7 @@ class NormasManager {
         
         if (startComplete) {
             this.toggleEndDateFields(true);
-            this.showToast('Info', 'Campos de data fim liberados. Agora você pode definir o período final.', 'info');
+            //this.showToast('Info', 'Campos de data fim liberados. Agora você pode definir o período final.', 'info');
         } /* else {
             this.toggleEndDateFields(false);
             
@@ -340,6 +340,9 @@ class NormasManager {
         if (!this.validateDateRange()) {
             return;
         }
+
+         // Salvar estado atual
+        this.saveFiltersState();
         
         // Atualizar filtros com valores dos campos
         this.currentFilters.search_term = $('#search_term').val().trim();
@@ -917,8 +920,171 @@ class NormasManager {
         if (window.userPermissions && window.userPermissions.canDelete) {
             $('#normaDesc').text(descricao);
             $('#deleteForm').attr('action', `/normas/norma_destroy/${id}`);
+            
+            // Sempre adicionar os filtros atuais como campos hidden no formulário
+            this.addFiltersToDeleteForm();
+            
             $('#deleteModal').modal('show');
         }
+    }
+
+    /**
+     * Adiciona filtros atuais ao formulário de exclusão
+     */
+    addFiltersToDeleteForm() {
+        const form = $('#deleteForm');
+        
+        // Remover campos hidden existentes para evitar duplicação
+        form.find('input[name^="filter_"]').remove();
+        
+        // Atualizar filtros atuais
+        this.updateCurrentFiltersFromForm();
+        
+        // Adicionar campos hidden com os filtros atuais
+        Object.keys(this.currentFilters).forEach(key => {
+            if (this.currentFilters[key] && this.currentFilters[key] !== '') {
+                form.append(`<input type="hidden" name="filter_${key}" value="${this.currentFilters[key]}">`);
+            }
+        });
+        
+        // Adicionar flag para identificar que é uma exclusão com filtros
+        form.append('<input type="hidden" name="preserve_filters" value="1">');
+    }
+
+    /**
+     * Atualiza os filtros atuais baseado no formulário
+     */
+    updateCurrentFiltersFromForm() {
+        this.currentFilters.search_term = $('#search_term').val().trim();
+        this.currentFilters.tipo_id = $('#tipo_id').val();
+        this.currentFilters.orgao_id = $('#orgao_id').val();
+        this.currentFilters.vigente = $('#vigente').val();
+        this.currentFilters.page = this.currentPage;
+        this.currentFilters.per_page = this.perPage;
+        this.currentFilters.order_by = this.orderBy;
+        this.currentFilters.order_dir = this.orderDir;
+        
+        this.updateDateFilters();
+    }
+
+    /**
+     * Restaura filtros da URL ou sessionStorage
+     */
+    restoreFiltersFromUrl() {
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        // Verificar se há filtros na URL
+        if (urlParams.has('restored_filters')) {
+            // Restaurar campos do formulário
+            if (urlParams.get('search_term')) {
+                $('#search_term').val(urlParams.get('search_term'));
+            }
+            if (urlParams.get('tipo_id')) {
+                $('#tipo_id').val(urlParams.get('tipo_id')).trigger('change');
+            }
+            if (urlParams.get('orgao_id')) {
+                $('#orgao_id').val(urlParams.get('orgao_id')).trigger('change');
+            }
+            if (urlParams.get('vigente')) {
+                $('#vigente').val(urlParams.get('vigente')).trigger('change');
+            }
+            
+            // Restaurar filtros de data
+            if (urlParams.get('data_inicio_mes') && urlParams.get('data_inicio_ano')) {
+                $('#data_inicio_mes').val(urlParams.get('data_inicio_mes'));
+                $('#data_inicio_ano').val(urlParams.get('data_inicio_ano'));
+                this.handleStartDateChange();
+                
+                if (urlParams.get('data_fim_mes') && urlParams.get('data_fim_ano')) {
+                    $('#data_fim_mes').val(urlParams.get('data_fim_mes'));
+                    $('#data_fim_ano').val(urlParams.get('data_fim_ano'));
+                }
+                
+                // Mostrar filtro de período se há datas
+                if (!$('#period-filter-content').is(':visible')) {
+                    this.togglePeriodFilter();
+                }
+            }
+            
+            // Restaurar ordenação
+            if (urlParams.get('order_by') && urlParams.get('order_dir')) {
+                this.orderBy = urlParams.get('order_by');
+                this.orderDir = urlParams.get('order_dir');
+                this.updateSortIndicators();
+            }
+            
+            // Restaurar página
+            if (urlParams.get('page')) {
+                this.currentPage = parseInt(urlParams.get('page'));
+            }
+            
+            // Aplicar filtros automaticamente
+            setTimeout(() => {
+                this.performSearch();
+                // Limpar URL após restaurar
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }, 500);
+        }
+    }
+
+    /**
+     * Salva estado atual dos filtros no sessionStorage
+     */
+    saveFiltersState() {
+        this.updateCurrentFiltersFromForm();
+        sessionStorage.setItem('normas_filters_state', JSON.stringify(this.currentFilters));
+    }
+    
+    /**
+     * Carrega estado dos filtros do sessionStorage
+     */
+    loadFiltersState() {
+        const savedState = sessionStorage.getItem('normas_filters_state');
+        if (savedState) {
+            try {
+                const filters = JSON.parse(savedState);
+                
+                // Aplicar filtros salvos
+                if (filters.search_term) $('#search_term').val(filters.search_term);
+                if (filters.tipo_id) $('#tipo_id').val(filters.tipo_id).trigger('change');
+                if (filters.orgao_id) $('#orgao_id').val(filters.orgao_id).trigger('change');
+                if (filters.vigente) $('#vigente').val(filters.vigente).trigger('change');
+                
+                // Aplicar filtros de data se existirem
+                if (filters.data_inicio) {
+                    const dataInicio = new Date(filters.data_inicio);
+                    $('#data_inicio_mes').val(String(dataInicio.getMonth() + 1).padStart(2, '0'));
+                    $('#data_inicio_ano').val(dataInicio.getFullYear());
+                    this.handleStartDateChange();
+                }
+                
+                if (filters.data_fim) {
+                    const dataFim = new Date(filters.data_fim);
+                    $('#data_fim_mes').val(String(dataFim.getMonth() + 1).padStart(2, '0'));
+                    $('#data_fim_ano').val(dataFim.getFullYear());
+                }
+                
+                // Aplicar ordenação
+                if (filters.order_by && filters.order_dir) {
+                    this.orderBy = filters.order_by;
+                    this.orderDir = filters.order_dir;
+                    this.updateSortIndicators();
+                }
+                
+                // Aplicar página
+                if (filters.page) {
+                    this.currentPage = filters.page;
+                }
+                
+                this.currentFilters = filters;
+                
+                return true;
+            } catch (e) {
+                console.error('Erro ao carregar estado dos filtros:', e);
+                sessionStorage.removeItem('normas_filters_state');
+            }
+        }
+        return false;
     }
     
     showLoading(show = true) {
@@ -1015,11 +1181,9 @@ $(document).ready(function() {
         // Configurar AJAX para não mostrar barras de progresso
         $.ajaxSetup({
             beforeSend: function(xhr, settings) {
-                // Remover barras de progresso
                 $('.progress, .progress-bar, .loading-bar').remove();
             },
             complete: function(xhr, status) {
-                // Garantir que barras de progresso sejam removidas
                 setTimeout(() => {
                     $('.progress, .progress-bar, .loading-bar, .ajax-progress').remove();
                     $('.preloader, .overlay').remove();
@@ -1030,6 +1194,9 @@ $(document).ready(function() {
         
         // Inicializar o gerenciador de normas
         window.normasManager = new NormasManager();
+        
+        // Verificar se há filtros para restaurar da URL
+        window.normasManager.restoreFiltersFromUrl();
         
         console.log('Sistema de Gestão de Normas iniciado com sucesso!');
         console.log('Busca manual ativada - use o botão Pesquisar');
