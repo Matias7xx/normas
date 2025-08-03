@@ -795,7 +795,10 @@
 .table-actions {
     display: flex;
     justify-content: center;
+    align-items: center;
     gap: 0.2rem;
+    min-width: 80px;
+    width: 100%;
 }
 
 /* TABELA */
@@ -821,6 +824,13 @@
     color: var(--text-color);
     font-size: 0.9rem;
     vertical-align: middle;
+}
+
+.minimal-table th:last-child,
+.minimal-table td:last-child {
+    text-align: center;
+    width: 100px;
+    min-width: 100px;
 }
 
 .minimal-table tbody tr {

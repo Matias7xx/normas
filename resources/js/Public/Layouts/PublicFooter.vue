@@ -11,10 +11,10 @@ const props = defineProps({
 const currentYear = computed(() => new Date().getFullYear())
 const lastUpdate = computed(() => {
   const now = new Date()
-  return now.toLocaleDateString('pt-BR') + ' ' + now.toLocaleTimeString('pt-BR', { 
+  return now.toLocaleDateString('pt-BR') /* + ' ' + now.toLocaleTimeString('pt-BR', { 
     hour: '2-digit', 
     minute: '2-digit' 
-  })
+  }) */
 })
 </script>
 
@@ -62,14 +62,14 @@ const lastUpdate = computed(() => {
       <!-- Estatísticas -->
       <div class="border-t border-gray-200 py-4">
         <div class="flex justify-center items-center flex-wrap gap-6 text-sm text-gray-600">
-          <div class="flex items-center hover:text-[#c1a85a] transition-colors duration-300">
+          <!-- <div class="flex items-center hover:text-[#c1a85a] transition-colors duration-300">
             <i class="fas fa-users mr-2 text-[#c1a85a]"></i>
             {{ stats?.usuarios_ativos || '---' }} Usuários Ativos
-          </div>
-          <div class="flex items-center hover:text-[#c1a85a] transition-colors duration-300">
+          </div> -->
+          <!-- <div class="flex items-center hover:text-[#c1a85a] transition-colors duration-300">
             <i class="fas fa-file-alt mr-2 text-[#c1a85a]"></i>
             {{ stats?.normas_cadastradas || '---' }} Normas Cadastradas
-          </div>
+          </div> -->
           <div class="flex items-center hover:text-[#c1a85a] transition-colors duration-300">
             <i class="fas fa-clock mr-2 text-[#c1a85a]"></i>
             Última Atualização: {{ lastUpdate }}

@@ -825,8 +825,6 @@ public function normasDuplicadas(Request $request)
         abort(403, 'Acesso negado.');
     }
 
-    $similaridade_minima = $request->get('similaridade', 80);
-    
     // Buscar todas as normas ativas
     $normas = Norma::where('status', true)
         ->with(['tipo', 'orgao'])
@@ -848,9 +846,7 @@ public function normasDuplicadas(Request $request)
                 continue;
             }
 
-            $similaridade = $this->calcularSimilaridade($norma1->descricao, $norma2->descricao);
-            
-            if ($similaridade >= $similaridade_minima) {
+            if ($this->saoNormasIdenticasOuQuaseIdenticas($norma1, $norma2)) {
                 if (empty($grupo)) {
                     $grupo[] = $norma1;
                 }
@@ -865,45 +861,110 @@ public function normasDuplicadas(Request $request)
         }
     }
 
-    return view('normas.duplicadas', compact('duplicadas', 'similaridade_minima'));
+    return view('normas.duplicadas', compact('duplicadas'));
 }
 
 /**
- * Calcula similaridade entre duas descrições (função similar_text() do PHP)
+ * Verifica se duas normas são idênticas ou quase idênticas
  */
-private function calcularSimilaridade($desc1, $desc2)
+private function saoNormasIdenticasOuQuaseIdenticas($norma1, $norma2)
 {
-    // Normalizar textos
-    $texto1 = $this->normalizarTexto($desc1);
-    $texto2 = $this->normalizarTexto($desc2);
+    // mesmo tipo, órgão E data
+    if ($norma1->tipo_id !== $norma2->tipo_id || 
+        $norma1->orgao_id !== $norma2->orgao_id ||
+        $norma1->data?->format('Y-m-d') !== $norma2->data?->format('Y-m-d')) {
+        return false;
+    }
+
+    // Normalizar descrições
+    $desc1 = $this->normalizarTextoCompleto($norma1->descricao);
+    $desc2 = $this->normalizarTextoCompleto($norma2->descricao);
     
-    // Se são idênticos após normalização
-    if ($texto1 === $texto2) {
-        return 100;
+    // Verificar se são exatamente iguais após normalização
+    if ($desc1 === $desc2) {
+        return true;
+    }
+
+    // Verificar se diferem por apenas números (mesmo padrão)
+    $padrao1 = $this->extrairPadraoDocumento($desc1);
+    $padrao2 = $this->extrairPadraoDocumento($desc2);
+    
+    if ($padrao1 === $padrao2 && !empty($padrao1)) {
+        // Com mesma data, tipo e órgão
+        $diferenca = $this->calcularDiferencaTexto($desc1, $desc2);
+        return $diferenca <= 2;
+    }
+
+    //Com todos os critérios iguais, indica duplicata
+    $similaridade = $this->calcularSimilaridadeExata($desc1, $desc2);
+    return $similaridade >= 95.0;
+}
+
+/**
+ * Extrai padrão do documento removendo números/datas variáveis
+ */
+private function extrairPadraoDocumento($texto)
+{
+    // Substituir números por placeholder
+    $padrao = preg_replace('/\b\d+\b/', '[NUM]', $texto);
+    
+    // Substituir datas por placeholder
+    $padrao = preg_replace('/\b\d{1,2}\/\d{1,2}\/\d{2,4}\b/', '[DATA]', $padrao);
+    $padrao = preg_replace('/\b\d{2,4}-\d{1,2}-\d{1,2}\b/', '[DATA]', $padrao);
+    
+    // Remover múltiplos placeholders consecutivos
+    $padrao = preg_replace('/(\[NUM\]\s*){2,}/', '[NUM] ', $padrao);
+    
+    return trim($padrao);
+}
+
+/**
+ * Calcula diferença entre textos
+ */
+private function calcularDiferencaTexto($texto1, $texto2)
+{
+    $tokens1 = array_filter(explode(' ', $texto1));
+    $tokens2 = array_filter(explode(' ', $texto2));
+    
+    $diff1 = array_diff($tokens1, $tokens2);
+    $diff2 = array_diff($tokens2, $tokens1);
+    
+    return count($diff1) + count($diff2);
+}
+
+/**
+ * Calcula similaridade exata usando Levenshtein (distância entre duas strings)
+ */
+private function calcularSimilaridadeExata($texto1, $texto2)
+{
+    $len1 = strlen($texto1);
+    $len2 = strlen($texto2);
+    
+    // Se a diferença de tamanho é muito grande, não são similares
+    if (abs($len1 - $len2) > min($len1, $len2) * 0.1) {
+        return 0;
     }
     
-    // Calcular similaridade
-    $similaridade = 0;
-    similar_text($texto1, $texto2, $similaridade);
-    
-    // Verificar se faltam apenas 1-2 termos
-    $palavras1 = explode(' ', $texto1);
-    $palavras2 = explode(' ', $texto2);
-    
-    $diferenca = abs(count($palavras1) - count($palavras2));
-    
-    // Se a diferença é pequena e similaridade alta, considerar duplicata
-    if ($diferenca <= 2 && $similaridade >= 75) {
-        $similaridade = min(100, $similaridade + 10);
+    // Usar similar_text
+    if ($len1 < 500 && $len2 < 500) {
+        $similaridade = 0;
+        similar_text($texto1, $texto2, $similaridade);
+        return $similaridade;
     }
     
-    return round($similaridade, 2);
+    $distancia = levenshtein(
+        substr($texto1, 0, 255), 
+        substr($texto2, 0, 255)
+    );
+    
+    $maxLen = max(255, 255);
+    return (($maxLen - $distancia) / $maxLen) * 100;
 }
 
 /**
  * Normaliza texto para comparação
  */
-private function normalizarTexto($texto)
+private function normalizarTextoCompleto($texto)
 {
     // Converter para minúsculas
     $texto = mb_strtolower($texto, 'UTF-8');
@@ -911,8 +972,8 @@ private function normalizarTexto($texto)
     // Remover acentos
     $texto = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $texto);
     
-    // Manter apenas letras, números e espaços
-    $texto = preg_replace('/[^a-z0-9\s]/', ' ', $texto);
+    // Remover pontuação
+    $texto = preg_replace('/[^\w\s\/\-°]/', ' ', $texto);
     
     // Remover espaços múltiplos
     $texto = preg_replace('/\s+/', ' ', $texto);

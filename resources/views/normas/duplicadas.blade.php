@@ -9,7 +9,7 @@
         <div class="col-sm-6">
             <h1 class="m-0 text-dark">
                 <i class="fas fa-copy mr-2"></i>
-                Normas Duplicadas/Similares
+                Normas Duplicadas/Idênticas
             </h1>
         </div>
         <div class="col-sm-6">
@@ -25,35 +25,22 @@
 @section('content')
 <div class="container-fluid">
     
-    <!-- Filtro de Similaridade -->
+    <!-- Informações sobre a busca -->
     <div class="row mb-4">
         <div class="col-12">
-            <div class="filter-panel">
-                <div class="filter-header">
+            <div class="info-panel">
+                <div class="info-header">
                     <h5>
-                        <i class="fas fa-filter mr-2"></i>
-                        Filtros de Busca
+                        <i class="fas fa-info-circle mr-2"></i>
+                        Detecção de Normas Duplicadas
                     </h5>
                 </div>
-                <form method="GET" class="filter-form">
-                    <div class="filter-row">
-                        <div class="filter-group">
-                            <label class="filter-label">Similaridade Mínima</label>
-                            <select name="similaridade" class="filter-select">
-                                <option value="70" {{ request('similaridade', 80) == 70 ? 'selected' : '' }}>70%</option>
-                                <option value="75" {{ request('similaridade', 80) == 75 ? 'selected' : '' }}>75%</option>
-                                <option value="80" {{ request('similaridade', 80) == 80 ? 'selected' : '' }}>80%</option>
-                                <option value="85" {{ request('similaridade', 80) == 85 ? 'selected' : '' }}>85%</option>
-                                <option value="90" {{ request('similaridade', 80) == 90 ? 'selected' : '' }}>90%</option>
-                            </select>
-                        </div>
-                        <div class="filter-actions">
-                            <button type="submit" class="btn-primary">
-                                <i class="fas fa-search mr-1"></i> Buscar
-                            </button>
-                        </div>
-                    </div>
-                </form>
+                <div class="info-content">
+                    <p>
+                        Normas que são <strong>idênticas ou quase idênticas</strong>, 
+                        considerando o mesmo <strong>tipo, órgão e data</strong> com conteúdo muito similar. 
+                    </p>
+                </div>
             </div>
         </div>
     </div>
@@ -62,7 +49,7 @@
         <div class="alert-section alert-warning">
             <div class="alert-header">
                 <i class="fas fa-exclamation-triangle mr-2"></i>
-                Encontrados <strong>{{ count($duplicadas) }}</strong> grupos de normas similares.
+                Encontrados <strong>{{ count($duplicadas) }}</strong> grupos de normas idênticas ou quase idênticas.
             </div>
         </div>
 
@@ -71,14 +58,14 @@
                 <div class="group-header">
                     <h5>
                         <i class="fas fa-layer-group mr-2"></i>
-                        Grupo {{ $grupo_index + 1 }} - {{ count($grupo) }} normas similares
+                        Grupo {{ $grupo_index + 1 }} - {{ count($grupo) }}
                     </h5>
                 </div>
                 <div class="group-content">
                     <div class="row">
                         @foreach($grupo as $norma)
                             <div class="col-md-6 mb-3">
-                                <div class="norma-card border-neutral">
+                                <div class="norma-card border-warning">
                                     <div class="norma-header">
                                         <div class="norma-id">ID: {{ $norma->id }}</div>
                                         <div class="norma-status">
@@ -134,7 +121,7 @@
                 <i class="fas fa-check-circle"></i>
                 <h4>Nenhuma norma duplicada encontrada!</h4>
                 <p>
-                    Com {{ $similaridade_minima ?? 80 }}% de similaridade, não foram encontradas normas duplicadas.
+                    Não foram encontradas normas idênticas ou duplicatas reais no sistema.
                 </p>
                 <a href="{{ route('normas.norma_list') }}" class="btn-neutral">
                     <i class="fas fa-arrow-left mr-2"></i>Voltar à Listagem
@@ -206,8 +193,8 @@
     padding: 0 15px;
 }
 
-/*  PAINEL DE FILTROS  */
-.filter-panel {
+/*  PAINEL DE INFORMAÇÕES  */
+.info-panel {
     background: white;
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
@@ -215,61 +202,24 @@
     overflow: hidden;
 }
 
-.filter-header {
-    background: var(--neutral-color);
+.info-header {
+    background: var(--secondary-color);
+    color: white;
     padding: var(--spacing);
-    border-bottom: 1px solid var(--border-color);
 }
 
-.filter-header h5 {
+.info-header h5 {
     margin: 0;
-    color: var(--text-color);
     font-weight: 500;
 }
 
-.filter-form {
+.info-content {
     padding: var(--spacing);
 }
 
-.filter-row {
-    display: flex;
-    align-items: end;
-    gap: 1rem;
-    flex-wrap: wrap;
-}
-
-.filter-group {
-    flex: 1;
-    min-width: 200px;
-}
-
-.filter-label {
-    display: block;
-    font-weight: 500;
+.info-content p {
+    margin-bottom: 0;
     color: var(--text-color);
-    margin-bottom: 0.5rem;
-}
-
-.filter-select {
-    width: 100%;
-    padding: 0.6rem 0.75rem;
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
-    font-size: 0.9rem;
-    color: var(--text-color);
-    background: white;
-    transition: all 0.3s ease;
-}
-
-.filter-select:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 0.2rem rgba(44, 62, 80, 0.25);
-    outline: none;
-}
-
-.filter-actions {
-    display: flex;
-    gap: 0.5rem;
 }
 
 /*  BOTÕES  */
@@ -371,7 +321,7 @@
 }
 
 .group-header {
-    background: var(--secondary-color);
+    background: var(--warning-color);
     color: white;
     padding: var(--spacing);
     border-bottom: 1px solid var(--border-color);
@@ -617,16 +567,6 @@
 
 /*  RESPONSIVIDADE  */
 @media (max-width: 768px) {
-    .filter-row {
-        flex-direction: column;
-        align-items: stretch;
-    }
-    
-    .filter-actions {
-        justify-content: center;
-        margin-top: 1rem;
-    }
-    
     .norma-header {
         flex-direction: column;
         gap: 0.5rem;
