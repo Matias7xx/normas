@@ -21,27 +21,21 @@ mix.js('resources/js/public.js', 'public/js')
        '@': 'resources/js'
    });
 
-// Configurações para desenvolvimento
+// Configurações para desenvolvimento LOCAL - SEM Docker
 if (!mix.inProduction()) {
-    // Habilitar source maps para debug
+    // Source maps para debug
     mix.sourceMaps();
     
-    // Configuração do BrowserSync para hot reload
-    mix.browserSync({
-        proxy: 'localhost', // URL do nginx
-        files: [
-            'resources/views/**/*.php',
-            'resources/js/**/*.js',
-            'resources/js/**/*.vue', 
-            'resources/css/**/*.css',
-            'app/**/*.php',
-            'routes/**/*.php'
-        ],
-        watchOptions: {
-            usePolling: true,
-            interval: 300
+    // Configuração 
+    mix.options({
+        hmrOptions: {
+            host: 'localhost',
+            port: 8080
         }
     });
+    
+    // REMOVER browserSync - não precisa com php artisan serve
+    // mix.browserSync()
 }
 
 // Versioning apenas em produção
@@ -51,8 +45,7 @@ if (mix.inProduction()) {
 
 // Configurações do webpack
 mix.webpackConfig({
-    watchOptions: {
-        ignored: /node_modules/,
-        poll: 1000,
+    stats: {
+        children: true,
     }
 });

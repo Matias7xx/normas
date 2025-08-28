@@ -8,14 +8,15 @@
         "hot": "mix watch --hot",
         "prod": "npm run production",
         "production": "mix --production",
-        "build-all": "mix --production"
+        "build-all": "mix --production",
+        
+        "local-dev": "mix watch",
+        "local-hot": "mix watch --hot"
     },
     "devDependencies": {
         "@vue/compiler-sfc": "^3.4.0",
         "autoprefixer": "^10.4.16",
         "axios": "^0.21",
-        "browser-sync": "^3.0.4",
-        "browser-sync-webpack-plugin": "^2.4.0",
         "laravel-mix": "^6.0.6",
         "lodash": "^4.17.19",
         "postcss": "^8.1.14",
