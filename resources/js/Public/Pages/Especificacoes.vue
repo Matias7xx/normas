@@ -78,13 +78,6 @@
           <p class="text-gray-600 mb-8 leading-relaxed">
             No momento não há especificações técnicas publicadas. Volte em breve para verificar novas atualizações.
           </p>
-          <button
-            @click="recarregarPagina"
-            class="bg-gradient-to-r from-gray-600 via-gray-700 to-gray-800 text-white px-8 py-3 rounded-lg font-medium transition-all duration-300 flex items-center mx-auto hover:shadow-lg hover:scale-105"
-          >
-            <i class="fas fa-refresh mr-2"></i>
-            Atualizar Página
-          </button>
         </div>
       </div>
     </section>

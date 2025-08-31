@@ -19,10 +19,10 @@
 
     <!-- Formulário de Busca -->
     <section class="bg-white shadow-lg -mt-6 relative z-10">
-      <div class="max-w-7xl mx-auto px-4 py-8">
+      <div class="max-w-7xl mx-auto px-4 py-6 sm:py-8">
         <form @submit.prevent="buscarNormas" class="space-y-6">
           <!-- Busca por termo -->
-          <div class="mb-6">
+          <div>
             <label for="search_term" class="block text-sm font-medium text-gray-700 mb-2">
               <i class="fas fa-search mr-2 text-blue-600"></i>
               Termo de busca (descrição, resumo ou palavra-chave)
@@ -32,12 +32,13 @@
               v-model="form.search_term"
               type="text"
               placeholder="Ex: portaria, regulamento, procedimento..."
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 text-sm sm:text-base"
             />
           </div>
 
           <!-- Filtros avançados -->
-          <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- Tipo -->
             <div>
               <label for="tipo_id" class="block text-sm font-medium text-gray-700 mb-2">
                 <i class="fas fa-layer-group mr-2 text-blue-600"></i>
@@ -46,7 +47,7 @@
               <select
                 id="tipo_id"
                 v-model="form.tipo_id"
-                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                class="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
               >
                 <option value="">Todos os tipos</option>
                 <option 
@@ -59,6 +60,7 @@
               </select>
             </div>
 
+            <!-- Órgão -->
             <div>
               <label for="orgao_id" class="block text-sm font-medium text-gray-700 mb-2">
                 <i class="fas fa-building mr-2 text-blue-600"></i>
@@ -67,7 +69,7 @@
               <select
                 id="orgao_id"
                 v-model="form.orgao_id"
-                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                class="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
               >
                 <option value="">Todos os órgãos</option>
                 <option 
@@ -80,6 +82,7 @@
               </select>
             </div>
 
+            <!-- Vigência -->
             <div>
               <label for="vigente" class="block text-sm font-medium text-gray-700 mb-2">
                 <i class="fas fa-calendar-check mr-2 text-blue-600"></i>
@@ -88,7 +91,7 @@
               <select
                 id="vigente"
                 v-model="form.vigente"
-                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                class="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
               >
                 <option value="">Todas</option>
                 <option value="VIGENTE">Vigente</option>
@@ -97,20 +100,22 @@
               </select>
             </div>
 
+            <!-- Botão Filtros de Data -->
             <div class="flex items-end">
               <button
                 type="button"
                 @click="mostrarFiltrosData = !mostrarFiltrosData"
-                class="w-full bg-gray-600 hover:bg-gray-700 text-white px-4 py-3 rounded-lg font-medium transition-all duration-300 flex items-center justify-center"
+                class="w-full bg-gray-600 hover:bg-gray-700 text-white px-4 py-3 rounded-lg font-medium transition-all duration-300 flex items-center justify-center text-sm sm:text-base"
               >
                 <i class="fas fa-calendar mr-2"></i>
-                Filtrar por Data
+                <span class="hidden sm:inline">Filtrar por Data</span>
+                <span class="sm:hidden">Data</span>
               </button>
             </div>
           </div>
 
           <!-- Filtros de data -->
-          <div v-if="mostrarFiltrosData" class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-lg">
+          <div v-if="mostrarFiltrosData" class="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg border">
             <div>
               <label for="data_inicio" class="block text-sm font-medium text-gray-700 mb-2">
                 <i class="fas fa-calendar-alt mr-2 text-blue-600"></i>
@@ -120,7 +125,7 @@
                 id="data_inicio"
                 v-model="form.data_inicio"
                 type="date"
-                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                class="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
               />
             </div>
             <div>
@@ -132,17 +137,17 @@
                 id="data_fim"
                 v-model="form.data_fim"
                 type="date"
-                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                class="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
               />
             </div>
           </div>
 
           <!-- Botões de ação -->
-          <div class="flex flex-wrap gap-3 justify-center">
+          <div class="flex flex-col sm:flex-row gap-3 justify-center items-center">
             <button
               type="submit"
               :disabled="carregando"
-              class="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-8 py-3 rounded-lg font-semibold transition-all duration-300 hover:scale-105 shadow-md flex items-center"
+              class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-6 sm:px-8 py-3 rounded-lg font-semibold transition-all duration-300 hover:scale-105 shadow-md flex items-center justify-center text-sm sm:text-base"
             >
               <i v-if="carregando" class="fas fa-spinner fa-spin mr-2"></i>
               <i v-else class="fas fa-search mr-2"></i>
@@ -152,7 +157,7 @@
             <button
               type="button"
               @click="limparFiltros"
-              class="bg-gray-500 hover:bg-gray-600 text-white px-8 py-3 rounded-lg font-semibold transition-all duration-300 hover:scale-105 shadow-md flex items-center"
+              class="w-full sm:w-auto bg-gray-500 hover:bg-gray-600 text-white px-6 sm:px-8 py-3 rounded-lg font-semibold transition-all duration-300 hover:scale-105 shadow-md flex items-center justify-center text-sm sm:text-base"
             >
               <i class="fas fa-times mr-2"></i>
               Limpar Filtros
@@ -189,23 +194,29 @@
           :key="norma?.id || 'norma-' + Math.random()"
           class="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 border border-gray-200"
         >
-          <div class="p-6">
-            <div class="flex items-start justify-between mb-4">
-              <div class="flex-1">
-                <h3 class="text-lg font-semibold text-gray-900 mb-2">
+          <div class="p-4 sm:p-6">
+            <!-- Cabeçalho do card -->
+            <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-4 space-y-3 sm:space-y-0">
+              <div class="flex-1 min-w-0">
+                <h3 class="text-lg font-semibold text-gray-900 mb-2 break-words">
                   {{ norma?.descricao || 'Descrição não informada' }}
-                  <span v-if="norma?.tipo?.tipo" class="ml-2 text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                  <span 
+                    v-if="norma?.tipo?.tipo" 
+                    class="inline-block mt-1 sm:mt-0 sm:ml-2 text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded whitespace-nowrap"
+                  >
                     {{ norma.tipo.tipo }}
                   </span>
                 </h3>
-                <p v-if="norma?.resumo" class="text-gray-700 mb-3 leading-relaxed">
+                <p v-if="norma?.resumo" class="text-gray-700 mb-3 leading-relaxed break-words">
                   {{ norma.resumo }}
                 </p>
               </div>
-              <div class="ml-4 flex flex-col items-end space-y-2">
+              
+              <!-- Status de vigência -->
+              <div class="flex-shrink-0 sm:ml-4">
                 <span
                   :class="getVigenciaClass(norma?.vigente)"
-                  class="px-3 py-1 rounded-full text-xs font-medium"
+                  class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap"
                 >
                   <i :class="getVigenciaIcon(norma?.vigente)" class="mr-1"></i>
                   {{ norma?.vigente || 'N/A' }}
@@ -213,111 +224,90 @@
               </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600 mb-4">
-              <div v-if="norma?.orgao?.orgao">
-                <i class="fas fa-building mr-1 text-blue-600"></i>
-                {{ norma.orgao.orgao }}
-              </div>
-              <div v-if="norma?.data">
-                <i class="fas fa-calendar mr-1 text-blue-600"></i>
-                Data: {{ formatarData(norma.data) }}
-              </div>
-              <div v-if="norma?.palavras_chave && Array.isArray(norma.palavras_chave) && norma.palavras_chave.length > 0">
-                <i class="fas fa-tags mr-1 text-blue-600"></i>
-                <span class="inline-flex flex-wrap gap-1">
-                  <span
-                    v-for="palavra in norma.palavras_chave"
-                    :key="palavra?.id || 'palavra-' + Math.random()"
-                    class="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs"
-                  >
-                    {{ palavra?.palavra_chave || 'Palavra-chave' }}
-                  </span>
-                  <span
-                    v-if="(norma?.palavras_chave_restantes || 0) > 0"
-                    class="bg-gray-200 text-gray-600 px-2 py-1 rounded text-xs"
-                  >
-                    +{{ norma.palavras_chave_restantes }}
-                  </span>
+            <!-- Informações detalhadas -->
+            <div class="space-y-3 sm:space-y-0 sm:grid sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 sm:gap-4 text-sm text-gray-600 mb-4">
+              <!-- Órgão -->
+              <div v-if="norma?.orgao?.orgao" class="flex items-center min-w-0">
+                <i class="fas fa-building mr-2 text-blue-600 flex-shrink-0"></i>
+                <span class="truncate" :title="norma.orgao.orgao">
+                  {{ norma.orgao.orgao }}
                 </span>
+              </div>
+              
+              <!-- Data -->
+              <div v-if="norma?.data" class="flex items-center">
+                <i class="fas fa-calendar mr-2 text-blue-600 flex-shrink-0"></i>
+                <span>Data: {{ formatarData(norma.data) }}</span>
+              </div>
+              
+              <!-- Palavras-chave -->
+              <div 
+                v-if="norma?.palavras_chave && Array.isArray(norma.palavras_chave) && norma.palavras_chave.length > 0" 
+                class="sm:col-span-1 lg:col-span-2 xl:col-span-1"
+              >
+                <div class="flex items-start">
+                  <i class="fas fa-tags mr-2 text-blue-600 flex-shrink-0 mt-0.5"></i>
+                  <div class="flex flex-wrap gap-1 min-w-0">
+                    <span
+                      v-for="palavra in norma.palavras_chave"
+                      :key="palavra?.id || 'palavra-' + Math.random()"
+                      class="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs whitespace-nowrap"
+                    >
+                      {{ palavra?.palavra_chave || 'Palavra-chave' }}
+                    </span>
+                    <span
+                      v-if="(norma?.palavras_chave_restantes || 0) > 0"
+                      class="bg-gray-200 text-gray-600 px-2 py-1 rounded text-xs whitespace-nowrap"
+                    >
+                      +{{ norma.palavras_chave_restantes }}
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div class="flex items-center justify-between pt-4 border-t border-gray-200">
-              <div class="flex space-x-3">
-                <button
-                  @click="visualizarNorma(norma?.id)"
-                  :disabled="!norma?.id"
-                  class="group bg-white hover:bg-slate-50 border border-slate-300 hover:border-slate-400 text-slate-700 hover:text-slate-900 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 hover:scale-105 hover:shadow-md active:scale-95"
-                >
-                  <i class="fas fa-eye mr-1"></i>
-                  Ver Detalhes
-                </button>
-                <button
-                  v-if="norma?.anexo_url || norma?.anexo"
-                  @click="baixarArquivo(norma?.id)"
-                  class="group bg-white hover:bg-slate-50 border border-slate-300 hover:border-slate-400 text-slate-700 hover:text-slate-900 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 hover:scale-105 hover:shadow-md active:scale-95"
-                >
-                  <i class="fas fa-download mr-1"></i>
-                  Baixar PDF
-                </button>
+            <!-- Botões de ação -->
+            <div class="pt-4 border-t border-gray-200">
+              <div class="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+                <!-- Botões principais -->
+                <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                  <button
+                    @click="visualizarNorma(norma?.id)"
+                    :disabled="!norma?.id"
+                    class="group bg-white hover:bg-slate-50 border border-slate-300 hover:border-slate-400 text-slate-700 hover:text-slate-900 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 hover:scale-105 hover:shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <i class="fas fa-eye"></i>
+                    <span class="whitespace-nowrap">Ver Detalhes</span>
+                  </button>
+                  
+                  <button
+                    v-if="norma?.anexo_url || norma?.anexo"
+                    @click="baixarArquivo(norma?.id)"
+                    class="group bg-white hover:bg-slate-50 border border-slate-300 hover:border-slate-400 text-slate-700 hover:text-slate-900 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 hover:scale-105 hover:shadow-md active:scale-95"
+                  >
+                    <i class="fas fa-download"></i>
+                    <span class="whitespace-nowrap">Baixar PDF</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Paginação -->
-      <div v-if="normas?.last_page && normas.last_page > 1" class="mt-8">
-        <nav class="flex items-center justify-center space-x-2">
-          <button
-            v-if="normas.current_page > 1"
-            @click="irParaPagina(normas.current_page - 1)"
-            class="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 px-3 py-2 rounded-lg transition-all duration-300"
-          >
-            <i class="fas fa-chevron-left"></i>
-          </button>
-          
-          <template v-for="pagina in paginasVisiveis" :key="pagina">
-            <button
-              v-if="pagina === '...'"
-              disabled
-              class="bg-white border border-gray-300 text-gray-400 px-3 py-2 rounded-lg cursor-not-allowed"
-            >
-              ...
-            </button>
-            <button
-              v-else
-              @click="irParaPagina(pagina)"
-              :class="pagina === normas.current_page ? 'bg-blue-600 text-white' : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'"
-              class="px-3 py-2 rounded-lg transition-all duration-300"
-            >
-              {{ pagina }}
-            </button>
-          </template>
-          
-          <button
-            v-if="normas.current_page < normas.last_page"
-            @click="irParaPagina(normas.current_page + 1)"
-            class="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 px-3 py-2 rounded-lg transition-all duration-300"
-          >
-            <i class="fas fa-chevron-right"></i>
-          </button>
-        </nav>
-      </div>
-
       <!-- Estado vazio -->
-      <div v-else-if="normas?.data && Array.isArray(normas.data) && normas.data.length === 0" class="text-center py-12">
-        <div class="bg-gray-50 rounded-lg p-8">
-          <i class="fas fa-search text-4xl text-gray-400 mb-4"></i>
-          <h3 class="text-xl font-semibold text-gray-700 mb-2">
+      <div v-else-if="normas?.data && Array.isArray(normas.data) && normas.data.length === 0" class="text-center py-8 sm:py-12">
+        <div class="bg-gray-50 rounded-lg p-6 sm:p-8 mx-4 sm:mx-0">
+          <i class="fas fa-search text-3xl sm:text-4xl text-gray-400 mb-4"></i>
+          <h3 class="text-lg sm:text-xl font-semibold text-gray-700 mb-2">
             Nenhuma norma encontrada
           </h3>
-          <p class="text-gray-600 mb-6">
+          <p class="text-gray-600 mb-6 text-sm sm:text-base">
             Tente ajustar os filtros ou usar termos diferentes na busca.
           </p>
           <button
             @click="limparFiltros"
-            class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-all duration-300"
+            class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-all duration-300 text-sm sm:text-base"
           >
             <i class="fas fa-refresh mr-2"></i>
             Nova Busca
@@ -326,13 +316,13 @@
       </div>
 
       <!-- Estado inicial -->
-      <div v-else class="text-center py-12">
-        <div class="p-8">
-          <i class="fas fa-search text-4xl text-blue-600 mb-4"></i>
-          <h3 class="text-xl font-semibold text-gray-700 mb-2">
+      <div v-else class="text-center py-8 sm:py-12">
+        <div class="p-6 sm:p-8 mx-4 sm:mx-0">
+          <i class="fas fa-search text-3xl sm:text-4xl text-blue-600 mb-4"></i>
+          <h3 class="text-lg sm:text-xl font-semibold text-gray-700 mb-2">
             Pronto para buscar
           </h3>
-          <p class="text-gray-600 mb-4">
+          <p class="text-gray-600 mb-4 text-sm sm:text-base">
             Use os filtros acima para encontrar as normas que você precisa.
           </p>
         </div>

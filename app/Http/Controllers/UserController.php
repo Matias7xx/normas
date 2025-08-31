@@ -8,6 +8,9 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Role;
 use Illuminate\Support\Facades\Log;
+use App\Http\Requests\UpdateUserRequest;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
@@ -43,24 +46,36 @@ class UserController extends Controller
     public function store(CreateUserRequest $request)
     {
       try {
-        // save the user to the database
+        DB::beginTransaction();
+        
         $user = User::create([
-            'name'          => $request->name,
-            'email'         => $request->email,
+            'name'          => trim($request->name),
+            'email'         => $request->email ? trim($request->email) : null,
             'matricula'     => $request->matricula,
-            'active'        => $request->active,
-            'password'      => bcrypt($request->password),
+            'active'        => (bool) $request->active,
+            'password'      => Hash::make($request->password),
             'role_id'       => $request->role_id,
             'cargo_id'      => $request->cargo_id,
             'cpf'           => $request->cpf,
-            'telefone'      => $request->phone,
+            'telefone'      => $request->telefone,
         ]);
+        
+        DB::commit();
+        
+        Log::info("Usuário criado com sucesso", [
+            'id' => $user->id,
+            'matricula' => $user->matricula,
+            'name' => $user->name,
+            'created_by' => auth()->user()->name ?? 'Sistema'
+        ]);
+        
         return redirect()->route('user.index')->withSuccess('Usuário criado com sucesso!');
+        
       } catch (\Exception $e) {
-        Log::error($e);
-        return back()->withErrors(['Erro interno no servidor, informe o administrador do sistema!']);
+        DB::rollBack();
+        Log::error('Erro ao criar usuário: ' . $e->getMessage());
+        return back()->withInput()->withErrors(['Erro interno no servidor, informe o administrador do sistema!']);
       }
-
     }
 
     /**
@@ -78,30 +93,56 @@ class UserController extends Controller
 
     /**
      * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(UpdateUserRequest $request, $id)
     {
-      $update_user = User::find($id) ;
-      $update_user->name  = $request->name;
-      $update_user->matricula = $request->matricula;
-      $update_user->email = $request->email;
-      $update_user->role_id = $request->role_id;
-      $update_user->cargo_id = $request->cargo_id;
-      $update_user->cpf = $request->cpf;
-      $update_user->telefone = $request->phone;
-      $update_user->active = $request->active;
-      // update pass is available
-      if ($request->has('password') && $request->password != null){
-       $update_user->password = bcrypt($request->password);
-      }
-      $update_user->save() ;
-
-      Session::flash('success', 'Usuário editado com sucesso!');
-      return redirect()->route('user.index') ;
+        try {
+            DB::beginTransaction();
+            
+            $user = User::findOrFail($id);
+            
+            // Verificar se não é o usuário root sendo editado por outro usuário
+            if ($user->id == 1 && auth()->user()->id != 1) {
+                return back()->withErrors(['Apenas o usuário root pode editar seus próprios dados.']);
+            }
+            
+            $user->fill([
+                'name'      => trim($request->name),
+                'matricula' => $request->matricula,
+                'email'     => $request->email ? trim($request->email) : null,
+                'role_id'   => $request->role_id,
+                'cargo_id'  => $request->cargo_id,
+                'cpf'       => $request->cpf,
+                'telefone'  => $request->telefone,
+                'active'    => (bool) $request->active,
+            ]);
+            
+            // Atualizar senha apenas se fornecida
+            if ($request->filled('password')) {
+                $user->password = Hash::make($request->password);
+                
+                Log::info("Senha atualizada para usuário", [
+                    'user_id' => $user->id,
+                    'matricula' => $user->matricula,
+                    'updated_by' => auth()->user()->name ?? 'Sistema'
+                ]);
+            }
+            
+            $user->save();
+            
+            DB::commit();
+            
+            return redirect()->route('user.index')
+                ->with('success', 'Usuário editado com sucesso!');
+                
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Erro ao atualizar usuário: ' . $e->getMessage());
+            
+            return back()
+                ->withInput()
+                ->withErrors(['Erro interno no servidor, informe o administrador do sistema!']);
+        }
     }
 
     /**
@@ -122,12 +163,10 @@ class UserController extends Controller
         return redirect()->back();
     }
 
-
     public function activate($id) {
         $user = User::find($id) ;
         $user->active = 1;
         $user->save() ;
-        // return "USER WITH ID: $id  is now active"  ;
         return redirect()->back() ;
     }
 

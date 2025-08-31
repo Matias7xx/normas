@@ -50,8 +50,18 @@
             title="Especificações Técnicas"
           >
             <i class="fas fa-tools mr-2"></i>
-            <span>Especificações Técnicas</span>
+            <span>Especificações</span>
           </Link>
+
+          <a
+            href="/boletins" 
+            :class="isActive('/boletins') ? 'text-[#c1a85a]' : 'text-gray-300 hover:text-[#c1a85a]'"
+            class="nav-link transition-colors duration-300 flex items-center px-3 py-2"
+            title="Boletins Informativos"
+          >
+            <i class="fas fa-newspaper mr-2"></i>
+            <span>Boletim Interno</span>
+          </a>
           
           <button 
             @click="$emit('show-help')"
@@ -61,14 +71,25 @@
             <i class="fas fa-question-circle mr-2"></i>
             <span>Ajuda</span>
           </button>
-          
+
+          <!-- Desktop: Mostrar Sair se logado e Área Administrativa sempre -->
+          <template v-if="page.props.auth?.user">
+            <button 
+              @click="logout"
+              class="nav-link text-gray-300 hover:text-red-500 px-4 py-2 transition-colors duration-300 flex items-center"
+              title="Sair"
+            >
+              <i class="fas fa-sign-out-alt mr-2"></i>
+              <span>Sair</span>
+            </button>
+          </template>
           <a
             href="/login" 
-            class="bg-[#9c8642] hover:bg-[#8d793f] text-gray-900 px-4 py-2 rounded-lg font-medium transition-all duration-300 hover:scale-105 shadow-md flex items-center"
+            class="bg-[#9c8642] hover:bg-[#8d793f] text-gray-900 px-4 py-2 rounded-lg font-medium transition-all duration-300 hover:scale-105 shadow-md flex items-center md:block hidden"
             title="Área Administrativa"
           >
             <i class="fas fa-cog mr-2"></i>
-            <span>Área Administrativa</span>
+            <span>Administração</span>
           </a>
         </div>
 
@@ -116,8 +137,18 @@
             @click="mobileMenuOpen = false"
           >
             <i class="fas fa-tools mr-3"></i>
-            Especificações Técnicas
+            Especificações
           </Link>
+
+          <a
+            href="/boletins" 
+            :class="isActive('/boletins') ? 'text-yellow-500 bg-gray-800' : 'text-gray-300 hover:text-yellow-500 hover:bg-gray-800'"
+            class="px-3 py-2 rounded transition-colors duration-300 flex items-center"
+            @click="mobileMenuOpen = false"
+          >
+            <i class="fas fa-newspaper mr-3"></i>
+            Boletim Interno
+          </a>
           
           <button 
             @click="$emit('show-help'); mobileMenuOpen = false"
@@ -126,15 +157,17 @@
             <i class="fas fa-question-circle mr-3"></i>
             Ajuda
           </button>
-          
-          <Link 
-            href="/login" 
-            class="bg-yellow-600 hover:bg-yellow-700 text-gray-900 px-3 py-2 rounded font-medium transition-all duration-300 text-center shadow-md flex items-center justify-center"
-            @click="mobileMenuOpen = false"
-          >
-            <i class="fas fa-cog mr-2"></i>
-            Área Administrativa
-          </Link>
+
+          <!-- Mobile: Mostrar só Sair se logado -->
+          <template v-if="page.props.auth?.user">
+            <button 
+              @click="logout; mobileMenuOpen = false"
+              class="text-gray-300 hover:text-red-500 hover:bg-gray-800 px-3 py-2 rounded transition-colors duration-300 flex items-center text-left w-full"
+            >
+              <i class="fas fa-sign-out-alt mr-3"></i>
+              Sair
+            </button>
+          </template>
         </div>
       </div>
     </div>
@@ -143,22 +176,23 @@
 
 <script setup>
 import { ref } from 'vue'
-import { Link, usePage } from '@inertiajs/vue3'
+import { Link, usePage, router } from '@inertiajs/vue3'
 
 const emit = defineEmits(['show-help'])
 
 const mobileMenuOpen = ref(false)
-
 const page = usePage()
 
 const isActive = (route) => {
   const currentUrl = page.url
-  
   if (route === '/') {
     return currentUrl === '/'
   }
-  
   return currentUrl.startsWith(route)
+}
+
+const logout = () => {
+  router.post('/logout')
 }
 </script>
 

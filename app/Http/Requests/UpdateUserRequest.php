@@ -5,8 +5,9 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
-class CreateUserRequest extends FormRequest
+class UpdateUserRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -20,8 +21,8 @@ class CreateUserRequest extends FormRequest
             return true;
         }
         
-        // Para outros usuários, verificar a permissão add_users
-        return Gate::allows('add_users');
+        // Para outros usuários, verificar a permissão edit_users
+        return Gate::allows('edit_users');
     }
 
     /**
@@ -31,12 +32,22 @@ class CreateUserRequest extends FormRequest
      */
     public function rules()
     {
+        $userId = $this->route('id') ?? $this->route('user'); // Flexibilidade no nome da rota
+        
         return [
             'name'          => 'required|string|max:255',
-            'matricula'     => 'required|unique:users|max:8',
-            'email'         => 'nullable|email|unique:users',
+            'matricula'     => [
+                'required',
+                'max:8',
+                Rule::unique('users', 'matricula')->ignore($userId)
+            ],
+            'email'         => [
+                'nullable',
+                'email',
+                Rule::unique('users', 'email')->ignore($userId)
+            ],
             'active'        => 'required|boolean',
-            'password'      => 'required|string|min:6',
+            'password'      => 'nullable|string|min:6', // Senha opcional na edição
             'role_id'       => 'required|exists:roles,id',
             'cargo_id'      => 'nullable|in:1,2,3,4',
             'cpf'           => 'nullable|string|max:14',
@@ -59,7 +70,6 @@ class CreateUserRequest extends FormRequest
             'matricula.required'    => 'Informe a matrícula do usuário.',
             'matricula.unique'      => 'Matrícula já cadastrada no sistema.',
             'matricula.max'         => 'A matrícula não pode ter mais que 8 caracteres.',
-            'password.required'     => 'Informe uma senha inicial para o usuário.',
             'password.min'          => 'A senha deve ter pelo menos 6 caracteres.',
             'role_id.required'      => 'Selecione um perfil para o usuário.',
             'role_id.exists'        => 'O perfil selecionado não existe.',

@@ -14,7 +14,9 @@ use App\Http\Controllers\PublicController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use App\Helpers\StorageHelper;
+use App\Http\Controllers\BoletimController;
 use App\Http\Controllers\VigenciaDashboardController;
+use App\Http\Middleware\CheckAdminRoles;
 
 // ==================== ROTAS PÚBLICAS (Vue 3 + Inertia.js) ====================
 
@@ -58,9 +60,23 @@ Route::get('/especificacao/view/{id}', [PublicController::class, 'viewEspecifica
 // rota AJAX para a consulta pública com BLADE
 //Route::get('/norma_public_search_ajax', [NormaSearchPublicController::class, 'searchAjax'])->name('norma_public_search_ajax');
 
-// ==================== ÁREA ADMINISTRATIVA ====================
+// ==================== BOLETINS - ROTAS PÚBLICAS ====================
+
 
 Route::middleware([Authenticate::class])->group(function() {
+    // Página de boletins com busca
+    Route::get('/boletins', [PublicController::class, 'boletins'])->name('public.boletins');
+    
+    // Visualização de PDF de boletim
+    Route::get('/boletim/view/{id}', [PublicController::class, 'viewBoletim'])->name('public.boletim.view');
+    
+    // Download de boletim
+    Route::get('/boletim/download/{id}', [PublicController::class, 'downloadBoletim'])->name('public.boletim.download');
+});
+
+// ==================== ÁREA ADMINISTRATIVA ====================
+
+Route::middleware([CheckAdminRoles::class])->group(function() {
 
     Route::get('/home', [NormaController::class, 'index'])->name('home');
 
@@ -195,6 +211,33 @@ Route::middleware([Authenticate::class])->group(function() {
         Route::get('/view/{id}', [EspecificacaoController::class, 'view'])->name('especificacoes.view');
     });
 
+    // =====================  GESTÃO DE BOLETINS - APENAS ROLE 1 (ROOT) ou 7  ============================
+    Route::group(['prefix' => 'admin/boletins', 'middleware' => ['auth']], function(){
+        
+        // Listagem
+        Route::get('/', [BoletimController::class, 'index'])->name('boletins.index');
+        
+        // Formulário de criação
+        Route::get('/create', [BoletimController::class, 'create'])->name('boletins.create');
+        
+        Route::post('/', [BoletimController::class, 'store'])->name('boletins.store');
+        
+        // Formulário de edição
+        Route::get('/{id}/edit', [BoletimController::class, 'edit'])->name('boletins.edit');
+        
+        // Atualizar boletim
+        Route::put('/{id}', [BoletimController::class, 'update'])->name('boletins.update');
+        
+        // Remover boletim - soft delete
+        Route::delete('/{id}', [BoletimController::class, 'destroy'])->name('boletins.destroy');
+        
+        // Visualizar PDF
+        Route::get('/{id}/view', [BoletimController::class, 'view'])->name('boletins.view');
+        
+        // Download PDF
+        Route::get('/{id}/download', [BoletimController::class, 'download'])->name('boletins.download');
+    });
+
     // =====================  TIPOS   ============================
     Route::group(['prefix' => 'tipos', 'middleware' => ['auth', 'admin']], function(){
         Route::get('/tipo_list', [TipoController::class, 'show'])->name('tipos.tipo_list');
@@ -230,21 +273,21 @@ Route::middleware([Authenticate::class])->group(function() {
     });
 
     // =====================  DASHBOARD DE VIGÊNCIA   ============================
-Route::group(['prefix' => 'vigencia', 'middleware' => ['auth']], function(){
-    // Dashboard de vigência - apenas para role 1 e 2
-    Route::get('/dashboard', [VigenciaDashboardController::class, 'index'])
-        ->name('vigencia.dashboard');
-    
-    // Executar atualização de vigência
-    Route::post('/executar', [VigenciaDashboardController::class, 'executarAtualizacao'])
-        ->name('vigencia.executar');
-    
-    // Atualizar norma específica
-    Route::post('/atualizar-norma/{id}', [VigenciaDashboardController::class, 'atualizarNormaEspecifica'])
-        ->name('vigencia.atualizar.norma');
-    
-    // API para dados de gráficos
-    Route::get('/dados-graficos', [VigenciaDashboardController::class, 'getDadosGraficos'])
-        ->name('vigencia.dados.graficos');
-});
+    Route::group(['prefix' => 'vigencia', 'middleware' => ['auth']], function(){
+        // Dashboard de vigência - apenas para role 1 e 2
+        Route::get('/dashboard', [VigenciaDashboardController::class, 'index'])
+            ->name('vigencia.dashboard');
+        
+        // Executar atualização de vigência
+        Route::post('/executar', [VigenciaDashboardController::class, 'executarAtualizacao'])
+            ->name('vigencia.executar');
+        
+        // Atualizar norma específica
+        Route::post('/atualizar-norma/{id}', [VigenciaDashboardController::class, 'atualizarNormaEspecifica'])
+            ->name('vigencia.atualizar.norma');
+        
+        // API para dados de gráficos
+        Route::get('/dados-graficos', [VigenciaDashboardController::class, 'getDadosGraficos'])
+            ->name('vigencia.dados.graficos');
+    });
 });

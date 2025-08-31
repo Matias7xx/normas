@@ -48,4 +48,12 @@ class StorageHelper
     {
         return self::bucket(env('AWS_BUCKET_ESPECIFICACOES', 'especificacoes'));
     }
+
+    /**
+     * Bucket de boletins
+     */
+    public static function boletins()
+    {
+        return self::bucket(env('AWS_BUCKET_BOLETINS', 'boletins'));
+    }
 }

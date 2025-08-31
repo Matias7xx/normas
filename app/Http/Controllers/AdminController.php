@@ -28,10 +28,14 @@ class AdminController extends Controller
     /* $role->display_name = $request->display_name; */ //Não existe na migration
     $role->description = mb_strtoupper($request->description, mb_internal_encoding());
     $role->save();
-    // $permissions = $request->permissions;
-    foreach ($request->permissions as $key => $p) {
-      $role->permissions()->toggle([$p]);
+    
+    // Verificar se existem permissões selecionadas antes do foreach
+    if ($request->has('permissions') && is_array($request->permissions)) {
+        foreach ($request->permissions as $key => $p) {
+            $role->permissions()->toggle([$p]);
+        }
     }
+    
     return back()->withInput();
   }
 

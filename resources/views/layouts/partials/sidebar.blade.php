@@ -4,18 +4,18 @@
     <!-- Sidebar -->
     <div class="sidebar">
         <div class="user-panel mt-3 pb-3 mb-3 d-flex" style="border-bottom: 1px solid #404040;">
-    <li class="nav-item d-flex align-items-center ml-3" style="width: 100%;">
-        <img src="/images/brasao_pcpb.png" alt="Logo PCPB" width="35px" class="mr-2" style="opacity: .9; brightness(1.1) flex-shrink: 0;"/>
-        <div style="min-width: 0; flex: 1;">
-            <h4 class="mb-0 font-weight-bold" style="color: #d8d8d8; font-size: 1.15rem; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                Biblioteca de Normas
-            </h4>
-            <small style="color: #6c757d; font-size: 1.0rem; line-height: 0.90; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                Polícia Civil da Paraíba
-            </small>
+            <li class="nav-item d-flex align-items-center ml-3" style="width: 100%;">
+                <img src="/images/brasao_pcpb.png" alt="Logo PCPB" width="35px" class="mr-2" style="opacity: .9; brightness(1.1) flex-shrink: 0;"/>
+                <div style="min-width: 0; flex: 1;">
+                    <h4 class="mb-0 font-weight-bold" style="color: #d8d8d8; font-size: 1.15rem; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                        Biblioteca de Normas
+                    </h4>
+                    <small style="color: #6c757d; font-size: 1.0rem; line-height: 0.90; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                        Polícia Civil da Paraíba
+                    </small>
+                </div>
+            </li>
         </div>
-    </li>
-</div>
 
         <!-- Sidebar Search Form -->
         <div class="form-inline px-3 mb-3">
@@ -40,8 +40,8 @@
                 <li class="nav-header text-uppercase" style="color: #bea55a; font-weight: bold; font-size: 0.75rem; letter-spacing: 1px;">
                     <i class="fas fa-cogs mr-2"></i> Administração
                 </li>
-                <li class="nav-item has-treeview {{ Request::is('admin*') ? 'menu-open' : '' }}">
-                    <a href="#" class="nav-link {{ Request::is('admin*') ? 'active' : '' }}">
+                <li class="nav-item has-treeview {{ Request::is('admin/users*') || Request::is('user/create') || Request::is('admin/list-*') ? 'menu-open' : '' }}">
+                    <a href="#" class="nav-link {{ Request::is('admin/users*') || Request::is('user/create') || Request::is('admin/list-*') ? 'active' : '' }}">
                         <i class="nav-icon fas fa-tachometer-alt" style="color: #bea55a;"></i>
                         <p style="color: #ffffff;">
                             Painel Administrativo
@@ -50,7 +50,7 @@
                     </a>
                     <ul class="nav nav-treeview">
                         <li class="nav-item">
-                            <a href="{{ route('user.create') }}" class="nav-link {{ Request::is('admin/create') ? 'active' : '' }}">
+                            <a href="{{ route('user.create') }}" class="nav-link {{ Request::is('user/create') ? 'active' : '' }}">
                                 <i class="far fa-circle nav-icon" style="color: #bea55a;"></i>
                                 <p style="color: #cccccc;">Novo Usuário</p>
                             </a>
@@ -82,18 +82,17 @@
                     <i class="fas fa-balance-scale mr-2"></i> Gestão de Normas
                 </li>
                 
-                <li class="nav-item has-treeview {{ Request::is('normas*') ? 'menu-open' : '' }}">
-                    <a href="#" class="nav-link {{ Request::is('normas*') ? 'active' : '' }}">
+                <li class="nav-item has-treeview {{ Request::is('normas*') || Request::is('vigencia*') ? 'menu-open' : '' }}">
+                    <a href="#" class="nav-link {{ Request::is('normas*') || Request::is('vigencia*') ? 'active' : '' }}">
                         <i class="nav-icon fas fa-layer-group" style="color: #bea55a;"></i>
                         <p style="color: #ffffff;">
                             Normas Jurídicas
                             <i class="right fas fa-angle-left"></i>
-                            {{-- <span class="badge badge-info right">6232{{ \App\Models\Norma::where('status', true)->count() }}</span> --}}
                         </p>
                     </a>
                     <ul class="nav nav-treeview">
                         <li class="nav-item">
-                            <a href="{{ route('normas.norma_list') }}" class="nav-link">
+                            <a href="{{ route('normas.norma_list') }}" class="nav-link {{ Request::is('normas') || Request::is('normas/norma_list') ? 'active' : '' }}">
                                 <i class="far fa-circle nav-icon" style="color: #bea55a;"></i>
                                 <p style="color: #cccccc;">Pesquisar</p>
                             </a>
@@ -110,14 +109,14 @@
                             <li class="nav-item">
                                 <a href="{{ route('vigencia.dashboard') }}" class="nav-link {{ Request::is('vigencia/dashboard') ? 'active' : '' }}">
                                     &nbsp;&nbsp;&nbsp;<i class="fas fa-calendar-check nav-icon text-warning"></i>
-                                    <p>Vigências</p>
+                                    <p style="color: #cccccc;">Vigências</p>
                                 </a>
                             </li>
                         @endif
 
                         @can('gestor')
                         <li class="nav-item">
-                            <a href="{{ route('normas.norma_create') }}" class="nav-link">
+                            <a href="{{ route('normas.norma_create') }}" class="nav-link {{ Request::is('normas/create') || Request::is('normas/norma_create') ? 'active' : '' }}">
                                 <i class="far fa-circle nav-icon" style="color: #bea55a;"></i>
                                 <p style="color: #cccccc;">Cadastrar</p>
                             </a>
@@ -132,8 +131,8 @@
                     <i class="fas fa-cog mr-2"></i> Configurações
                 </li>
                 
-                <li class="nav-item has-treeview">
-                    <a href="#" class="nav-link">
+                <li class="nav-item has-treeview {{ Request::is('tipos*') ? 'menu-open' : '' }}">
+                    <a href="#" class="nav-link {{ Request::is('tipos*') ? 'active' : '' }}">
                         <i class="nav-icon fas fa-tags" style="color: #bea55a;"></i>
                         <p style="color: #ffffff;">
                             Tipos de Normas
@@ -142,13 +141,13 @@
                     </a>
                     <ul class="nav nav-treeview">
                         <li class="nav-item">
-                            <a href="{{ route('tipos.tipo_list') }}" class="nav-link">
+                            <a href="{{ route('tipos.tipo_list') }}" class="nav-link {{ Request::is('tipos') || Request::is('tipos/tipo_list') ? 'active' : '' }}">
                                 <i class="far fa-circle nav-icon" style="color: #bea55a;"></i>
                                 <p style="color: #cccccc;">Listar Tipos</p>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{{ route('tipos.tipo_create') }}" class="nav-link">
+                            <a href="{{ route('tipos.tipo_create') }}" class="nav-link {{ Request::is('tipos/create') || Request::is('tipos/tipo_create') ? 'active' : '' }}">
                                 <i class="far fa-circle nav-icon" style="color: #bea55a;"></i>
                                 <p style="color: #cccccc;">Cadastrar Tipo</p>
                             </a>
@@ -156,8 +155,8 @@
                     </ul>
                 </li>
 
-                <li class="nav-item has-treeview">
-                    <a href="#" class="nav-link">
+                <li class="nav-item has-treeview {{ Request::is('orgaos*') ? 'menu-open' : '' }}">
+                    <a href="#" class="nav-link {{ Request::is('orgaos*') ? 'active' : '' }}">
                         <i class="nav-icon fas fa-building" style="color: #bea55a;"></i>
                         <p style="color: #ffffff;">
                             Órgãos
@@ -166,13 +165,13 @@
                     </a>
                     <ul class="nav nav-treeview">
                         <li class="nav-item">
-                            <a href="{{ route('orgaos.orgao_list') }}" class="nav-link">
+                            <a href="{{ route('orgaos.orgao_list') }}" class="nav-link {{ Request::is('orgaos') || Request::is('orgaos/orgao_list') ? 'active' : '' }}">
                                 <i class="far fa-circle nav-icon" style="color: #bea55a;"></i>
                                 <p style="color: #cccccc;">Listar Órgãos</p>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{{ route('orgaos.orgao_create') }}" class="nav-link">
+                            <a href="{{ route('orgaos.orgao_create') }}" class="nav-link {{ Request::is('orgaos/create') || Request::is('orgaos/orgao_create') ? 'active' : '' }}">
                                 <i class="far fa-circle nav-icon" style="color: #bea55a;"></i>
                                 <p style="color: #cccccc;">Cadastrar Órgão</p>
                             </a>
@@ -180,8 +179,8 @@
                     </ul>
                 </li>
 
-                <li class="nav-item has-treeview">
-                    <a href="#" class="nav-link">
+                <li class="nav-item has-treeview {{ Request::is('palavras*') ? 'menu-open' : '' }}">
+                    <a href="#" class="nav-link {{ Request::is('palavras*') ? 'active' : '' }}">
                         <i class="nav-icon fas fa-key" style="color: #bea55a;"></i>
                         <p style="color: #ffffff;">
                             Palavras-chave
@@ -190,13 +189,13 @@
                     </a>
                     <ul class="nav nav-treeview">
                         <li class="nav-item">
-                            <a href="{{ route('palavras_chaves.palavras_chaves_list') }}" class="nav-link">
+                            <a href="{{ route('palavras_chaves.palavras_chaves_list') }}" class="nav-link {{ Request::is('palavras*list*') ? 'active' : '' }}">
                                 <i class="far fa-circle nav-icon" style="color: #bea55a;"></i>
                                 <p style="color: #cccccc;">Listar Palavras</p>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{{ route('palavras_chaves.palavras_chaves_create') }}" class="nav-link">
+                            <a href="{{ route('palavras_chaves.palavras_chaves_create') }}" class="nav-link {{ Request::is('palavras*create*') ? 'active' : '' }}">
                                 <i class="far fa-circle nav-icon" style="color: #bea55a;"></i>
                                 <p style="color: #cccccc;">Cadastrar Palavra</p>
                             </a>
@@ -205,8 +204,8 @@
                 </li>
 
                 {{-- Área de Especificações --}}
-                <li class="nav-item has-treeview">
-                    <a href="#" class="nav-link">
+                <li class="nav-item has-treeview {{ Request::is('especificacoes*') ? 'menu-open' : '' }}">
+                    <a href="#" class="nav-link {{ Request::is('especificacoes*') ? 'active' : '' }}">
                         <i class="nav-icon fas fa-tools" style="color: #bea55a;"></i>
                         <p style="color: #ffffff;">
                             Especificações
@@ -215,13 +214,13 @@
                     </a>
                     <ul class="nav nav-treeview">
                         <li class="nav-item">
-                            <a href="{{ route('especificacoes.especificacoes_list') }}" class="nav-link">
+                            <a href="{{ route('especificacoes.especificacoes_list') }}" class="nav-link {{ Request::is('especificacoes*list*') ? 'active' : '' }}">
                                 <i class="far fa-circle nav-icon" style="color: #bea55a;"></i>
                                 <p style="color: #cccccc;">Listar Especificações</p>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{{ route('especificacoes.especificacoes_create') }}" class="nav-link">
+                            <a href="{{ route('especificacoes.especificacoes_create') }}" class="nav-link {{ Request::is('especificacoes*create*') ? 'active' : '' }}">
                                 <i class="far fa-circle nav-icon" style="color: #bea55a;"></i>
                                 <p style="color: #cccccc;">Nova Especificação</p>
                             </a>
@@ -229,6 +228,38 @@
                     </ul>
                 </li>
                 @endcan
+
+                {{-- Gestão de Boletins - apenas para role 1 (root) ou 7 --}}
+                @if(Auth::user()->role_id == 1 || Auth::user()->role_id == 7)
+                <li class="nav-header text-uppercase" style="color: #bea55a; font-weight: bold; font-size: 0.75rem; letter-spacing: 1px; margin-top: 20px;">
+                    <i class="fas fa-newspaper mr-2"></i> Gestão de Boletins
+                </li>
+                
+                <li class="nav-item has-treeview {{ Request::is('admin/boletins*') ? 'menu-open' : '' }}">
+                    <a href="#" class="nav-link {{ Request::is('admin/boletins*') ? 'active' : '' }}">
+                        <i class="nav-icon fas fa-file-alt" style="color: #bea55a;"></i>
+                        <p style="color: #ffffff;">
+                            Boletim Interno
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="{{ route('boletins.index') }}" class="nav-link {{ Request::is('admin/boletins') ? 'active' : '' }}">
+                                <i class="far fa-circle nav-icon" style="color: #bea55a;"></i>
+                                <p style="color: #cccccc;">Listar</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('boletins.create') }}" class="nav-link {{ Request::is('admin/boletins/create') ? 'active' : '' }}">
+                                <i class="far fa-circle nav-icon" style="color: #bea55a;"></i>
+                                <p style="color: #cccccc;">Cadastrar</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                @endif
+
             </ul>
         </nav>
     </div>

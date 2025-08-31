@@ -43,8 +43,8 @@
             @if (!$users->isEmpty())
               <tbody>
                 @foreach ( $users as $user)
-                  @if ( $user->id == 1 )  @continue
-                  @endif
+                  {{-- @if ( $user->id == 1 )  @continue
+                  @endif --}}
                   <tr>
                     {{-- <td><a href="{{ route('user.list', ['id'=> $user->id] ) }}">{{ $user->name }}</a></td> --}}
                     <td class="text-primary">{{ $user->name }}</td>
