@@ -33,7 +33,14 @@ class UserController extends Controller
     public function create()
     {
       $user = new User;
-      $roles = Role::where('id', '!=', 1)->get();
+      
+      // Apenas usuários root podem atribuir perfil root
+      if (auth()->user()->isRoot()) {
+          $roles = Role::all(); // Root pode atribuir qualquer perfil
+      } else {
+          $roles = Role::where('id', '!=', 1)->get(); // Outros usuários não podem atribuir root
+      }
+      
       return view('user.create')->with('roles', $roles)->with('user', $user);
     }
 
@@ -47,6 +54,11 @@ class UserController extends Controller
     {
       try {
         DB::beginTransaction();
+        
+        // Apenas usuários root podem criar usuários com perfil root
+        if ($request->role_id == 1 && !auth()->user()->isRoot()) {
+            return back()->withInput()->withErrors(['Apenas usuários root podem atribuir o perfil root.']);
+        }
         
         $user = User::create([
             'name'          => trim($request->name),
@@ -87,7 +99,14 @@ class UserController extends Controller
     public function edit($id)
     {
       $user = User::find($id);
-      $roles = Role::where('id', '!=', 1)->get();
+      
+      // Apenas usuários root podem atribuir perfil root
+      if (auth()->user()->isRoot()) {
+          $roles = Role::all(); // Root pode atribuir qualquer perfil
+      } else {
+          $roles = Role::where('id', '!=', 1)->get(); // Outros usuários não podem atribuir root
+      }
+      
       return view('user.edit')->with('user', $user)->with('roles', $roles);
     }
 
@@ -104,6 +123,11 @@ class UserController extends Controller
             // Verificar se não é o usuário root sendo editado por outro usuário
             if ($user->id == 1 && auth()->user()->id != 1) {
                 return back()->withErrors(['Apenas o usuário root pode editar seus próprios dados.']);
+            }
+            
+            // Apenas usuários root podem atribuir perfil root
+            if ($request->role_id == 1 && !auth()->user()->isRoot()) {
+                return back()->withErrors(['Apenas usuários root podem atribuir o perfil root.']);
             }
             
             $user->fill([
