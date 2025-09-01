@@ -24,7 +24,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        /* URL::forceScheme('https');
-        URL::forceRootUrl(config('app.url')); */
+        URL::forceScheme(env('HTTP_SCHEMA', 'https'));
+        URL::forceRootUrl(env('APP_URL'));
     }
 }
