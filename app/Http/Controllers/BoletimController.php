@@ -186,21 +186,21 @@ class BoletimController extends Controller
         try {
             // Upload do arquivo para MinIO
             $arquivo = $request->file('arquivo');
-            $nomeArquivo = $this->generateUniqueFileName($arquivo, $request->nome);
+            $caminhoCompleto = $this->generateUniqueFileName($arquivo, $request->nome, $request->data_publicacao);
             
-            // Salvar no bucket 'boletins'
-            $uploaded = StorageHelper::boletins()->putFileAs('', $arquivo, $nomeArquivo);
+            // Salvar no bucket 'boletins' com a estrutura de pastas ano/mes/
+            $uploaded = StorageHelper::boletins()->putFileAs('', $arquivo, $caminhoCompleto);
             
             if (!$uploaded) {
                 return back()->withErrors(['Erro ao fazer upload do arquivo.'])->withInput();
             }
 
-            // Criar registro no banco
+            // Criar registro no banco - salvar o caminho completo
             Boletim::create([
                 'nome' => $request->nome,
                 'descricao' => $request->descricao,
                 'data_publicacao' => $request->data_publicacao,
-                'arquivo' => $nomeArquivo,
+                'arquivo' => $caminhoCompleto, // Salva: 2025/09/nome_arquivo.pdf
                 'user_id' => Auth::id()
             ]);
 
@@ -238,22 +238,22 @@ class BoletimController extends Controller
     {
         try {
             $boletim = Boletim::findOrFail($id);
-            $nomeArquivoAtual = $boletim->arquivo;
+            $caminhoArquivoAtual = $boletim->arquivo;
 
             // Se enviou novo arquivo
             if ($request->hasFile('arquivo')) {
                 $arquivo = $request->file('arquivo');
-                $novoNomeArquivo = $this->generateUniqueFileName($arquivo, $request->nome);
+                $novoCaminhoArquivo = $this->generateUniqueFileName($arquivo, $request->nome, $request->data_publicacao);
                 
                 // Upload do novo arquivo
-                $uploaded = StorageHelper::boletins()->putFileAs('', $arquivo, $novoNomeArquivo);
+                $uploaded = StorageHelper::boletins()->putFileAs('', $arquivo, $novoCaminhoArquivo);
                 
                 if ($uploaded) {
                     // Remove arquivo antigo se conseguiu fazer upload do novo
-                    if (StorageHelper::boletins()->exists($nomeArquivoAtual)) {
-                        StorageHelper::boletins()->delete($nomeArquivoAtual);
+                    if ($caminhoArquivoAtual && StorageHelper::boletins()->exists($caminhoArquivoAtual)) {
+                        StorageHelper::boletins()->delete($caminhoArquivoAtual);
                     }
-                    $nomeArquivoAtual = $novoNomeArquivo;
+                    $caminhoArquivoAtual = $novoCaminhoArquivo;
                 } else {
                     return back()->withErrors(['Erro ao fazer upload do novo arquivo.'])->withInput();
                 }
@@ -264,7 +264,7 @@ class BoletimController extends Controller
                 'nome' => $request->nome,
                 'descricao' => $request->descricao,
                 'data_publicacao' => $request->data_publicacao,
-                'arquivo' => $nomeArquivoAtual
+                'arquivo' => $caminhoArquivoAtual
             ]);
 
             return redirect()
@@ -367,14 +367,33 @@ class BoletimController extends Controller
     }
 
     /**
-     * Gera nome único para o arquivo baseado no nome do boletim
+     * Gera nome único para o arquivo com estrutura de pastas baseado na data de publicação
+     * ano/mes/nome_arquivo.pdf
      */
-    private function generateUniqueFileName($file, $nomeBoletim)
+    private function generateUniqueFileName($file, $nomeBoletim, $dataPublicacao)
     {
         $extension = $file->getClientOriginalExtension();
         $nomeBoletimSanitizado = $this->sanitize_filename($nomeBoletim);
         
-        return $nomeBoletimSanitizado . '.' . $extension;
+        // Criar estrutura de pasta baseada na data de publicação
+        $dataCarbon = Carbon::parse($dataPublicacao);
+        $ano = $dataCarbon->format('Y');
+        $mes = $dataCarbon->format('m');
+        
+        // Construir nome do arquivo
+        $nomeArquivo = $nomeBoletimSanitizado . '.' . $extension;
+        
+        // Verificar se já existe um arquivo com o mesmo nome na mesma pasta
+        $caminhoCompleto = $ano . '/' . $mes . '/' . $nomeArquivo;
+        $contador = 1;
+        
+        while (StorageHelper::boletins()->exists($caminhoCompleto)) {
+            $nomeArquivoComContador = $nomeBoletimSanitizado . '_' . $contador . '.' . $extension;
+            $caminhoCompleto = $ano . '/' . $mes . '/' . $nomeArquivoComContador;
+            $contador++;
+        }
+        
+        return $caminhoCompleto;
     }
 
     /**
