@@ -48,6 +48,57 @@ class EspecificacaoController extends Controller
     }
 
     /**
+     * Sanitiza o nome do arquivo baseado no nome da especificação
+     * 
+     * @param string $nome
+     * @param string $extension
+     * @return string
+     */
+    private function generateEspecificacaoFileName($nome, $extension)
+    {
+        // Remover caracteres especiais e limitar tamanho
+        $nomeArquivo = preg_replace('/[^A-Za-z0-9\s\-_.]/', '', $nome);
+        
+        // Substituir múltiplos espaços por um só e converter para underscore
+        $nomeArquivo = preg_replace('/\s+/', '_', trim($nomeArquivo));
+        
+        // Limitar o tamanho do nome (máximo 100 caracteres)
+        $nomeArquivo = substr($nomeArquivo, 0, 100);
+        
+        // Remover underscores do final
+        $nomeArquivo = rtrim($nomeArquivo, '_');
+        
+        // Se ficou vazio, usar fallback
+        if (empty($nomeArquivo)) {
+            $nomeArquivo = 'especificacao_' . date('Y_m_d_His');
+        }
+        
+        return $nomeArquivo . '.' . $extension;
+    }
+
+    /**
+     * Verifica se já existe um arquivo com o mesmo nome no MinIO
+     * Se existir, adiciona um sufixo numérico
+     * 
+     * @param string $fileName
+     * @return string
+     */
+    private function getUniqueEspecificacaoFileName($fileName)
+    {
+        $originalName = pathinfo($fileName, PATHINFO_FILENAME);
+        $extension = pathinfo($fileName, PATHINFO_EXTENSION);
+        $counter = 1;
+        
+        // Verificar se o arquivo já existe
+        while (StorageHelper::especificacoes()->exists($fileName)) {
+            $fileName = $originalName . '_' . $counter . '.' . $extension;
+            $counter++;
+        }
+        
+        return $fileName;
+    }
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(CreateEspecificacaoRequest $request)
@@ -59,8 +110,11 @@ class EspecificacaoController extends Controller
             if ($request->hasFile('arquivo')) {
                 $arquivo = $request->file('arquivo');
                 
-                // Gerar nome único com UUID
-                $nomeArquivo = Str::uuid() . '.' . $arquivo->getClientOriginalExtension();
+                // Usar nome da especificação para gerar nome do arquivo
+                $nomeArquivo = $this->generateEspecificacaoFileName($request->nome, $arquivo->getClientOriginalExtension());
+                
+                // Verificar se já existe arquivo com mesmo nome e gerar nome único
+                $nomeArquivo = $this->getUniqueEspecificacaoFileName($nomeArquivo);
                 
                 // Salvar no bucket 'especificacoes' via Helper
                 StorageHelper::especificacoes()->putFileAs('/', $arquivo, $nomeArquivo);
@@ -106,6 +160,7 @@ class EspecificacaoController extends Controller
         try {
             $especificacao = Especificacao::findOrFail($id);
             $nomeArquivo = $especificacao->arquivo;
+            $mensagens = [];
 
             // Upload do novo arquivo (se fornecido)
             if ($request->hasFile('arquivo')) {
@@ -114,10 +169,58 @@ class EspecificacaoController extends Controller
                     StorageHelper::especificacoes()->delete($especificacao->arquivo);
                 }
 
+                // Usar nome da especificação para gerar nome do arquivo
+                $nomeParaArquivo = $request->has('nome') ? $request->nome : $especificacao->nome;
+                $nomeArquivo = $this->generateEspecificacaoFileName($nomeParaArquivo, $request->file('arquivo')->getClientOriginalExtension());
+                
+                // Verificar se já existe arquivo com mesmo nome e gerar nome único
+                $nomeArquivo = $this->getUniqueEspecificacaoFileName($nomeArquivo);
+                
                 // Salvar novo arquivo no MinIO
-                $arquivo = $request->file('arquivo');
-                $nomeArquivo = Str::uuid() . '.' . $arquivo->getClientOriginalExtension();
-                StorageHelper::especificacoes()->putFileAs('/', $arquivo, $nomeArquivo);
+                StorageHelper::especificacoes()->putFileAs('/', $request->file('arquivo'), $nomeArquivo);
+                $mensagens[] = 'Arquivo atualizado com sucesso!';
+            }
+
+            // Renomear arquivo existente se o nome foi alterado
+            // Se o nome foi alterado e não houve upload de novo arquivo, renomear o arquivo existente
+            if ($request->has('nome') && $request->nome !== $especificacao->nome && 
+                $especificacao->arquivo && !$request->hasFile('arquivo')) {
+                
+                try {
+                    // Obter extensão do arquivo atual
+                    $extensaoAtual = pathinfo($especificacao->arquivo, PATHINFO_EXTENSION);
+                    
+                    // Gerar novo nome baseado no novo nome da especificação
+                    $novoNome = $this->generateEspecificacaoFileName($request->nome, $extensaoAtual);
+                    $novoNome = $this->getUniqueEspecificacaoFileName($novoNome);
+                    
+                    // Se o nome for diferente do atual, renomear no MinIO
+                    if ($novoNome !== $especificacao->arquivo) {
+                        // Verificar se arquivo atual existe
+                        if (StorageHelper::especificacoes()->exists($especificacao->arquivo)) {
+                            // Copiar arquivo com novo nome
+                            $conteudoArquivo = StorageHelper::especificacoes()->get($especificacao->arquivo);
+                            StorageHelper::especificacoes()->put($novoNome, $conteudoArquivo);
+                            
+                            // Excluir arquivo antigo
+                            StorageHelper::especificacoes()->delete($especificacao->arquivo);
+                            
+                            // Atualizar referência na especificação
+                            $nomeAntigoArquivo = $especificacao->arquivo;
+                            $nomeArquivo = $novoNome;
+                            
+                            Log::info('Arquivo da especificação renomeado', [
+                                'especificacao_id' => $especificacao->id,
+                                'nome_antigo' => $nomeAntigoArquivo,
+                                'nome_novo' => $novoNome,
+                                'usuario' => auth()->user()->name
+                            ]);
+                            
+                        }
+                    }
+                } catch (\Exception $e) {
+                    Log::error('Erro ao renomear arquivo da especificação: ' . $e->getMessage());
+                }
             }
 
             $especificacao->update([
@@ -125,8 +228,13 @@ class EspecificacaoController extends Controller
                 'arquivo' => $nomeArquivo
             ]);
 
+            // Determinar mensagem de sucesso
+            $mensagemFinal = count($mensagens) > 0 ? 
+                'Especificação atualizada com sucesso! ' . implode(' ', $mensagens) : 
+                'Especificação atualizada com sucesso!';
+
             return redirect()->route('especificacoes.especificacoes_list')
-                ->withSuccess('Especificação atualizada com sucesso!');
+                ->withSuccess($mensagemFinal);
 
         } catch (\Exception $e) {
             Log::error('Erro ao atualizar especificação: ' . $e->getMessage());

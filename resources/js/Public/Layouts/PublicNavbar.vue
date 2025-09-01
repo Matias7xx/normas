@@ -97,7 +97,7 @@
         <div class="md:hidden">
           <button 
             @click="mobileMenuOpen = !mobileMenuOpen"
-            class="text-gray-300 hover:text-yellow-500 focus:outline-none focus:text-yellow-500 transition-colors duration-300"
+            class="text-gray-300 hover:text-[#c1a85a] focus:outline-none focus:text-[#c1a85a] transition-colors duration-300"
           >
             <i :class="mobileMenuOpen ? 'fas fa-times' : 'fas fa-bars'" class="text-xl"></i>
           </button>
@@ -112,7 +112,7 @@
         <div class="flex flex-col space-y-3">
           <Link 
             href="/" 
-            :class="isActive('/') ? 'text-yellow-500 bg-gray-800' : 'text-gray-300 hover:text-yellow-500 hover:bg-gray-800'"
+            :class="isActive('/') ? 'text-[#c1a85a] bg-gray-800' : 'text-gray-300 hover:text-[#c1a85a] hover:bg-gray-800'"
             class="px-3 py-2 rounded transition-colors duration-300 flex items-center"
             @click="mobileMenuOpen = false"
           >
@@ -122,7 +122,7 @@
           
           <Link 
             href="/consulta" 
-            :class="isActive('/consulta') ? 'text-yellow-500 bg-gray-800' : 'text-gray-300 hover:text-yellow-500 hover:bg-gray-800'"
+            :class="isActive('/consulta') ? 'text-[#c1a85a] bg-gray-800' : 'text-gray-300 hover:text-[#c1a85a] hover:bg-gray-800'"
             class="px-3 py-2 rounded transition-colors duration-300 flex items-center"
             @click="mobileMenuOpen = false"
           >
@@ -132,7 +132,7 @@
 
           <Link 
             href="/especificacoes" 
-            :class="isActive('/especificacoes') ? 'text-yellow-500 bg-gray-800' : 'text-gray-300 hover:text-yellow-500 hover:bg-gray-800'"
+            :class="isActive('/especificacoes') ? 'text-[#c1a85a] bg-gray-800' : 'text-gray-300 hover:text-[#c1a85a] hover:bg-gray-800'"
             class="px-3 py-2 rounded transition-colors duration-300 flex items-center"
             @click="mobileMenuOpen = false"
           >
@@ -142,7 +142,7 @@
 
           <a
             href="/boletins" 
-            :class="isActive('/boletins') ? 'text-yellow-500 bg-gray-800' : 'text-gray-300 hover:text-yellow-500 hover:bg-gray-800'"
+            :class="isActive('/boletins') ? 'text-[#c1a85a] bg-gray-800' : 'text-gray-300 hover:text-[#c1a85a] hover:bg-gray-800'"
             class="px-3 py-2 rounded transition-colors duration-300 flex items-center"
             @click="mobileMenuOpen = false"
           >
@@ -152,7 +152,7 @@
           
           <button 
             @click="$emit('show-help'); mobileMenuOpen = false"
-            class="text-gray-300 hover:text-yellow-500 hover:bg-gray-800 px-3 py-2 rounded transition-colors duration-300 flex items-center text-left w-full"
+            class="text-gray-300 hover:text-[#c1a85a] hover:bg-gray-800 px-3 py-2 rounded transition-colors duration-300 flex items-center text-left w-full"
           >
             <i class="fas fa-question-circle mr-3"></i>
             Ajuda

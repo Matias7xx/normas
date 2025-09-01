@@ -337,7 +337,13 @@ class NormaController extends Controller
             
             // Processar e armazenar o arquivo
             $file = $request->file('anexo');
-            $nameFile = Str::uuid() . "." . $file->extension();
+            
+            // Usar descrição da norma para gerar nome do arquivo (MinIO)
+            $nameFile = $this->generateNormaFileName($request->descricao, $file->extension());
+            
+            // Verificar se já existe arquivo com mesmo nome e gerar nome único
+            $nameFile = $this->getUniqueFileName($nameFile);
+            
             // BUCKET 'normas' com helper
             $path = StorageHelper::normas()->putFileAs('/', $file, $nameFile);
             
@@ -606,13 +612,60 @@ class NormaController extends Controller
                     StorageHelper::normas()->delete($norma->anexo);
                 }
                 
-                // Criar um hash para renomear o arquivo
-                $nameFile = Str::uuid() . "." . $request->anexo->extension();
+                // Usar descrição da norma para gerar nome do arquivo (MinIO)
+                $descricaoParaNome = $request->has('descricao') ? $request->descricao : $norma->descricao;
+                $nameFile = $this->generateNormaFileName($descricaoParaNome, $request->anexo->extension());
+                
+                // Verificar se já existe arquivo com mesmo nome e gerar nome único
+                $nameFile = $this->getUniqueFileName($nameFile);
                 
                 // Salvar o arquivo no MinIO
                 StorageHelper::normas()->putFileAs('/', $request->file('anexo'), $nameFile);
                 $norma->anexo = $nameFile;
                 $atualizouNorma = true;
+            }
+            
+            // Renomear arquivo existente se a descrição for alterada
+            // Se a descrição foi alterada e não houve upload de novo arquivo, renomear o arquivo existente
+            if ($request->has('descricao') && $request->descricao !== $norma->getOriginal('descricao') && 
+                $norma->anexo && !$request->hasFile('anexo')) {
+                
+                try {
+                    // Obter extensão do arquivo atual
+                    $extensaoAtual = pathinfo($norma->anexo, PATHINFO_EXTENSION);
+                    
+                    // Gerar novo nome baseado na nova descrição
+                    $novoNome = $this->generateNormaFileName($request->descricao, $extensaoAtual);
+                    $novoNome = $this->getUniqueFileName($novoNome);
+                    
+                    // Se o nome for diferente do atual, renomear no MinIO
+                    if ($novoNome !== $norma->anexo) {
+                        // Verificar se arquivo atual existe
+                        if (StorageHelper::normas()->exists($norma->anexo)) {
+                            // Copiar arquivo com novo nome
+                            $conteudoArquivo = StorageHelper::normas()->get($norma->anexo);
+                            StorageHelper::normas()->put($novoNome, $conteudoArquivo);
+                            
+                            // Excluir arquivo antigo
+                            StorageHelper::normas()->delete($norma->anexo);
+                            
+                            // Atualizar referência na norma
+                            $normaAntigoNome = $norma->anexo;
+                            $norma->anexo = $novoNome;
+                            $atualizouNorma = true;
+                            
+                            Log::info('Arquivo da norma renomeado', [
+                                'norma_id' => $norma->id,
+                                'nome_antigo' => $normaAntigoNome,
+                                'nome_novo' => $novoNome,
+                                'usuario' => auth()->user()->name
+                            ]);
+                            
+                        }
+                    }
+                } catch (\Exception $e) {
+                    Log::error('Erro ao renomear arquivo da norma: ' . $e->getMessage());
+                }
             }
             
             // Salvar a norma se algo foi alterado
@@ -1013,6 +1066,57 @@ private function normalizarTextoCompleto($texto)
     $texto = preg_replace('/\s+/', ' ', $texto);
     
     return trim($texto);
+}
+
+/**
+ * Sanitiza o nome do arquivo baseado na descrição da norma
+ * 
+ * @param string $descricao
+ * @param string $extension
+ * @return string
+ */
+private function generateNormaFileName($descricao, $extension)
+{
+    // Remover caracteres especiais e limitar tamanho
+    $nome = preg_replace('/[^A-Za-z0-9\s\-_.]/', '', $descricao);
+    
+    // Substituir múltiplos espaços por um só e converter para underscore
+    $nome = preg_replace('/\s+/', '_', trim($nome));
+    
+    // Limitar o tamanho do nome (máximo 100)
+    $nome = substr($nome, 0, 100);
+    
+    // Remover underscores do final
+    $nome = rtrim($nome, '_');
+    
+    // Se ficou vazio, usar fallback
+    if (empty($nome)) {
+        $nome = 'norma_' . date('Y_m_d_His');
+    }
+    
+    return $nome . '.' . $extension;
+}
+
+/**
+ * Verifica se já existe um arquivo com o mesmo nome no MinIO
+ * Se existir, adiciona um sufixo numérico
+ * 
+ * @param string $fileName
+ * @return string
+ */
+private function getUniqueFileName($fileName)
+{
+    $originalName = pathinfo($fileName, PATHINFO_FILENAME);
+    $extension = pathinfo($fileName, PATHINFO_EXTENSION);
+    $counter = 1;
+    
+    // Verificar se o arquivo já existe
+    while (StorageHelper::normas()->exists($fileName)) {
+        $fileName = $originalName . '_' . $counter . '.' . $extension;
+        $counter++;
+    }
+    
+    return $fileName;
 }
 
 }

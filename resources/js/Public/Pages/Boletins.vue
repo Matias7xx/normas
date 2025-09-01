@@ -45,7 +45,7 @@
             <div>
               <label for="data_publicacao" class="block text-sm font-medium text-gray-700 mb-2">
                 <i class="fas fa-calendar-day mr-2 text-blue-600"></i>
-                Data Exata de Publicação
+                Data exata de publicação
               </label>
               <input
                 id="data_publicacao"
@@ -60,7 +60,7 @@
             <div>
               <label for="mes_ano" class="block text-sm font-medium text-gray-700 mb-2">
                 <i class="fas fa-calendar-alt mr-2 text-blue-600"></i>
-                Mês/Ano de Publicação
+                Mês/Ano de publicação
               </label>
               <input
                 id="mes_ano"
