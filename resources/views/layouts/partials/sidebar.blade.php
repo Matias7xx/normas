@@ -93,7 +93,7 @@
                     <ul class="nav nav-treeview">
                         <li class="nav-item">
                             <a href="{{ route('normas.norma_list') }}" class="nav-link {{ Request::is('normas') || Request::is('normas/norma_list') ? 'active' : '' }}">
-                                <i class="far fa-circle nav-icon" style="color: #bea55a;"></i>
+                                <i class="fas fa-search nav-icon" style="color: #bea55a;"></i>
                                 <p style="color: #cccccc;">Pesquisar</p>
                             </a>
                         </li>
@@ -101,14 +101,14 @@
                         @if(Auth::user()->role_id == 1 || Auth::user()->role_id == 2)
                             <li class="nav-item">
                                 <a href="{{ route('normas.duplicadas') }}" class="nav-link {{ Request::is('normas/duplicadas') ? 'active' : '' }}">
-                                    &nbsp;&nbsp;&nbsp;<i class="fas fa-copy nav-icon text-warning"></i>
+                                    &nbsp;&nbsp;&nbsp;<i class="fas fa-copy nav-icon" style="color: #bea55a;"></i>
                                     <p>Duplicadas</p>
                                 </a>
                             </li>
 
                             <li class="nav-item">
                                 <a href="{{ route('vigencia.dashboard') }}" class="nav-link {{ Request::is('vigencia/dashboard') ? 'active' : '' }}">
-                                    &nbsp;&nbsp;&nbsp;<i class="fas fa-calendar-check nav-icon text-warning"></i>
+                                    &nbsp;&nbsp;&nbsp;<i class="fas fa-calendar-check nav-icon" style="color: #bea55a;"></i>
                                     <p style="color: #cccccc;">Vigências</p>
                                 </a>
                             </li>
@@ -117,8 +117,8 @@
                         @can('gestor')
                         <li class="nav-item">
                             <a href="{{ route('normas.norma_create') }}" class="nav-link {{ Request::is('normas/create') || Request::is('normas/norma_create') ? 'active' : '' }}">
-                                <i class="far fa-circle nav-icon" style="color: #bea55a;"></i>
-                                <p style="color: #cccccc;">Cadastrar</p>
+                                <i class="fas fa-plus nav-icon" style="color: #bea55a;"></i>
+                                <p style="color: #cccccc;">Adicionar</p>
                             </a>
                         </li>
                         @endcan
@@ -246,14 +246,14 @@
                     <ul class="nav nav-treeview">
                         <li class="nav-item">
                             <a href="{{ route('boletins.index') }}" class="nav-link {{ Request::is('admin/boletins') ? 'active' : '' }}">
-                                <i class="far fa-circle nav-icon" style="color: #bea55a;"></i>
+                                <i class="fas fa-list nav-icon" style="color: #bea55a;"></i>
                                 <p style="color: #cccccc;">Listar</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="{{ route('boletins.create') }}" class="nav-link {{ Request::is('admin/boletins/create') ? 'active' : '' }}">
-                                <i class="far fa-circle nav-icon" style="color: #bea55a;"></i>
-                                <p style="color: #cccccc;">Cadastrar</p>
+                                <i class="fas fa-plus nav-icon" style="color: #bea55a;"></i>
+                                <p style="color: #cccccc;">Adicionar</p>
                             </a>
                         </li>
                     </ul>

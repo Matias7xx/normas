@@ -46,26 +46,38 @@
     </div>
 
     @if(isset($duplicadas) && count($duplicadas) > 0)
-        <div class="alert-section alert-warning">
-            <div class="alert-header">
-                <i class="fas fa-exclamation-triangle mr-2"></i>
-                Encontrados <strong>{{ count($duplicadas) }}</strong> grupos de normas idênticas ou quase idênticas.
+        <!-- Estatísticas e navegação -->
+        <div class="row mb-3">
+            <div class="col-md-12">
+                <div class="alert-section alert-warning">
+                    <div class="alert-header">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>
+                        Encontrados <strong>{{ $total_grupos }}</strong> grupo(s) de normas idênticas ou quase idênticas.
+                        @if($total_grupos > $grupos_por_pagina)
+                            <br>
+                            <small>
+                                Exibindo {{ count($duplicadas) }} grupo(s) 
+                            </small>
+                        @endif
+                    </div>
+                </div>
             </div>
         </div>
 
+        <!-- Grupos de normas duplicadas -->
         @foreach($duplicadas as $grupo_index => $grupo)
             <div class="group-card">
                 <div class="group-header">
                     <h5>
                         <i class="fas fa-layer-group mr-2"></i>
-                        Grupo {{ $grupo_index + 1 }} - {{ count($grupo) }}
+                        Grupo {{ (($pagina_atual - 1) * $grupos_por_pagina) + $grupo_index + 1 }} - {{ count($grupo) }} normas
                     </h5>
                 </div>
                 <div class="group-content">
                     <div class="row">
                         @foreach($grupo as $norma)
                             <div class="col-md-6 mb-3">
-                                <div class="norma-card border-warning">
+                                <div class="norma-card">
                                     <div class="norma-header">
                                         <div class="norma-id">ID: {{ $norma->id }}</div>
                                         <div class="norma-status">
@@ -94,16 +106,16 @@
                                             <a href="{{ route('normas.view', $norma->id) }}" 
                                                class="action-btn"
                                                target="_blank">
-                                                <i class="fas fa-eye"></i> Ver PDF
+                                                <i class="fas fa-eye mr-1"></i> Ver PDF
                                             </a>
                                             <a href="{{ route('normas.norma_edit', $norma->id) }}" 
                                                class="action-btn">
-                                                <i class="fas fa-edit"></i> Editar
+                                                <i class="fas fa-edit mr-1"></i> Editar
                                             </a>
                                             <button type="button" 
                                                     class="action-btn btn-danger" 
                                                     onclick="confirmarExclusao({{ $norma->id }}, '{{ $norma->descricao }}')">
-                                                <i class="fas fa-trash"></i> Remover
+                                                <i class="fas fa-trash mr-1"></i> Remover
                                             </button>
                                         </div>
                                     </div>
@@ -114,6 +126,94 @@
                 </div>
             </div>
         @endforeach
+
+        <!-- Paginação -->
+        @if($paginacao->hasPages())
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="pagination-wrapper">
+                        <nav aria-label="Navegação das páginas">
+                            <ul class="pagination pagination-modern">
+                                {{-- Link para primeira página --}}
+                                @if($paginacao->currentPage() > 1)
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ $paginacao->url(1) }}" title="Primeira página">
+                                            <i class="fas fa-angle-double-left"></i>
+                                        </a>
+                                    </li>
+                                @endif
+                                
+                                {{-- Link anterior --}}
+                                @if($paginacao->onFirstPage())
+                                    <li class="page-item disabled">
+                                        <span class="page-link">
+                                            <i class="mr-1 fas fa-angle-left"></i> Anterior
+                                        </span>
+                                    </li>
+                                @else
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ $paginacao->previousPageUrl() }}">
+                                            <i class="mr-1 fas fa-angle-left"></i> Anterior
+                                        </a>
+                                    </li>
+                                @endif
+
+                                {{-- Links das páginas --}}
+                                @php
+                                    $start = max(1, $paginacao->currentPage() - 2);
+                                    $end = min($paginacao->lastPage(), $paginacao->currentPage() + 2);
+                                @endphp
+
+                                @for($i = $start; $i <= $end; $i++)
+                                    @if($i == $paginacao->currentPage())
+                                        <li class="page-item active">
+                                            <span class="page-link">{{ $i }}</span>
+                                        </li>
+                                    @else
+                                        <li class="page-item">
+                                            <a class="page-link" href="{{ $paginacao->url($i) }}">{{ $i }}</a>
+                                        </li>
+                                    @endif
+                                @endfor
+
+                                {{-- Link próximo --}}
+                                @if($paginacao->hasMorePages())
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ $paginacao->nextPageUrl() }}">
+                                            Próximo <i class="ml-1 fas fa-angle-right"></i>
+                                        </a>
+                                    </li>
+                                @else
+                                    <li class="page-item disabled">
+                                        <span class="page-link">
+                                            Próximo <i class="ml-1 fas fa-angle-right"></i>
+                                        </span>
+                                    </li>
+                                @endif
+
+                                {{-- Link para última página --}}
+                                @if($paginacao->currentPage() < $paginacao->lastPage())
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ $paginacao->url($paginacao->lastPage()) }}" title="Última página">
+                                            <i class="fas fa-angle-double-right"></i>
+                                        </a>
+                                    </li>
+                                @endif
+                            </ul>
+                        </nav>
+                        
+                        <!-- Informações da paginação -->
+                        <div class="pagination-info mt-2">
+                            <small class="text-muted">
+                                Exibindo grupos {{ (($pagina_atual - 1) * $grupos_por_pagina) + 1 }} 
+                                a {{ min($pagina_atual * $grupos_por_pagina, $total_grupos) }} 
+                                de {{ $total_grupos }} grupos encontrados
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
 
     @else
         <div class="empty-state">
@@ -164,7 +264,7 @@
 </div>
 
 <style>
-/*  CORES E VARIÁVEIS  */
+/* CORES E VARIÁVEIS  */
 :root {
     --primary-color: #2c3e50;
     --secondary-color: #6c757d;
@@ -182,7 +282,6 @@
     --spacing: 1rem;
 }
 
-/*  RESET E BASE  */
 * {
     box-sizing: border-box;
 }
@@ -193,7 +292,6 @@
     padding: 0 15px;
 }
 
-/*  PAINEL DE INFORMAÇÕES  */
 .info-panel {
     background: white;
     border: 1px solid var(--border-color);
@@ -222,7 +320,115 @@
     color: var(--text-color);
 }
 
-/*  BOTÕES  */
+.pagination-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.pagination-modern {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.25rem;
+    margin: 0;
+    padding: 1rem;
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
+}
+
+.pagination-modern .page-item {
+    list-style: none;
+}
+
+.pagination-modern .page-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    height: 40px;
+    padding: 0.5rem 0.75rem;
+    background: white;
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+}
+
+.pagination-modern .page-link:hover {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-hover);
+}
+
+.pagination-modern .page-item.active .page-link {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+    font-weight: 600;
+}
+
+.pagination-modern .page-item.disabled .page-link {
+    background: var(--neutral-color);
+    color: var(--text-muted);
+    border-color: var(--border-color);
+    cursor: not-allowed;
+}
+
+.pagination-modern .page-item.disabled .page-link:hover {
+    background: var(--neutral-color);
+    color: var(--text-muted);
+    transform: none;
+    box-shadow: none;
+}
+
+.pagination-info {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+/* Responsividade da paginação */
+@media (max-width: 768px) {
+    .pagination-modern {
+        flex-wrap: wrap;
+        gap: 0.125rem;
+        padding: 0.75rem;
+    }
+    
+    .pagination-modern .page-link {
+        min-width: 35px;
+        height: 35px;
+        padding: 0.25rem 0.5rem;
+        font-size: 0.8rem;
+    }
+    
+    .pagination-info {
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .pagination-modern .page-link {
+        min-width: 30px;
+        height: 30px;
+        padding: 0.2rem 0.4rem;
+        font-size: 0.75rem;
+    }
+    
+    .pagination-modern .page-item:not(.active):not(:first-child):not(:last-child):not(:nth-child(2)):not(:nth-last-child(2)) {
+        display: none;
+    }
+}
+
 .btn-primary {
     background: var(--primary-color);
     color: white;
@@ -292,7 +498,6 @@
     text-decoration: none;
 }
 
-/*  ALERTAS  */
 .alert-section {
     padding: var(--spacing);
     border-radius: var(--border-radius);
@@ -310,7 +515,6 @@
     font-size: 0.95rem;
 }
 
-/*  CARDS DE GRUPOS  */
 .group-card {
     background: white;
     border: 1px solid var(--border-color);
@@ -321,8 +525,8 @@
 }
 
 .group-header {
-    background: var(--warning-color);
-    color: white;
+    background: var(--neutral-color);
+    color: var(--text-color);
     padding: var(--spacing);
     border-bottom: 1px solid var(--border-color);
 }
@@ -337,7 +541,6 @@
     padding: var(--spacing);
 }
 
-/*  CARDS DE NORMAS  */
 .norma-card {
     background: white;
     border: 1px solid var(--border-color);
@@ -403,7 +606,6 @@
     color: var(--text-color);
 }
 
-/*  STATUS BADGES  */
 .status-badge {
     padding: 0.3rem 0.6rem;
     border-radius: 12px;
@@ -431,7 +633,6 @@
     border: 1px solid #ffeaa7;
 }
 
-/*  AÇÕES  */
 .norma-actions {
     display: flex;
     gap: 0.5rem;
@@ -472,7 +673,6 @@
     color: white;
 }
 
-/*  ESTADO VAZIO  */
 .empty-state {
     background: white;
     border: 1px solid var(--border-color);
@@ -503,7 +703,6 @@
     margin-bottom: 1.5rem;
 }
 
-/*  MODAIS  */
 .modal-content {
     border: none;
     border-radius: var(--border-radius);
@@ -565,7 +764,7 @@
     border-radius: 0 0 var(--border-radius) var(--border-radius);
 }
 
-/*  RESPONSIVIDADE  */
+/* RESPONSIVIDADE */
 @media (max-width: 768px) {
     .norma-header {
         flex-direction: column;
@@ -600,7 +799,7 @@
     }
 }
 
-/*  ANIMAÇÕES  */
+/* ANIMAÇÕES */
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -617,7 +816,6 @@
     animation: fadeIn 0.3s ease;
 }
 
-/*  UTILITÁRIOS  */
 .mb-4 { margin-bottom: 2rem; }
 .mb-3 { margin-bottom: 1.5rem; }
 .mb-2 { margin-bottom: 1rem; }
@@ -625,10 +823,71 @@
 
 <script>
 function confirmarExclusao(normaId, descricao) {
-    document.getElementById('normaDetalhes').textContent = `ID: ${normaId} - ${descricao}`;
+    // Limitar o tamanho da descrição para o modal
+    const descricaoLimitada = descricao.length > 100 ? 
+        descricao.substring(0, 100) + '...' : descricao;
+    
+    document.getElementById('normaDetalhes').textContent = `ID: ${normaId} - ${descricaoLimitada}`;
     document.getElementById('formExclusao').action = `/normas/norma_destroy/${normaId}`;
     $('#modalExclusao').modal('show');
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    // loading state nos links de paginação
+    const paginationLinks = document.querySelectorAll('.pagination-modern .page-link');
+    
+    paginationLinks.forEach(link => {
+        if (!link.parentElement.classList.contains('disabled')) {
+            link.addEventListener('click', function() {
+                // indicador de loading
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                this.style.pointerEvents = 'none';
+            });
+        }
+    });
+    
+    // Scroll suave para o topo quando mudar de página
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentPage = urlParams.get('page');
+    
+    if (currentPage && currentPage > 1) {
+        // Scroll para o topo da lista de duplicadas
+        const duplicadasSection = document.querySelector('.alert-section');
+        if (duplicadasSection) {
+            duplicadasSection.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'start' 
+            });
+        }
+    }
+    
+    // tooltips para ações
+    const actionButtons = document.querySelectorAll('.action-btn');
+    actionButtons.forEach(button => {
+        const icon = button.querySelector('i');
+        if (icon) {
+            if (icon.classList.contains('fa-eye')) {
+                button.setAttribute('title', 'Visualizar PDF da norma');
+            } else if (icon.classList.contains('fa-edit')) {
+                button.setAttribute('title', 'Editar norma');
+            } else if (icon.classList.contains('fa-trash')) {
+                button.setAttribute('title', 'Remover norma');
+            }
+        }
+    });
+    
+    // cards
+    const normaCards = document.querySelectorAll('.norma-card');
+    normaCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.borderLeftWidth = '6px';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.borderLeftWidth = '4px';
+        });
+    });
+});
 </script>
 
 @endsection

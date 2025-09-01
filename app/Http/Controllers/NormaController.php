@@ -17,6 +17,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use App\Helpers\StorageHelper;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 
 class NormaController extends Controller
 {
@@ -861,7 +863,39 @@ public function normasDuplicadas(Request $request)
         }
     }
 
-    return view('normas.duplicadas', compact('duplicadas'));
+    // paginação
+    $currentPage = $request->get('page', 1);
+    $perPage = 20; // 20 grupos por página
+    $total = count($duplicadas);
+    
+    // Calcular offset
+    $offset = ($currentPage - 1) * $perPage;
+    
+    // Pegar apenas os itens da página atual
+    $currentPageItems = array_slice($duplicadas, $offset, $perPage);
+    
+    // Criar o objeto paginador
+    $paginatedDuplicadas = new LengthAwarePaginator(
+        $currentPageItems,
+        $total,
+        $perPage,
+        $currentPage,
+        [
+            'path' => $request->url(),
+            'pageName' => 'page',
+        ]
+    );
+
+    // query parameters
+    $paginatedDuplicadas->appends($request->query());
+
+    return view('normas.duplicadas', [
+        'duplicadas' => $currentPageItems,
+        'paginacao' => $paginatedDuplicadas,
+        'total_grupos' => $total,
+        'grupos_por_pagina' => $perPage,
+        'pagina_atual' => $currentPage
+    ]);
 }
 
 /**
