@@ -94,7 +94,7 @@
             <strong>Especificações:</strong> Documentos que definem os requisitos mínimos para equipamentos utilizados nas atividades da Polícia Civil da Paraíba.
           </p>
           <p>
-            <strong>Boletim Interno:</strong> Pesquise boletins por data de publicação.
+            <strong>Boletim Interno:</strong> Pesquise boletins por data de publicação ou número do Boletim.
           </p>
           <p>
             <strong>Administração:</strong> Acesso restrito para gestão do sistema.

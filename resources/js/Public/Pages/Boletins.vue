@@ -10,7 +10,7 @@
             Boletim Interno
           </h1>
           <p class="text-xl text-blue-100 max-w-2xl mx-auto">
-            Pesquise boletins por data de publicação
+            Pesquise boletins por data de publicação ou número do Boletim
           </p>
           <div v-if="mostrandoMesAtual" class="mt-4 bg-blue-600 bg-opacity-20 rounded-lg p-3 inline-block">
             <i class="fas fa-calendar-alt mr-2"></i>
@@ -24,20 +24,20 @@
     <section class="bg-white shadow-lg -mt-6 relative z-10">
       <div class="max-w-7xl mx-auto px-4 py-8">
         <form @submit.prevent="buscarBoletins" class="space-y-6">
-          <!-- Busca por termo -->
-          <!-- <div class="mb-6">
+          <!-- Busca por termo (Nº do Boletim) -->
+          <div class="mb-6">
             <label for="search_term" class="block text-sm font-medium text-gray-700 mb-2">
               <i class="fas fa-search mr-2 text-blue-600"></i>
-              Termo de busca (nome ou descrição do boletim)
+              Termo de busca (número do boletim)
             </label>
             <input
               id="search_term"
               v-model="form.search_term"
               type="text"
-              placeholder="Ex: boletim informativo, comunicado, relatório..."
+              placeholder="Ex: BSPC Nº 2158, 2160..."
               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300"
             />
-          </div> -->
+          </div>
 
           <!-- Filtros de data aprimorados -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">

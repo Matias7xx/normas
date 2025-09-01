@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use App\Helpers\StorageHelper;
 use Illuminate\Support\Str;
+use Carbon\Carbon;
 
 class BoletimController extends Controller
 {
@@ -28,20 +29,145 @@ class BoletimController extends Controller
     /**
      * Lista todos os boletins
      */
-    public function index()
+    public function index(Request $request)
     {
         try {
-            $boletins = Boletim::with('usuario')
-                ->ativos()
-                ->ordenado()
-                ->paginate(15);
+            $query = Boletim::with('usuario')->ativos();
 
-            return view('boletins.boletim_list', compact('boletins'));
+            $temFiltros = $request->anyFilled(['search_term', 'data_publicacao', 'mes_ano']);
+            $isBusca = $request->has('busca') || $temFiltros;
+
+            if ($isBusca) {
+                $boletins = $this->executarBuscaBoletins($request, $query);
+            } else {
+                // Mostrar boletins do mês atual por padrão
+                $mesAtual = Carbon::now()->format('Y-m');
+                $boletins = $this->buscarBoletinsPorMes($query, $mesAtual);
+            }
+
+            // Paginação
+            if ($boletins instanceof \Illuminate\Database\Eloquent\Builder) {
+                $boletins = $boletins->paginate(40);
+                $boletins->appends($request->only(['search_term', 'data_publicacao', 'mes_ano', 'busca']));
+            } elseif ($boletins instanceof \Illuminate\Support\Collection) {
+                $currentPage = $request->input('page', 1);
+                $perPage = 40;
+                $pagedData = $boletins->slice(($currentPage - 1) * $perPage, $perPage)->values();
+                
+                $boletins = new \Illuminate\Pagination\LengthAwarePaginator(
+                    $pagedData,
+                    $boletins->count(),
+                    $perPage,
+                    $currentPage,
+                    ['path' => request()->url(), 'pageName' => 'page']
+                );
+                
+                $boletins->appends($request->only(['search_term', 'data_publicacao', 'mes_ano', 'busca']));
+            }
+
+            return view('boletins.boletim_list', [
+                'boletins' => $boletins,
+                'filtros' => $request->only(['search_term', 'data_publicacao', 'mes_ano']),
+                'mostrandoMesAtual' => !$isBusca,
+                'mesAtual' => Carbon::now()->format('Y-m'),
+                'totalEncontrados' => $boletins->total(),
+                'expandirFiltros' => $isBusca || $request->get('expandir_filtros', true)
+            ]);
 
         } catch (\Exception $e) {
             Log::error('Erro ao listar boletins: ' . $e->getMessage());
             return back()->withErrors(['Erro ao carregar lista de boletins.']);
         }
+    }
+
+    /**
+     * Executar busca de boletins
+     */
+    private function executarBuscaBoletins(Request $request, $query)
+    {
+        // Filtro por termo de busca
+        if ($request->filled('search_term')) {
+            $searchTerm = trim($request->search_term);
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('nome', 'ILIKE', "%{$searchTerm}%")
+                ->orWhere('descricao', 'ILIKE', "%{$searchTerm}%");
+            });
+        }
+
+        // Filtro por data exata
+        if ($request->filled('data_publicacao')) {
+            try {
+                $dataFiltro = Carbon::parse($request->data_publicacao);
+                
+                // Verificar se não é data futura
+                if ($dataFiltro->isFuture()) {
+                    Log::warning('Tentativa de busca com data futura: ' . $request->data_publicacao);
+                    // Retorna query que não vai encontrar nada
+                    return $query->whereRaw('1 = 0');
+                }
+                
+                $query->whereDate('data_publicacao', $dataFiltro->toDateString());
+            } catch (\Exception $e) {
+                Log::warning('Data inválida no filtro: ' . $request->data_publicacao);
+                return $query->whereRaw('1 = 0');
+            }
+        }
+
+        // Filtro por mês/ano - usando TO_CHAR
+        if ($request->filled('mes_ano') && !$request->filled('data_publicacao')) {
+            try {
+                if (preg_match('/^(\d{4})-(\d{2})$/', $request->mes_ano, $matches)) {
+                    $mesAnoFormatado = $matches[1] . '-' . $matches[2]; // YYYY-MM
+                    
+                    // Verificar se não é mês futuro
+                    $mesAtual = Carbon::now()->format('Y-m');
+                    if ($mesAnoFormatado > $mesAtual) {
+                        Log::warning('Tentativa de busca com mês futuro: ' . $request->mes_ano);
+                        return $query->whereRaw('1 = 0');
+                    }
+                    
+                    // TO_CHAR(data_publicacao, 'YYYY-MM') = '2025-08'
+                    $query->whereRaw("TO_CHAR(data_publicacao, 'YYYY-MM') = ?", [$mesAnoFormatado]);
+                }
+            } catch (\Exception $e) {
+                Log::warning('Mês/ano inválido no filtro: ' . $request->mes_ano);
+                return $query->whereRaw('1 = 0');
+            }
+        }
+
+        // Retornar com ordenação
+        return $query->orderBy('data_publicacao', 'desc')->orderBy('created_at', 'desc');
+    }
+
+    /**
+     * Buscar boletins por mês específico
+     */
+    private function buscarBoletinsPorMes($query, $mesAno)
+    {
+        try {
+            if (preg_match('/^(\d{4})-(\d{2})$/', $mesAno, $matches)) {
+                $mesAnoFormatado = $matches[1] . '-' . $matches[2];
+                
+                // Verificar se não é mês futuro
+                $mesAtual = Carbon::now()->format('Y-m');
+                if ($mesAnoFormatado > $mesAtual) {
+                    return $query->whereRaw('1 = 0');
+                }
+                
+                // TO_CHAR(data_publicacao, 'YYYY-MM') = '2025-08'
+                return $query->whereRaw("TO_CHAR(data_publicacao, 'YYYY-MM') = ?", [$mesAnoFormatado])
+                            ->orderBy('data_publicacao', 'desc')
+                            ->orderBy('created_at', 'desc');
+            }
+        } catch (\Exception $e) {
+            Log::error('Erro ao buscar boletins do mês: ' . $e->getMessage());
+        }
+
+        // Fallback: retornar todos os boletins do mês atual
+        $mesAtual = Carbon::now()->format('Y-m');
+        return $query->whereRaw("TO_CHAR(data_publicacao, 'YYYY-MM') = ?", [$mesAtual])
+                    ->orderBy('data_publicacao', 'desc')
+                    ->orderBy('created_at', 'desc');
     }
 
     /**
