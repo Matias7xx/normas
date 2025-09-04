@@ -39,7 +39,7 @@
                 <div class="card-body" id="filtersSection">
                     <form method="GET" action="{{ route('boletins.index') }}" id="searchForm">
                         <input type="hidden" name="busca" value="1">
-                        
+
                         <div class="row">
                             <!-- Campo de busca por termo -->
                             <div class="col-md-6 mb-3">
@@ -47,53 +47,53 @@
                                     <i class="fas fa-search mr-1 text-dark"></i>
                                     Buscar por nome ou descrição
                                 </label>
-                                <input type="text" 
-                                       class="form-control" 
-                                       id="search_term" 
+                                <input type="text"
+                                       class="form-control"
+                                       id="search_term"
                                        name="search_term"
                                        value="{{ $filtros['search_term'] ?? '' }}"
                                        placeholder="Ex: BSPC Nº 2158, 2160...">
                             </div>
-                            
+
                             <!-- Data exata de publicação -->
                             <div class="col-md-3 mb-3">
                                 <label for="data_publicacao" class="form-label">
                                     <i class="fas fa-calendar-day mr-1 text-dark"></i>
                                     Data Exata
                                 </label>
-                                <input type="date" 
-                                       class="form-control" 
-                                       id="data_publicacao" 
+                                <input type="date"
+                                       class="form-control"
+                                       id="data_publicacao"
                                        name="data_publicacao"
                                        value="{{ $filtros['data_publicacao'] ?? '' }}"
                                        max="{{ date('Y-m-d') }}">
                             </div>
-                            
+
                             <!-- Mês/Ano -->
                             <div class="col-md-3 mb-3">
                                 <label for="mes_ano" class="form-label">
                                     <i class="fas fa-calendar-alt mr-1 text-dark"></i>
                                     Mês/Ano
                                 </label>
-                                <input type="month" 
-                                       class="form-control" 
-                                       id="mes_ano" 
+                                <input type="month"
+                                       class="form-control"
+                                       id="mes_ano"
                                        name="mes_ano"
                                        value="{{ $filtros['mes_ano'] ?? '' }}"
                                        max="{{ date('Y-m') }}">
                             </div>
                         </div>
-                        
+
                         <!-- Botões de ação -->
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <button type="submit" class="btn btn-primary" id="btnBuscar">
                                     <i class="fas fa-search mr-1"></i>Buscar
                                 </button>
-                                <button type="button" class="btn btn-outline-secondary" id="btnLimpar">
+                                <button type="button" class="btn btn-outline-dark" id="btnLimpar">
                                     <i class="fas fa-eraser mr-1"></i>Limpar Filtros
                                 </button>
-                                <button type="button" class="btn btn-outline-info" id="btnMesAtual">
+                                <button type="button" class="btn btn-outline-dark" id="btnMesAtual">
                                     <i class="fas fa-calendar-check mr-1"></i>Mês Atual
                                 </button>
                             </div>
@@ -108,7 +108,7 @@
     @if(isset($totalEncontrados))
     <div class="row mb-3">
         <div class="col-12">
-            <div class="alert alert-info mb-0">
+            <div class="alert alert-dark mb-0">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <i class="fas fa-secondary-circle mr-1"></i>
@@ -149,12 +149,12 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="card-body p-0">
                     @if($boletins->count() > 0)
                         <div class="table-responsive">
                             <table class="table table-striped table-hover mb-0">
-                                <thead class="thead-dark">
+                                <thead class="thead-light">
                                     <tr>
                                         <th width="35%">Nome</th>
                                         <th width="20%">Descrição</th>
@@ -192,29 +192,29 @@
                                             </td>
                                             <td class="text-center">
                                                 {{-- Visualizar --}}
-                                                <a href="{{ route('boletins.view', $boletim->id) }}" 
+                                                <a href="{{ route('boletins.view', $boletim->id) }}"
                                                    target="_blank"
-                                                   class="btn btn-sm btn-outline-secondary mr-1"
+                                                   class="btn btn-sm btn-outline-dark mr-1"
                                                    title="Visualizar PDF">
                                                     <i class="fas fa-eye"></i>
                                                 </a>
-                                                
+
                                                 {{-- Download --}}
-                                                <a href="{{ route('boletins.download', $boletim->id) }}" 
-                                                   class="btn btn-sm btn-outline-secondary mr-1"
+                                                <a href="{{ route('boletins.download', $boletim->id) }}"
+                                                   class="btn btn-sm btn-outline-dark mr-1"
                                                    title="Download">
                                                     <i class="fas fa-download"></i>
                                                 </a>
-                                                
+
                                                 {{-- Editar --}}
-                                                <a href="{{ route('boletins.edit', $boletim->id) }}" 
-                                                   class="btn btn-sm btn-outline-secondary mr-1"
+                                                <a href="{{ route('boletins.edit', $boletim->id) }}"
+                                                   class="btn btn-sm btn-outline-dark mr-1"
                                                    title="Editar">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
-                                                
+
                                                 {{-- Excluir --}}
-                                                <button type="button" 
+                                                <button type="button"
                                                         class="btn btn-sm btn-outline-danger"
                                                         onclick="confirmarExclusao({{ $boletim->id }}, '{{ $boletim->nome }}')"
                                                         title="Remover">
@@ -226,14 +226,14 @@
                                 </tbody>
                             </table>
                         </div>
-                        
+
                         {{-- Paginação --}}
                         @if($boletins->hasPages())
                             <div class="card-footer">
                                 <div class="row align-items-center">
                                     <div class="col">
                                         <small class="text-muted">
-                                            Exibindo {{ $boletins->firstItem() }} a {{ $boletins->lastItem() }} 
+                                            Exibindo {{ $boletins->firstItem() }} a {{ $boletins->lastItem() }}
                                             de {{ $boletins->total() }} resultados
                                         </small>
                                     </div>
@@ -310,10 +310,10 @@ $(document).ready(function() {
     // Configuração inicial dos filtros
     const filtersSection = $('#filtersSection');
     const toggleFiltersBtn = $('#toggleFilters');
-    
+
     // Inicializar sempre expandido
     let filtersVisible = {{ isset($expandirFiltros) && $expandirFiltros ? 'true' : 'true' }}; // Sempre true agora
-    
+
     // Estado inicial dos filtros
     if (filtersVisible) {
         filtersSection.show();
@@ -324,11 +324,11 @@ $(document).ready(function() {
         toggleFiltersBtn.find('span').text('Expandir Filtros');
         toggleFiltersBtn.find('i').removeClass('fa-chevron-up').addClass('fa-filter');
     }
-    
+
     // Toggle dos filtros
     toggleFiltersBtn.click(function() {
         filtersVisible = !filtersVisible;
-        
+
         if (filtersVisible) {
             filtersSection.slideDown();
             $(this).find('span').text('Ocultar Filtros');
@@ -339,73 +339,73 @@ $(document).ready(function() {
             $(this).find('i').removeClass('fa-chevron-up').addClass('fa-filter');
         }
     });
-    
+
     // Limpar campo conflitante quando preencher outro
     $('#data_publicacao').change(function() {
         if ($(this).val()) {
             $('#mes_ano').val('');
         }
     });
-    
+
     $('#mes_ano').change(function() {
         if ($(this).val()) {
             $('#data_publicacao').val('');
         }
     });
-    
+
     // Botão Mês Atual
     $('#btnMesAtual').click(function() {
         // Limpar todos os filtros
         $('#search_term').val('');
         $('#data_publicacao').val('');
         $('#mes_ano').val('');
-        
+
         // Definir mês atual
         const today = new Date();
         const currentMonth = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0');
         $('#mes_ano').val(currentMonth);
-        
+
         // Submeter formulário
         $('#searchForm').submit();
     });
-    
+
     // Botão Limpar Filtros
     $('#btnLimpar, #btnLimparVazio').click(function() {
         $('#search_term').val('');
         $('#data_publicacao').val('');
         $('#mes_ano').val('');
         $('.quick-filter').removeClass('active');
-        
+
         // Redirecionar sem parâmetros de busca
         window.location.href = '{{ route("boletins.index") }}';
     });
-    
+
     // Validação do formulário
     $('#searchForm').submit(function(e) {
         const searchTerm = $('#search_term').val().trim();
         const dataPublicacao = $('#data_publicacao').val();
         const mesAno = $('#mes_ano').val();
-        
+
         // Verificar se pelo menos um campo foi preenchido
         if (!searchTerm && !dataPublicacao && !mesAno) {
             e.preventDefault();
             alert('Por favor, preencha pelo menos um campo de busca.');
             return false;
         }
-        
+
         // Verificar data futura
         if (dataPublicacao) {
             const inputDate = new Date(dataPublicacao);
             const today = new Date();
             today.setHours(0, 0, 0, 0);
-            
+
             if (inputDate > today) {
                 e.preventDefault();
                 alert('Não é possível buscar por datas futuras.');
                 return false;
             }
         }
-        
+
         // Verificar mês futuro
         if (mesAno) {
             const [year, month] = mesAno.split('-');
@@ -413,26 +413,26 @@ $(document).ready(function() {
             const currentMonth = new Date();
             currentMonth.setDate(1);
             currentMonth.setHours(0, 0, 0, 0);
-            
+
             if (inputMonth > currentMonth) {
                 e.preventDefault();
                 alert('Não é possível buscar por meses futuros.');
                 return false;
             }
         }
-        
+
         // Adicionar indicador de loading
         const btnBuscar = $('#btnBuscar');
         btnBuscar.prop('disabled', true)
                  .html('<i class="fas fa-spinner fa-spin mr-1"></i>Buscando...');
-        
+
         // Restaurar botão após timeout (caso de erro)
         setTimeout(function() {
             btnBuscar.prop('disabled', false)
                      .html('<i class="fas fa-search mr-1"></i>Buscar');
         }, 10000);
     });
-    
+
     // Enter para submeter busca
     $('#search_term').keypress(function(e) {
         if (e.which === 13) {
@@ -440,17 +440,17 @@ $(document).ready(function() {
             $('#searchForm').submit();
         }
     });
-    
+
     // Auto-focus no campo de busca já que filtros são sempre visíveis
     setTimeout(function() {
         $('#search_term').focus();
     }, 300);
-    
+
     // Destacar filtros ativos na inicialização
     const currentSearchTerm = '{{ $filtros["search_term"] ?? "" }}';
     const currentDataPublicacao = '{{ $filtros["data_publicacao"] ?? "" }}';
     const currentMesAno = '{{ $filtros["mes_ano"] ?? "" }}';
-    
+
     // Destacar campos preenchidos
     if (currentSearchTerm) {
         $('#search_term').addClass('border-primary');
@@ -461,7 +461,7 @@ $(document).ready(function() {
     if (currentMesAno) {
         $('#mes_ano').addClass('border-primary');
     }
-    
+
     // Remover destaque quando campo for limpo
     $('#search_term, #data_publicacao, #mes_ano').on('input change', function() {
         if ($(this).val()) {

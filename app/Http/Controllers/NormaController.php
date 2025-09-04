@@ -27,14 +27,14 @@ class NormaController extends Controller
      * @return \Illuminate\View\View
      */
     public function index(Request $request)
-    {   
+    {
         try {
             /* $servidor = Servidor::where('matricula', Auth::user()->matricula)->first(); */
-            
+
             // Obter listas para filtros
             $tipos = Tipo::where('status', true)->orderBy('tipo')->get();
             $orgaos = Orgao::where('status', true)->orderBy('orgao')->get();
-            
+
             // Verificar permissões do usuário
             $user = Auth::user();
             $userPermissions = [
@@ -44,9 +44,9 @@ class NormaController extends Controller
                 'isRoot' => $user->role_id == 1,
                 'isAdmin' => in_array($user->role_id, [1, 2, 3])
             ];
-            
+
             return view('normas.norma_list', compact( 'tipos', 'orgaos', 'userPermissions'));
-            
+
         } catch (\Exception $e) {
             Log::error('Erro ao listar normas: ' . $e->getMessage());
             return back()->withErrors(['Erro ao carregar normas. Por favor, tente novamente.']);
@@ -60,28 +60,28 @@ class NormaController extends Controller
      */
     public function getNormasAjax(Request $request)
 {
-    try {   
+    try {
         // Base query com eager loading otimizado
         $query = Norma::with([
-            'publicidade:id,publicidade', 
-            'orgao:id,orgao', 
-            'tipo:id,tipo', 
+            'publicidade:id,publicidade',
+            'orgao:id,orgao',
+            'tipo:id,tipo',
             'palavrasChave:id,palavra_chave',
             'usuario:id,name,matricula' // Necessário para auditoria
         ])
         ->ativas();
-        
+
         // Aplicar filtros de pesquisa
         if ($request->filled('search_term')) {
         $searchTerm = trim($request->search_term);
         $query = $this->applySearchWithRelevance($query, $searchTerm);
         }
-        
+
         // Filtro por tipo
         if ($request->filled('tipo_id')) {
             $query->where('tipo_id', $request->tipo_id);
         }
-        
+
         // Filtro por órgão
         if ($request->filled('orgao_id')) {
             $query->where('orgao_id', $request->orgao_id);
@@ -91,7 +91,7 @@ class NormaController extends Controller
         if ($request->filled('vigente')) {
             $query->where('vigente', $request->vigente);
         }
-        
+
         if ($request->filled('data_inicio')) {
             try {
                 $dataInicio = Carbon::createFromFormat('Y-m-d', $request->data_inicio)->startOfDay();
@@ -99,7 +99,7 @@ class NormaController extends Controller
             } catch (\Exception $e) {
             }
         }
-        
+
         if ($request->filled('data_fim')) {
             try {
                 $dataFim = Carbon::createFromFormat('Y-m-d', $request->data_fim)->endOfDay();
@@ -107,15 +107,15 @@ class NormaController extends Controller
             } catch (\Exception $e) {
             }
         }
-                    
+
         // Tratamento de ordenação
         $orderBy = $request->input('order_by', 'data');
         $orderDir = $request->input('order_dir', 'desc');
-        
+
         // Validar direção de ordenação
-        $orderDir = in_array(strtolower($orderDir), ['asc', 'desc']) ? 
+        $orderDir = in_array(strtolower($orderDir), ['asc', 'desc']) ?
             strtolower($orderDir) : 'desc';
-        
+
         // Aplicar ordenação baseada no campo
         switch ($orderBy) {
             case 'id':
@@ -132,11 +132,11 @@ class NormaController extends Controller
                 break;
             case 'vigente':
                 $query->orderByRaw(
-                    "CASE 
-                        WHEN vigente = 'VIGENTE' THEN 1 
-                        WHEN vigente = 'EM ANÁLISE' THEN 2 
-                        WHEN vigente = 'NÃO VIGENTE' THEN 3 
-                        ELSE 4 
+                    "CASE
+                        WHEN vigente = 'VIGENTE' THEN 1
+                        WHEN vigente = 'EM ANÁLISE' THEN 2
+                        WHEN vigente = 'NÃO VIGENTE' THEN 3
+                        ELSE 4
                     END " . $orderDir
                 );
                 break;
@@ -154,16 +154,16 @@ class NormaController extends Controller
                 $query->orderBy('data', 'desc')->orderBy('id', 'desc');
                 break;
         }
-        
+
         // Paginação
         $perPage = $request->input('per_page', 15);
         $perPage = in_array($perPage, [10, 15, 25, 50]) ? $perPage : 15;
-        
+
         $normas = $query->paginate($perPage);
-        
+
         // Verificar se o usuário atual tem role_id = 2 (gestor) ou 1 (root) para mostrar auditoria
         $showAudit = in_array(auth()->user()->role_id, [1, 2]);
-        
+
         // Preparar dados para exibição
         $formattedNormas = $normas->map(function($norma) use ($showAudit) {
             $normaData = [
@@ -181,10 +181,10 @@ class NormaController extends Controller
                 'palavras_chave' => $norma->palavrasChave->take(3)->map(function($pc) {
                     return ['id' => $pc->id, 'palavra_chave' => $pc->palavra_chave];
                 }),
-                'palavras_chave_restantes' => $norma->palavrasChave->count() > 3 ? 
+                'palavras_chave_restantes' => $norma->palavrasChave->count() > 3 ?
                     $norma->palavrasChave->count() - 3 : 0
             ];
-            
+
             // Adicionar informações de auditoria apenas se o usuário tiver permissão
             if ($showAudit && $norma->usuario) {
                 $normaData['auditoria'] = [
@@ -193,10 +193,10 @@ class NormaController extends Controller
                     'data_cadastro' => $norma->created_at ? $norma->created_at->format('d/m/Y H:i') : null
                 ];
             }
-            
+
             return $normaData;
         });
-        
+
         return response()->json([
             'normas' => $formattedNormas,
             'pagination' => [
@@ -216,33 +216,33 @@ class NormaController extends Controller
                 'total_encontrado' => $normas->total()
             ]
         ]);
-        
-    } catch (\Exception $e) {            
+
+    } catch (\Exception $e) {
         return response()->json([
             'error' => 'Erro ao carregar normas: ' . $e->getMessage(),
             'trace' => config('app.debug') ? $e->getTraceAsString() : null
         ], 500);
     }
 }
-    
+
     /**
      * Retorna informações sobre os filtros aplicados
      */
     private function getAppliedFiltersInfo(Request $request)
     {
         $filters = [];
-        
+
         if ($request->filled('search_term')) {
             $filters[] = 'Termo de busca: ' . $request->search_term;
         }
-        
+
         if ($request->filled('tipo_id')) {
             $tipo = Tipo::find($request->tipo_id);
             if ($tipo) {
                 $filters[] = 'Tipo: ' . $tipo->tipo;
             }
         }
-        
+
         if ($request->filled('orgao_id')) {
             $orgao = Orgao::find($request->orgao_id);
             if ($orgao) {
@@ -253,15 +253,15 @@ class NormaController extends Controller
         if ($request->filled('vigente')) {
             $filters[] = 'Vigência: ' . $request->vigente;
         }
-        
+
         if ($request->filled('data_inicio')) {
             $filters[] = 'A partir de: ' . Carbon::createFromFormat('Y-m-d', $request->data_inicio)->format('d/m/Y');
         }
-        
+
         if ($request->filled('data_fim')) {
             $filters[] = 'Até: ' . Carbon::createFromFormat('Y-m-d', $request->data_fim)->format('d/m/Y');
         }
-        
+
         return $filters;
     }
 
@@ -277,7 +277,7 @@ class NormaController extends Controller
             $publicidades = Publicidade::where('status', true)->orderBy('publicidade')->get();
             $orgaos = Orgao::where('status', true)->orderBy('orgao')->get();
             $palavras_chave = PalavraChave::where('status', true)->orderBy('palavra_chave')->get();
-                
+
             return view('normas.norma_create', compact('tipos', 'orgaos', 'publicidades', 'palavras_chave'));
         } catch (\Exception $e) {
             Log::error('Erro ao carregar formulário de criação: ' . $e->getMessage());
@@ -295,15 +295,15 @@ class NormaController extends Controller
     {
         try {
             $norma = Norma::with([
-                'publicidade:id,publicidade', 
-                'orgao:id,orgao', 
-                'tipo:id,tipo', 
+                'publicidade:id,publicidade',
+                'orgao:id,orgao',
+                'tipo:id,tipo',
                 'palavrasChave'
             ])
             ->where('id', $id)
             ->ativas()
             ->firstOrFail();
-            
+
             $tipos = Tipo::where('status', true)->orderBy('tipo')->get();
             $publicidades = Publicidade::where('status', true)->orderBy('publicidade')->get();
             $orgaos = Orgao::where('status', true)->orderBy('orgao')->get();
@@ -334,19 +334,19 @@ class NormaController extends Controller
                     ->withInput()
                     ->withErrors(['anexo' => 'Erro ao fazer o upload do arquivo!']);
             }
-            
+
             // Processar e armazenar o arquivo
             $file = $request->file('anexo');
-            
+
             // Usar descrição da norma para gerar nome do arquivo (MinIO)
             $nameFile = $this->generateNormaFileName($request->descricao, $file->extension());
-            
+
             // Verificar se já existe arquivo com mesmo nome e gerar nome único
             $nameFile = $this->getUniqueFileName($nameFile);
-            
+
             // BUCKET 'normas' com helper
             $path = StorageHelper::normas()->putFileAs('/', $file, $nameFile);
-            
+
             // Criar a norma
             $norma = Norma::create([
                 'usuario_id' => auth()->user()->id,
@@ -362,31 +362,31 @@ class NormaController extends Controller
                 'data_limite_vigencia' => $request->data_limite_vigencia,
                 'status' => true
             ]);
-            
+
             // Array para armazenar IDs de palavras-chave para vincular
             $palavrasChaveIds = [];
-            
+
             // Processar palavras-chave existentes selecionadas
             if ($request->has('palavras_chave') && is_array($request->palavras_chave)) {
                 $palavrasChaveIds = array_merge($palavrasChaveIds, $request->palavras_chave);
             }
-            
+
             // Processar novas palavras-chave
             if ($request->has('novas_palavras_chave') && !empty($request->novas_palavras_chave)) {
                 try {
                     $novasPalavrasChave = json_decode($request->novas_palavras_chave, true);
-                    
+
                     if (is_array($novasPalavrasChave) && count($novasPalavrasChave) > 0) {
                         foreach ($novasPalavrasChave as $palavraChave) {
                             // Limpar e validar a entrada
                             $palavraChave = trim($palavraChave);
                             if (empty($palavraChave)) continue;
-                            
+
                             // Verificar se esta palavra-chave já existe
                             $existente = PalavraChave::where('palavra_chave', 'ILIKE', $palavraChave)
                                 ->where('status', true)
                                 ->first();
-                            
+
                             if ($existente) {
                                 // Se existir, adicione o ID ao array
                                 $palavrasChaveIds[] = $existente->id;
@@ -397,7 +397,7 @@ class NormaController extends Controller
                                     'palavra_chave' => $palavraChave,
                                     'status' => true
                                 ]);
-                                
+
                                 $palavrasChaveIds[] = $novaPalavraChave->id;
                             }
                         }
@@ -406,10 +406,10 @@ class NormaController extends Controller
                     Log::error('Erro ao processar novas palavras-chave: ' . $e->getMessage());
                 }
             }
-            
+
             // Remover duplicatas
             $palavrasChaveIds = array_unique($palavrasChaveIds);
-            
+
             // Vincular todas as palavras-chave à norma
             if (!empty($palavrasChaveIds)) {
                 foreach ($palavrasChaveIds as $palavraChaveId) {
@@ -420,10 +420,10 @@ class NormaController extends Controller
                     ]);
                 }
             }
-            
+
             DB::commit();
             return redirect()->route('normas.norma_list')->with('success', 'Norma cadastrada com sucesso!');
-            
+
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Erro ao cadastrar norma: ' . $e->getMessage());
@@ -448,7 +448,7 @@ class NormaController extends Controller
             $norma = Norma::where('id', $id)
                 ->ativas()
                 ->firstOrFail();
-            
+
             $mensagens = []; // Para armazenar mensagens de sucesso
 
             // Processar exclusão de palavra-chave (se solicitado)
@@ -457,17 +457,17 @@ class NormaController extends Controller
                     ->where('palavra_chave_id', $request->delete_palavra_chave)
                     ->where('status', true)
                     ->first();
-                    
+
                 if ($normaChave) {
                     $normaChave->status = false;
                     $normaChave->save();
                     $mensagens[] = 'Palavra-chave desvinculada com sucesso!';
                 }
             }
-            
+
             // Processar adição de palavras-chave
             $adicionouPalavras = false;
-            
+
             // Processar palavras-chave existentes selecionadas
             if ($request->has('add_palavra_chave') && is_array($request->add_palavra_chave) && count($request->add_palavra_chave) > 0) {
                 foreach ($request->add_palavra_chave as $palavraChaveId) {
@@ -475,7 +475,7 @@ class NormaController extends Controller
                     $existente = NormaChave::where('norma_id', $id)
                         ->where('palavra_chave_id', $palavraChaveId)
                         ->first();
-                        
+
                     if ($existente) {
                         // Se existir, apenas atualiza para ativo
                         if (!$existente->status) {
@@ -494,28 +494,28 @@ class NormaController extends Controller
                     }
                 }
             }
-            
+
             // Processar novas palavras-chave
             if ($request->has('novas_palavras_chave') && !empty($request->novas_palavras_chave)) {
                 $novasPalavrasChave = json_decode($request->novas_palavras_chave, true);
-                
+
                 if (is_array($novasPalavrasChave) && count($novasPalavrasChave) > 0) {
                     foreach ($novasPalavrasChave as $palavraChave) {
                         // Limpar e validar a entrada
                         $palavraChave = trim($palavraChave);
                         if (empty($palavraChave)) continue;
-                        
+
                         // Verificar se esta palavra-chave já existe
                         $existente = PalavraChave::where('palavra_chave', 'ILIKE', $palavraChave)
                             ->where('status', true)
                             ->first();
-                        
+
                         if ($existente) {
                             // Verificar se já está vinculada à norma
                             $normaChaveExistente = NormaChave::where('norma_id', $id)
                                 ->where('palavra_chave_id', $existente->id)
                                 ->first();
-                                
+
                             if ($normaChaveExistente) {
                                 // Se existir, apenas atualiza para ativo
                                 if (!$normaChaveExistente->status) {
@@ -539,7 +539,7 @@ class NormaController extends Controller
                                 'palavra_chave' => $palavraChave,
                                 'status' => true
                             ]);
-                            
+
                             NormaChave::create([
                                 'norma_id' => $id,
                                 'palavra_chave_id' => $novaPalavraChave->id,
@@ -550,39 +550,39 @@ class NormaController extends Controller
                     }
                 }
             }
-            
+
             if ($adicionouPalavras) {
                 $mensagens[] = 'Palavras-chave vinculadas com sucesso!';
             }
-            
+
             // Atualizar dados da norma
             $atualizouNorma = false;
-            
+
             if ($request->has('data')) {
                 $norma->data = $request->data;
                 $atualizouNorma = true;
             }
-            
+
             if ($request->has('descricao')) {
                 $norma->descricao = $request->descricao;
                 $atualizouNorma = true;
             }
-            
+
             if ($request->has('resumo')) {
                 $norma->resumo = $request->resumo;
                 $atualizouNorma = true;
             }
-            
+
             if ($request->has('publicidade')) {
                 $norma->publicidade_id = $request->publicidade;
                 $atualizouNorma = true;
             }
-            
+
             if ($request->has('tipo')) {
                 $norma->tipo_id = $request->tipo;
                 $atualizouNorma = true;
             }
-            
+
             if ($request->has('orgao')) {
                 $norma->orgao_id = $request->orgao;
                 $atualizouNorma = true;
@@ -604,40 +604,40 @@ class NormaController extends Controller
                 $norma->data_limite_vigencia = $request->data_limite_vigencia;
                 $atualizouNorma = true;
             }
-            
+
             // Processar upload de arquivo (se enviado)
             if (($request->hasFile('anexo')) && ($request->file('anexo')->isValid())) {
                 // Excluir arquivo anterior do MinIO
                 if ($norma->anexo && StorageHelper::normas()->exists($norma->anexo)) {
                     StorageHelper::normas()->delete($norma->anexo);
                 }
-                
+
                 // Usar descrição da norma para gerar nome do arquivo (MinIO)
                 $descricaoParaNome = $request->has('descricao') ? $request->descricao : $norma->descricao;
                 $nameFile = $this->generateNormaFileName($descricaoParaNome, $request->anexo->extension());
-                
+
                 // Verificar se já existe arquivo com mesmo nome e gerar nome único
                 $nameFile = $this->getUniqueFileName($nameFile);
-                
+
                 // Salvar o arquivo no MinIO
                 StorageHelper::normas()->putFileAs('/', $request->file('anexo'), $nameFile);
                 $norma->anexo = $nameFile;
                 $atualizouNorma = true;
             }
-            
+
             // Renomear arquivo existente se a descrição for alterada
             // Se a descrição foi alterada e não houve upload de novo arquivo, renomear o arquivo existente
-            if ($request->has('descricao') && $request->descricao !== $norma->getOriginal('descricao') && 
+            if ($request->has('descricao') && $request->descricao !== $norma->getOriginal('descricao') &&
                 $norma->anexo && !$request->hasFile('anexo')) {
-                
+
                 try {
                     // Obter extensão do arquivo atual
                     $extensaoAtual = pathinfo($norma->anexo, PATHINFO_EXTENSION);
-                    
+
                     // Gerar novo nome baseado na nova descrição
                     $novoNome = $this->generateNormaFileName($request->descricao, $extensaoAtual);
                     $novoNome = $this->getUniqueFileName($novoNome);
-                    
+
                     // Se o nome for diferente do atual, renomear no MinIO
                     if ($novoNome !== $norma->anexo) {
                         // Verificar se arquivo atual existe
@@ -645,37 +645,37 @@ class NormaController extends Controller
                             // Copiar arquivo com novo nome
                             $conteudoArquivo = StorageHelper::normas()->get($norma->anexo);
                             StorageHelper::normas()->put($novoNome, $conteudoArquivo);
-                            
+
                             // Excluir arquivo antigo
                             StorageHelper::normas()->delete($norma->anexo);
-                            
+
                             // Atualizar referência na norma
                             $normaAntigoNome = $norma->anexo;
                             $norma->anexo = $novoNome;
                             $atualizouNorma = true;
-                            
+
                             Log::info('Arquivo da norma renomeado', [
                                 'norma_id' => $norma->id,
                                 'nome_antigo' => $normaAntigoNome,
                                 'nome_novo' => $novoNome,
                                 'usuario' => auth()->user()->name
                             ]);
-                            
+
                         }
                     }
                 } catch (\Exception $e) {
                     Log::error('Erro ao renomear arquivo da norma: ' . $e->getMessage());
                 }
             }
-            
+
             // Salvar a norma se algo foi alterado
             if ($atualizouNorma) {
                 $norma->save();
                 $mensagens[] = 'Informações da norma atualizadas com sucesso!';
             }
-            
+
             DB::commit();
-            
+
             // Determinar mensagem de sucesso
             $mensagemFinal = count($mensagens) > 0 ? implode(' ', $mensagens) : 'Nenhuma alteração foi realizada.';
 
@@ -689,7 +689,7 @@ class NormaController extends Controller
                 return redirect()->route('normas.norma_list')
                                 ->with('success', $mensagemFinal);
             }
-            
+
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             DB::rollBack();
             return redirect()->route('normas.norma_list')->withErrors(['Norma não encontrada.']);
@@ -701,7 +701,7 @@ class NormaController extends Controller
                 ->withErrors(['Erro ao atualizar norma: ' . $e->getMessage()]);
         }
     }
-    
+
     /**
      * Executa soft delete em uma norma
      *
@@ -712,39 +712,39 @@ class NormaController extends Controller
     {
         try {
             DB::beginTransaction();
-            
+
             $norma = Norma::findOrFail($id);
-            
+
             // Verificar permissões
             if (!in_array(auth()->user()->role_id, [1, 2, 3])) {
                 return back()->withErrors(['Você não tem permissão para excluir normas.']);
             }
-            
+
             // Soft delete da norma
             $norma->update([
                 'status' => false,
                 'deleted_at' => now()
             ]);
-            
+
             // Log da exclusão
             Log::info('Norma excluída', [
                 'norma_id' => $id,
                 'descricao' => $norma->descricao,
                 'usuario' => auth()->user()->name
             ]);
-            
+
             DB::commit();
-            
+
             // SEMPRE PERSISTIR FILTROS
             if (request()->has('preserve_filters') && request()->preserve_filters == '1') {
                 // Construir URL com filtros persistidos
                 $redirectUrl = $this->buildRedirectUrlWithFilters(request());
                 return redirect($redirectUrl)->with('success', 'Norma removida com sucesso!');
             }
-            
+
             // VERIFICAR SE VEIO DA PÁGINA DE DUPLICADAS
             $referer = request()->headers->get('referer');
-            
+
             if ($referer && str_contains($referer, '/normas/duplicadas')) {
                 // Se veio da página de duplicadas, volta para lá
                 return redirect()->route('normas.duplicadas')
@@ -754,7 +754,7 @@ class NormaController extends Controller
                 return redirect()->route('normas.norma_list')
                     ->with('success', 'Norma removida com sucesso!');
             }
-            
+
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             DB::rollBack();
             Log::warning("Tentativa de excluir norma não encontrada - ID: {$id}");
@@ -773,12 +773,12 @@ class NormaController extends Controller
     {
         $baseUrl = route('normas.norma_list');
         $filters = [];
-        
+
         // Coletar todos os filtros do request
         foreach ($request->all() as $key => $value) {
             if (str_starts_with($key, 'filter_') && !empty($value)) {
                 $filterName = str_replace('filter_', '', $key);
-                
+
                 // Tratamento especial para filtros de data
                 if ($filterName === 'data_inicio' && $value) {
                     $date = \Carbon\Carbon::createFromFormat('Y-m-d', $value);
@@ -793,16 +793,16 @@ class NormaController extends Controller
                 }
             }
         }
-        
+
         // Adicionar flag de filtros restaurados
         $filters['restored_filters'] = '1';
-        
+
         // Construir URL com query string
         if (!empty($filters)) {
             $queryString = http_build_query($filters);
             return $baseUrl . '?' . $queryString;
         }
-        
+
         return $baseUrl;
     }
 
@@ -810,23 +810,23 @@ class NormaController extends Controller
     private function applySearchWithRelevance($query, $searchTerm)
 {
     $searchTerm = trim($searchTerm);
-    
+
     if (empty($searchTerm)) {
         return $query;
     }
-    
+
     // Dividir em palavras e filtrar palavras muito pequenas
     $words = array_filter(array_map('trim', explode(' ', $searchTerm)), function($word) {
         return strlen($word) >= 2;
     });
-    
+
     if (empty($words)) {
         return $query;
     }
-    
+
     // Criar subquery para calcular relevância
     $relevanceSelect = $this->buildRelevanceScore($words, $searchTerm);
-    
+
     return $query->select('normas.*')
                 ->selectRaw("({$relevanceSelect}) as relevance_score")
                 ->where(function($q) use ($words, $searchTerm) {
@@ -837,7 +837,7 @@ class NormaController extends Controller
                                      ->orWhere('resumo', 'ILIKE', "%{$word}%");
                         });
                     }
-                    
+
                     // busca nas palavras-chave
                     $q->orWhereHas('palavrasChave', function($subq) use ($words) {
                         foreach ($words as $word) {
@@ -855,18 +855,18 @@ class NormaController extends Controller
 private function buildRelevanceScore($words, $fullTerm)
 {
     $scoreQueries = [];
-    
+
     // Score para frase exata (busca primeiro)
     $scoreQueries[] = "CASE WHEN descricao ILIKE '%{$fullTerm}%' THEN 10 ELSE 0 END";
     $scoreQueries[] = "CASE WHEN resumo ILIKE '%{$fullTerm}%' THEN 8 ELSE 0 END";
-    
+
     // Score para palavras individuais
     foreach ($words as $index => $word) {
         $weight = max(1, 5 - $index); // Primeiras palavras têm peso maior
         $scoreQueries[] = "CASE WHEN descricao ILIKE '%{$word}%' THEN {$weight} ELSE 0 END";
         $scoreQueries[] = "CASE WHEN resumo ILIKE '%{$word}%' THEN " . ($weight - 1) . " ELSE 0 END";
     }
-    
+
     return implode(' + ', $scoreQueries);
 }
 
@@ -895,7 +895,7 @@ public function normasDuplicadas(Request $request)
         }
 
         $grupo = [];
-        
+
         foreach ($normas as $norma2) {
             if ($norma1->id === $norma2->id || in_array($norma2->id, $ja_processadas)) {
                 continue;
@@ -920,13 +920,13 @@ public function normasDuplicadas(Request $request)
     $currentPage = $request->get('page', 1);
     $perPage = 20; // 20 grupos por página
     $total = count($duplicadas);
-    
+
     // Calcular offset
     $offset = ($currentPage - 1) * $perPage;
-    
+
     // Pegar apenas os itens da página atual
     $currentPageItems = array_slice($duplicadas, $offset, $perPage);
-    
+
     // Criar o objeto paginador
     $paginatedDuplicadas = new LengthAwarePaginator(
         $currentPageItems,
@@ -957,7 +957,7 @@ public function normasDuplicadas(Request $request)
 private function saoNormasIdenticasOuQuaseIdenticas($norma1, $norma2)
 {
     // mesmo tipo, órgão E data
-    if ($norma1->tipo_id !== $norma2->tipo_id || 
+    if ($norma1->tipo_id !== $norma2->tipo_id ||
         $norma1->orgao_id !== $norma2->orgao_id ||
         $norma1->data?->format('Y-m-d') !== $norma2->data?->format('Y-m-d')) {
         return false;
@@ -966,7 +966,7 @@ private function saoNormasIdenticasOuQuaseIdenticas($norma1, $norma2)
     // Normalizar descrições
     $desc1 = $this->normalizarTextoCompleto($norma1->descricao);
     $desc2 = $this->normalizarTextoCompleto($norma2->descricao);
-    
+
     // Verificar se são exatamente iguais após normalização
     if ($desc1 === $desc2) {
         return true;
@@ -975,7 +975,7 @@ private function saoNormasIdenticasOuQuaseIdenticas($norma1, $norma2)
     // Verificar se diferem por apenas números (mesmo padrão)
     $padrao1 = $this->extrairPadraoDocumento($desc1);
     $padrao2 = $this->extrairPadraoDocumento($desc2);
-    
+
     if ($padrao1 === $padrao2 && !empty($padrao1)) {
         // Com mesma data, tipo e órgão
         $diferenca = $this->calcularDiferencaTexto($desc1, $desc2);
@@ -994,14 +994,14 @@ private function extrairPadraoDocumento($texto)
 {
     // Substituir números por placeholder
     $padrao = preg_replace('/\b\d+\b/', '[NUM]', $texto);
-    
+
     // Substituir datas por placeholder
     $padrao = preg_replace('/\b\d{1,2}\/\d{1,2}\/\d{2,4}\b/', '[DATA]', $padrao);
     $padrao = preg_replace('/\b\d{2,4}-\d{1,2}-\d{1,2}\b/', '[DATA]', $padrao);
-    
+
     // Remover múltiplos placeholders consecutivos
     $padrao = preg_replace('/(\[NUM\]\s*){2,}/', '[NUM] ', $padrao);
-    
+
     return trim($padrao);
 }
 
@@ -1012,10 +1012,10 @@ private function calcularDiferencaTexto($texto1, $texto2)
 {
     $tokens1 = array_filter(explode(' ', $texto1));
     $tokens2 = array_filter(explode(' ', $texto2));
-    
+
     $diff1 = array_diff($tokens1, $tokens2);
     $diff2 = array_diff($tokens2, $tokens1);
-    
+
     return count($diff1) + count($diff2);
 }
 
@@ -1026,24 +1026,24 @@ private function calcularSimilaridadeExata($texto1, $texto2)
 {
     $len1 = strlen($texto1);
     $len2 = strlen($texto2);
-    
+
     // Se a diferença de tamanho é muito grande, não são similares
     if (abs($len1 - $len2) > min($len1, $len2) * 0.1) {
         return 0;
     }
-    
+
     // Usar similar_text
     if ($len1 < 500 && $len2 < 500) {
         $similaridade = 0;
         similar_text($texto1, $texto2, $similaridade);
         return $similaridade;
     }
-    
+
     $distancia = levenshtein(
-        substr($texto1, 0, 255), 
+        substr($texto1, 0, 255),
         substr($texto2, 0, 255)
     );
-    
+
     $maxLen = max(255, 255);
     return (($maxLen - $distancia) / $maxLen) * 100;
 }
@@ -1055,22 +1055,22 @@ private function normalizarTextoCompleto($texto)
 {
     // Converter para minúsculas
     $texto = mb_strtolower($texto, 'UTF-8');
-    
+
     // Remover acentos
     $texto = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $texto);
-    
+
     // Remover pontuação
     $texto = preg_replace('/[^\w\s\/\-°]/', ' ', $texto);
-    
+
     // Remover espaços múltiplos
     $texto = preg_replace('/\s+/', ' ', $texto);
-    
+
     return trim($texto);
 }
 
 /**
  * Sanitiza o nome do arquivo baseado na descrição da norma
- * 
+ *
  * @param string $descricao
  * @param string $extension
  * @return string
@@ -1079,28 +1079,28 @@ private function generateNormaFileName($descricao, $extension)
 {
     // Remover caracteres especiais e limitar tamanho
     $nome = preg_replace('/[^A-Za-z0-9\s\-_.]/', '', $descricao);
-    
+
     // Substituir múltiplos espaços por um só e converter para underscore
     $nome = preg_replace('/\s+/', '_', trim($nome));
-    
+
     // Limitar o tamanho do nome (máximo 100)
     $nome = substr($nome, 0, 100);
-    
+
     // Remover underscores do final
     $nome = rtrim($nome, '_');
-    
+
     // Se ficou vazio, usar fallback
     if (empty($nome)) {
         $nome = 'norma_' . date('Y_m_d_His');
     }
-    
+
     return $nome . '.' . $extension;
 }
 
 /**
  * Verifica se já existe um arquivo com o mesmo nome no MinIO
  * Se existir, adiciona um sufixo numérico
- * 
+ *
  * @param string $fileName
  * @return string
  */
@@ -1109,13 +1109,13 @@ private function getUniqueFileName($fileName)
     $originalName = pathinfo($fileName, PATHINFO_FILENAME);
     $extension = pathinfo($fileName, PATHINFO_EXTENSION);
     $counter = 1;
-    
+
     // Verificar se o arquivo já existe
     while (StorageHelper::normas()->exists($fileName)) {
         $fileName = $originalName . '_' . $counter . '.' . $extension;
         $counter++;
     }
-    
+
     return $fileName;
 }
 

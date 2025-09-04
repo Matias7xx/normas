@@ -27,9 +27,9 @@
             <form action="{{ route('boletins.update', $boletim->id) }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
-                
+
                 {{-- Card Principal --}}
-                <div class="card card-outline card-secondary">
+                <div class="card card-outline card-dark">
                     <div class="card-header">
                         <h3 class="card-title">
                             <i class="fas fa-file-alt mr-2"></i>Dados do Boletim
@@ -38,7 +38,7 @@
                             <span class="badge badge-info">ID: {{ $boletim->id }}</span>
                         </div>
                     </div>
-                    
+
                     <div class="card-body">
                         <div class="row">
                             {{-- Nome do Boletim --}}
@@ -46,7 +46,7 @@
                                 <label for="nome" class="form-label">
                                     <i class="fas fa-tag mr-1"></i>Nome do Boletim <span class="text-danger">*</span>
                                 </label>
-                                <input type="text" 
+                                <input type="text"
                                        class="form-control @error('nome') is-invalid @enderror"
                                        id="nome"
                                        name="nome"
@@ -58,13 +58,13 @@
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
-                            
+
                             {{-- Data de Publicação --}}
                             <div class="col-md-4 mb-3">
                                 <label for="data_publicacao" class="form-label">
                                     <i class="fas fa-calendar mr-1"></i>Data de Publicação <span class="text-danger">*</span>
                                 </label>
-                                <input type="date" 
+                                <input type="date"
                                        class="form-control @error('data_publicacao') is-invalid @enderror"
                                        id="data_publicacao"
                                        name="data_publicacao"
@@ -74,7 +74,7 @@
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
-                            
+
                             {{-- Descrição --}}
                             <div class="col-md-12 mb-3">
                                 <label for="descricao" class="form-label">
@@ -98,13 +98,13 @@
                 </div>
 
                 {{-- Card Arquivo Atual --}}
-                <div class="card card-outline card-secondary">
+                <div class="card card-outline card-dark">
                     <div class="card-header">
                         <h3 class="card-title">
                             <i class="fas fa-file-pdf mr-2"></i>Arquivo Atual
                         </h3>
                     </div>
-                    
+
                     <div class="card-body">
                         <div class="row align-items-center">
                             <div class="col-md-8">
@@ -120,13 +120,13 @@
                                 </div>
                             </div>
                             <div class="col-md-4 text-right">
-                                <a href="{{ route('boletins.view', $boletim->id) }}" 
-                                   target="_blank" 
+                                <a href="{{ route('boletins.view', $boletim->id) }}"
+                                   target="_blank"
                                    class="btn btn-dark btn-sm mr-2">
                                     <i class="fas fa-eye mr-1"></i>Visualizar
                                 </a>
-                                <a href="{{ route('boletins.download', $boletim->id) }}" 
-                                   class="btn btn-secondary btn-sm">
+                                <a href="{{ route('boletins.download', $boletim->id) }}"
+                                   class="btn btn-light btn-sm">
                                     <i class="fas fa-download mr-1"></i>Download
                                 </a>
                             </div>
@@ -135,25 +135,25 @@
                 </div>
 
                 {{-- Card Novo Arquivo --}}
-                <div class="card card-outline card-secondary">
+                <div class="card card-outline card-dark">
                     <div class="card-header">
                         <h3 class="card-title">
                             <i class="fas fa-upload mr-2"></i>Substituir Arquivo
                         </h3>
                         <div class="card-tools">
-                            <span class="badge badge-secondary">Opcional</span>
+                            <span class="badge badge-dark">Opcional</span>
                         </div>
                     </div>
-                    
+
                     <div class="card-body">
                         <div class="row">
                             <div class="col-md-12">
                                 <label for="arquivo" class="form-label">
                                     <i class="fas fa-upload mr-1"></i>Novo Arquivo PDF (opcional)
                                 </label>
-                                
+
                                 <div class="custom-file">
-                                    <input type="file" 
+                                    <input type="file"
                                            class="custom-file-input @error('arquivo') is-invalid @enderror"
                                            id="arquivo"
                                            name="arquivo"
@@ -165,15 +165,15 @@
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
-                                
+
                                 <small class="form-text text-muted mt-2">
                                     <i class="fas fa-info-circle mr-1"></i>
                                     Deixe em branco para manter o arquivo atual. Apenas arquivos PDF são aceitos. Tamanho máximo: 20MB
                                 </small>
-                                
+
                                 {{-- Preview do arquivo selecionado --}}
                                 <div id="arquivo-preview" class="mt-3" style="display: none;">
-                                    <div class="alert alert-warning">
+                                    <div class="alert alert-light">
                                         <i class="fas fa-file-pdf mr-2"></i>
                                         <strong>Novo arquivo selecionado:</strong>
                                         <span id="arquivo-nome"></span>
@@ -195,13 +195,13 @@
                 </div>
 
                 {{-- Card Informações de Auditoria --}}
-                <div class="card card-outline card-secondary">
+                <div class="card card-outline card-dark">
                     <div class="card-header">
                         <h3 class="card-title">
                             <i class="fas fa-info-circle mr-2"></i>Informações
                         </h3>
                     </div>
-                    
+
                     <div class="card-body">
                         <div class="row">
                             <div class="col-md-6">
@@ -234,7 +234,7 @@
                                 <button type="submit" class="btn btn-dark btn-lg mr-2">
                                     <i class="fas fa-save mr-2"></i>Atualizar Boletim
                                 </button>
-                                <a href="{{ route('boletins.index') }}" class="btn btn-secondary btn-lg">
+                                <a href="{{ route('boletins.index') }}" class="btn btn-light btn-lg">
                                     <i class="fas fa-times mr-2"></i>Cancelar
                                 </a>
                             </div>
@@ -253,33 +253,33 @@ $(document).ready(function() {
     $('#descricao').on('input', function() {
         var count = $(this).val().length;
         $('#descricao-contador').text(count);
-        
+
         if (count > 900) {
             $('#descricao-contador').addClass('text-warning');
         } else {
             $('#descricao-contador').removeClass('text-warning');
         }
-        
+
         if (count >= 1000) {
             $('#descricao-contador').addClass('text-danger').removeClass('text-warning');
         }
     });
-    
+
     // Atualizar contador inicial
     $('#descricao').trigger('input');
-    
+
     // Preview do arquivo selecionado
     $('#arquivo').on('change', function() {
         var file = this.files[0];
         if (file) {
             // Atualizar label
             $(this).next('.custom-file-label').text(file.name);
-            
+
             // Mostrar preview
             $('#arquivo-nome').text(file.name);
             $('#arquivo-tamanho').text(formatFileSize(file.size));
             $('#arquivo-preview').show();
-            
+
             // Validar tamanho (20MB = 20971520 bytes)
             if (file.size > 20971520) {
                 alert('Arquivo muito grande! O tamanho máximo permitido é 20MB.');
@@ -288,7 +288,7 @@ $(document).ready(function() {
                 $('#arquivo-preview').hide();
                 return;
             }
-            
+
             // Validar tipo
             if (file.type !== 'application/pdf') {
                 alert('Apenas arquivos PDF são permitidos!');
@@ -302,15 +302,15 @@ $(document).ready(function() {
             $('#arquivo-preview').hide();
         }
     });
-    
+
     // Função para formatar tamanho do arquivo
     function formatFileSize(bytes) {
         if (bytes === 0) return '0 Bytes';
-        
+
         const k = 1024;
         const sizes = ['Bytes', 'KB', 'MB', 'GB'];
         const i = Math.floor(Math.log(bytes) / Math.log(k));
-        
+
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     }
 });

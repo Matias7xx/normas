@@ -1,14 +1,14 @@
 <template>
   <PublicLayout :stats="stats">
     <Head title="Início" />
-    
+
     <section class="bg-gradient-to-r from-gray-600 via-gray-700 to-gray-800 text-white py-20">
       <div class="max-w-7xl mx-auto px-4 text-center">
         <div class="mb-8">
-          <img 
-            src="/images/brasao_pcpb.png" 
-            alt="Brasão PCPB" 
-            class="h-21 w-20 mx-auto mb-6 opacity-90 brightness-110"
+          <img
+            src="/images/brasao_pcpb.png"
+            alt="Brasão PCPB"
+            class="h-21 w-20 mx-auto mb-6"
           />
           <h1 class="text-4xl md:text-6xl font-bold mb-6 animate-fade-in">
             Biblioteca de <span class="text-[#c1a85a]">Normas</span>
@@ -16,17 +16,17 @@
           <p class="text-xl md:text-2xl text-blue-100 max-w-3xl mx-auto mb-8">
             Sistema de consulta de normas da Polícia Civil da Paraíba
           </p>
-          
+
           <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Link 
+            <Link
               href="/consulta"
               class="bg-[#c1a85a] hover:bg-[#a8914a] text-gray-900 px-8 py-4 rounded-lg font-bold text-lg transition-all duration-300 hover:scale-105 shadow-lg flex items-center"
             >
               <i class="fas fa-search mr-3"></i>
               Consultar Normas
             </Link>
-            
-            <button 
+
+            <button
               @click="scrollToStats"
               class="bg-transparent border-2 border-white hover:bg-white hover:text-blue-800 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-300 flex items-center"
             >
@@ -178,9 +178,9 @@ const sugestoesBusca = [
 
 const realizarBuscaRapida = () => {
   if (!buscaRapida.value.trim()) return
-  
+
   carregandoBusca.value = true
-  
+
   router.visit('/consulta', {
     data: { search_term: buscaRapida.value },
     onFinish: () => {
@@ -199,35 +199,35 @@ const animateStats = () => {
   const duration = 2000 // 2 segundos
   const steps = 60
   const stepDuration = duration / steps
-  
+
   const targets = {
     total_normas: props.stats.total_normas || 0,
     normas_vigentes: props.stats.normas_vigentes || 0,
     tipos_count: props.stats.tipos_count || 0,
     orgaos_count: props.stats.orgaos_count || 0
   }
-  
+
   let step = 0
-  
+
   const animate = () => {
     step++
     const progress = step / steps
     const easeOutQuart = 1 - Math.pow(1 - progress, 4)
-    
+
     animatedStats.value = {
       total_normas: Math.floor(targets.total_normas * easeOutQuart),
       normas_vigentes: Math.floor(targets.normas_vigentes * easeOutQuart),
       tipos_count: Math.floor(targets.tipos_count * easeOutQuart),
       orgaos_count: Math.floor(targets.orgaos_count * easeOutQuart)
     }
-    
+
     if (step < steps) {
       setTimeout(animate, stepDuration)
     } else {
       animatedStats.value = targets
     }
   }
-  
+
   animate()
 }
 

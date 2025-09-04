@@ -24,7 +24,7 @@
 
 @section('content')
 <div class="container-fluid">
-    
+
     <!-- Informações sobre a busca -->
     <div class="row mb-4">
         <div class="col-12">
@@ -37,8 +37,8 @@
                 </div>
                 <div class="info-content">
                     <p>
-                        Normas que são <strong>idênticas ou quase idênticas</strong>, 
-                        considerando o mesmo <strong>tipo, órgão e data</strong> com conteúdo muito similar. 
+                        Normas que são <strong>idênticas ou quase idênticas</strong>,
+                        considerando o mesmo <strong>tipo, órgão e data</strong> com conteúdo muito similar.
                     </p>
                 </div>
             </div>
@@ -56,7 +56,7 @@
                         @if($total_grupos > $grupos_por_pagina)
                             <br>
                             <small>
-                                Exibindo {{ count($duplicadas) }} grupo(s) 
+                                Exibindo {{ count($duplicadas) }} grupo(s)
                             </small>
                         @endif
                     </div>
@@ -103,17 +103,17 @@
                                             </div>
                                         </div>
                                         <div class="norma-actions">
-                                            <a href="{{ route('normas.view', $norma->id) }}" 
+                                            <a href="{{ route('normas.view', $norma->id) }}"
                                                class="action-btn"
                                                target="_blank">
                                                 <i class="fas fa-eye mr-1"></i> Ver PDF
                                             </a>
-                                            <a href="{{ route('normas.norma_edit', $norma->id) }}" 
+                                            <a href="{{ route('normas.norma_edit', $norma->id) }}"
                                                class="action-btn">
                                                 <i class="fas fa-edit mr-1"></i> Editar
                                             </a>
-                                            <button type="button" 
-                                                    class="action-btn btn-danger" 
+                                            <button type="button"
+                                                    class="action-btn btn-danger"
                                                     onclick="confirmarExclusao({{ $norma->id }}, '{{ $norma->descricao }}')">
                                                 <i class="fas fa-trash mr-1"></i> Remover
                                             </button>
@@ -142,7 +142,7 @@
                                         </a>
                                     </li>
                                 @endif
-                                
+
                                 {{-- Link anterior --}}
                                 @if($paginacao->onFirstPage())
                                     <li class="page-item disabled">
@@ -201,12 +201,12 @@
                                 @endif
                             </ul>
                         </nav>
-                        
+
                         <!-- Informações da paginação -->
                         <div class="pagination-info mt-2">
                             <small class="text-muted">
-                                Exibindo grupos {{ (($pagina_atual - 1) * $grupos_por_pagina) + 1 }} 
-                                a {{ min($pagina_atual * $grupos_por_pagina, $total_grupos) }} 
+                                Exibindo grupos {{ (($pagina_atual - 1) * $grupos_por_pagina) + 1 }}
+                                a {{ min($pagina_atual * $grupos_por_pagina, $total_grupos) }}
                                 de {{ $total_grupos }} grupos encontrados
                             </small>
                         </div>
@@ -403,14 +403,14 @@
         gap: 0.125rem;
         padding: 0.75rem;
     }
-    
+
     .pagination-modern .page-link {
         min-width: 35px;
         height: 35px;
         padding: 0.25rem 0.5rem;
         font-size: 0.8rem;
     }
-    
+
     .pagination-info {
         font-size: 0.8rem;
     }
@@ -423,7 +423,7 @@
         padding: 0.2rem 0.4rem;
         font-size: 0.75rem;
     }
-    
+
     .pagination-modern .page-item:not(.active):not(:first-child):not(:last-child):not(:nth-child(2)):not(:nth-last-child(2)) {
         display: none;
     }
@@ -771,16 +771,16 @@
         gap: 0.5rem;
         text-align: center;
     }
-    
+
     .norma-actions {
         justify-content: center;
     }
-    
+
     .detail-item {
         flex-direction: column;
         margin-bottom: 0.75rem;
     }
-    
+
     .detail-label {
         min-width: auto;
         margin-bottom: 0.25rem;
@@ -793,7 +793,7 @@
         font-size: 0.8rem;
         padding: 0.3rem 0.6rem;
     }
-    
+
     .modal-dialog {
         margin: 0.5rem;
     }
@@ -824,9 +824,9 @@
 <script>
 function confirmarExclusao(normaId, descricao) {
     // Limitar o tamanho da descrição para o modal
-    const descricaoLimitada = descricao.length > 100 ? 
+    const descricaoLimitada = descricao.length > 100 ?
         descricao.substring(0, 100) + '...' : descricao;
-    
+
     document.getElementById('normaDetalhes').textContent = `ID: ${normaId} - ${descricaoLimitada}`;
     document.getElementById('formExclusao').action = `/normas/norma_destroy/${normaId}`;
     $('#modalExclusao').modal('show');
@@ -835,7 +835,7 @@ function confirmarExclusao(normaId, descricao) {
 document.addEventListener('DOMContentLoaded', function() {
     // loading state nos links de paginação
     const paginationLinks = document.querySelectorAll('.pagination-modern .page-link');
-    
+
     paginationLinks.forEach(link => {
         if (!link.parentElement.classList.contains('disabled')) {
             link.addEventListener('click', function() {
@@ -845,22 +845,22 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     });
-    
+
     // Scroll suave para o topo quando mudar de página
     const urlParams = new URLSearchParams(window.location.search);
     const currentPage = urlParams.get('page');
-    
+
     if (currentPage && currentPage > 1) {
         // Scroll para o topo da lista de duplicadas
         const duplicadasSection = document.querySelector('.alert-section');
         if (duplicadasSection) {
-            duplicadasSection.scrollIntoView({ 
-                behavior: 'smooth', 
-                block: 'start' 
+            duplicadasSection.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
             });
         }
     }
-    
+
     // tooltips para ações
     const actionButtons = document.querySelectorAll('.action-btn');
     actionButtons.forEach(button => {
@@ -875,14 +875,14 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
-    
+
     // cards
     const normaCards = document.querySelectorAll('.norma-card');
     normaCards.forEach(card => {
         card.addEventListener('mouseenter', function() {
             this.style.borderLeftWidth = '6px';
         });
-        
+
         card.addEventListener('mouseleave', function() {
             this.style.borderLeftWidth = '4px';
         });
