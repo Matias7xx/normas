@@ -26,7 +26,7 @@
                     name="publicidade" id="publicidade">
                     <option value="">Selecione...</option>
                     @foreach ($publicidades as $publicidade)
-                        <option value="{{ $publicidade->id }}" 
+                        <option value="{{ $publicidade->id }}"
                             {{ old('publicidade', $norma->publicidade->id) == $publicidade->id ? 'selected' : '' }}>
                             {{ mb_strtoupper($publicidade->publicidade) }}
                         </option>
@@ -39,7 +39,7 @@
                     name="tipo" id="tipo">
                     <option value="">Selecione...</option>
                     @foreach ($tipos as $tipo)
-                        <option value="{{ $tipo->id }}" 
+                        <option value="{{ $tipo->id }}"
                             {{ old('tipo', $norma->tipo->id) == $tipo->id ? 'selected' : '' }}>
                             {{ mb_strtoupper($tipo->tipo) }}
                         </option>
@@ -52,7 +52,7 @@
                     name="orgao" id="orgao">
                     <option value="">Selecione...</option>
                     @foreach ($orgaos as $orgao)
-                        <option value="{{ $orgao->id }}" 
+                        <option value="{{ $orgao->id }}"
                             {{ old('orgao', $norma->orgao->id) == $orgao->id ? 'selected' : '' }}>
                             {{ mb_strtoupper($orgao->orgao) }}
                         </option>
@@ -68,14 +68,14 @@
                     name="vigente" id="vigente" onchange="handleVigenciaChange()">
                     <option value="">Selecione...</option>
                     @foreach (\App\Models\Norma::getVigenteOptions() as $value => $label)
-                        <option value="{{ $value }}" 
+                        <option value="{{ $value }}"
                             {{ old('vigente', $norma->vigente) == $value ? 'selected' : '' }}>
                             {{ $label }}
                         </option>
                     @endforeach
                 </select>
                 <small class="form-text text-muted">
-                    Status atual: 
+                    Status atual:
                     <span class="badge {{ $norma->vigente_class }}">
                         <i class="{{ $norma->vigente_icon }} mr-1"></i>{{ $norma->vigente }}
                     </span>
@@ -97,8 +97,8 @@
                             <!-- Checkbox para vigência indeterminada -->
                             <div class="col-md-6">
                                 <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="vigencia_indeterminada" 
-                                        name="vigencia_indeterminada" value="1" 
+                                    <input class="form-check-input" type="checkbox" id="vigencia_indeterminada"
+                                        name="vigencia_indeterminada" value="1"
                                         {{ old('vigencia_indeterminada', old('vigencia_indeterminada_hidden', $norma->vigencia_indeterminada ?? true)) == '1' ? 'checked' : '' }}
                                         onchange="toggleDataLimite()">
                                     <label class="form-check-label" for="vigencia_indeterminada" id="vigencia_indeterminada_label">
@@ -106,7 +106,7 @@
                                         <br><small class="text-muted" id="vigencia_indeterminada_help">Marque esta opção se a norma não tem data limite definida</small>
                                     </label>
                                 </div>
-                                
+
                                 @if(isset($norma->vigencia_indeterminada) && isset($norma->data_limite_vigencia))
                                     <div class="mt-2">
                                         <small class="text-info">
@@ -121,12 +121,12 @@
                                     </div>
                                 @endif
                             </div>
-                            
+
                             <!-- Campo de data limite -->
                             <div class="col-md-6" id="data_limite_container">
                                 <label class="section-form-label">Data limite para mudança de vigência</label>
                                 <input type="date" class="section-form-input {{ $errors->has('data_limite_vigencia') ? 'border-error' : '' }}"
-                                    name="data_limite_vigencia" id="data_limite_vigencia" 
+                                    name="data_limite_vigencia" id="data_limite_vigencia"
                                     value="{{ old('data_limite_vigencia', $norma->data_limite_vigencia ? $norma->data_limite_vigencia->format('Y-m-d') : '') }}"
                                     min="{{ date('Y-m-d', strtotime('+1 day')) }}">
                                 <small class="form-text text-muted" id="data_limite_help">
@@ -152,7 +152,7 @@
             <div class="col-lg-8 col-md-12">
                 <label class="section-form-label">Descrição <span class="text-danger">*</span></label>
                 <input type="text" class="section-form-input {{ $errors->has('descricao') ? 'border-error' : '' }}"
-                    name="descricao" id="descricao" value="{{ old('descricao', $norma->descricao) }}" 
+                    name="descricao" id="descricao" value="{{ old('descricao', $norma->descricao) }}"
                     placeholder="Informe a descrição da norma" maxlength="255">
                 <small class="form-text text-muted">Máximo 255 caracteres</small>
             </div>
@@ -164,11 +164,11 @@
                     <label class="custom-file-label" for="anexo">Escolha o arquivo...</label>
                 </div>
                 <small class="form-text text-muted">
-                    <i class="fas fa-file-pdf text-danger mr-1"></i>Somente arquivos PDF (máx. 20MB)
+                    <i class="fas fa-file-pdf text-danger mr-1"></i>Somente arquivos PDF (máx. 30MB)
                 </small>
                 <div class="mt-2">
-                    <a href="{{ route('normas.view', $norma->id) }}" 
-                       target="_blank" 
+                    <a href="{{ route('normas.view', $norma->id) }}"
+                       target="_blank"
                        class="btn btn-sm btn-outline-danger">
                         <i class='fas fa-file-pdf mr-1'></i>Ver Anexo Atual
                     </a>
@@ -212,7 +212,7 @@
                         <span class="badge badge-info ml-2">Existentes</span>
                     </div>
                     <div class="section-content">
-                        <select class="select2-palavras-chave section-form-select" multiple="multiple" 
+                        <select class="select2-palavras-chave section-form-select" multiple="multiple"
                             data-placeholder="🔍 Digite para buscar palavras-chave já cadastradas..."
                             style="width: 100%;" name="add_palavra_chave[]">
                             @foreach ($palavra_chaves as $key => $palavra_chave_obj)
@@ -251,7 +251,7 @@
                     </div>
                     <div class="section-content">
                         <div class="input-group input-group-new">
-                            <input type="text" class="section-form-input new-input" id="nova_palavra_chave" 
+                            <input type="text" class="section-form-input new-input" id="nova_palavra_chave"
                                 placeholder="✏️ Digite uma nova palavra-chave para criar..." maxlength="255">
                             <div class="input-group-append">
                                 <button class="btn btn-success btn-add-new" type="button" id="btn_add_palavra_chave">
@@ -274,7 +274,7 @@
                             <span class="text-muted">Nenhuma palavra-chave nova adicionada</span>
                         </div>
                     </div>
-                    <input type="hidden" id="novas_palavras_chave" name="novas_palavras_chave" 
+                    <input type="hidden" id="novas_palavras_chave" name="novas_palavras_chave"
                         value="{{ old('novas_palavras_chave') }}">
                 </div>
             </div>
@@ -881,35 +881,35 @@ input[type="date"].section-form-input::-webkit-calendar-picker-indicator {
     .card-body {
         padding: 15px;
     }
-    
+
     .btn-lg {
         padding: 8px 16px;
         font-size: 14px;
     }
-    
+
     .section-form-input, .section-form-select {
         padding: 8px 10px;
     }
-    
+
     .section-form-label {
         height: 22px;
         line-height: 22px;
         margin-bottom: 6px;
     }
-    
-    .section-form-input, 
+
+    .section-form-input,
     .section-form-select,
     .custom-file,
     .custom-file-input,
     .custom-file-label {
         height: 42px;
     }
-    
+
     .custom-file-label {
         padding: 8px 10px;
         font-size: 13px;
     }
-    
+
     .custom-file-label::after {
         height: 38px;
         padding: 8px 10px;
@@ -947,11 +947,11 @@ document.addEventListener('DOMContentLoaded', function() {
         console.error('jQuery não está carregado!');
         return;
     }
-    
+
     $(function() {
         // Inicializa array para armazenar novas palavras-chave
         let novasPalavrasChave = [];
-        
+
         // *** RECUPERAR PALAVRAS-CHAVE DO OLD() ***
         const oldNovasPalavrasChave = $('#novas_palavras_chave').val();
         if (oldNovasPalavrasChave) {
@@ -963,12 +963,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.error('Erro ao recuperar palavras-chave:', e);
             }
         }
-        
+
         // Função para restaurar palavras-chave após erro de validação
         function restaurarPalavrasChave() {
             if (novasPalavrasChave.length > 0) {
                 $("#palavras_chave_container .empty-state").remove();
-                
+
                 novasPalavrasChave.forEach(function(palavra) {
                     var tagHtml = `
                         <div class="palavra-chave-tag" data-palavra="${palavra}">
@@ -982,12 +982,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             }
         }
-        
+
         // Contador de caracteres para o resumo
         $('#resumo').on('input', function() {
             const count = $(this).val().length;
             $('#resumo-contador').text(count);
-            
+
             if (count > 800) {
                 $('#resumo-contador').addClass('text-warning');
             } else if (count > 950) {
@@ -996,13 +996,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 $('#resumo-contador').removeClass('text-warning text-danger').addClass('text-info');
             }
         });
-        
+
         // Atualiza label do arquivo
         $('#anexo').on('change', function() {
             const fileName = this.files[0] ? this.files[0].name : 'Escolha o arquivo...';
             $(this).next('.custom-file-label').text(fileName);
         });
-        
+
         // Configuração do Select2 para palavras-chave
         if ($.fn.select2) {
             $('.select2-palavras-chave').select2({
@@ -1030,11 +1030,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (!palavra.id) {
                     return palavra.text;
                 }
-                
+
                 var $palavra = $(
                     '<span><i class="fas fa-tag mr-2"></i> ' + palavra.text + '</span>'
                 );
-                
+
                 return $palavra;
             }
 
@@ -1042,12 +1042,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 return palavra.text;
             }
         }
-        
+
         // Função para atualizar o estado vazio
         function atualizarEstadoVazio() {
             const container = $("#palavras_chave_container");
             const emptyState = container.find('.empty-state');
-            
+
             if (novasPalavrasChave.length === 0) {
                 if (emptyState.length === 0) {
                     container.append(`
@@ -1061,11 +1061,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 emptyState.remove();
             }
         }
-        
+
         // Função para adicionar palavra-chave à lista
         function adicionarPalavraChave() {
             var palavra_chave = $("#nova_palavra_chave").val().trim();
-            
+
             if (palavra_chave.length < 3) {
                 $(document).Toasts('create', {
                     title: "Atenção!",
@@ -1077,7 +1077,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
                 return;
             }
-            
+
             // Verificar se a palavra-chave já foi adicionada
             if (novasPalavrasChave.includes(palavra_chave)) {
                 $(document).Toasts('create', {
@@ -1091,16 +1091,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 $("#nova_palavra_chave").val('');
                 return;
             }
-            
+
             // Adicionar à lista
             novasPalavrasChave.push(palavra_chave);
-            
+
             // Atualizar campo oculto
             $("#novas_palavras_chave").val(JSON.stringify(novasPalavrasChave));
-            
+
             // Remover estado vazio
             $("#palavras_chave_container .empty-state").remove();
-            
+
             // Adicionar elemento visual
             var tagHtml = `
                 <div class="palavra-chave-tag" data-palavra="${palavra_chave}">
@@ -1110,19 +1110,19 @@ document.addEventListener('DOMContentLoaded', function() {
                     </a>
                 </div>
             `;
-            
+
             $("#palavras_chave_container").append(tagHtml);
-            
+
             // Limpar campo
             $("#nova_palavra_chave").val('').focus();
         }
-        
+
         // Botão para adicionar nova palavra-chave
         $("#btn_add_palavra_chave").on("click", function(e) {
             e.preventDefault();
             adicionarPalavraChave();
         });
-        
+
         // Permitir uso da tecla Enter para adicionar palavra-chave
         $("#nova_palavra_chave").on("keypress", function(e) {
             if (e.which == 13) {
@@ -1130,33 +1130,33 @@ document.addEventListener('DOMContentLoaded', function() {
                 adicionarPalavraChave();
             }
         });
-        
+
         // Remover palavra-chave da lista
         $(document).on('click', '.remover-palavra-chave', function() {
             var palavra = $(this).data('palavra');
-            
+
             // Remover do array
             novasPalavrasChave = novasPalavrasChave.filter(item => item !== palavra);
-            
+
             // Atualizar campo oculto
             $("#novas_palavras_chave").val(JSON.stringify(novasPalavrasChave));
-            
+
             // Remover elemento visual
             $(this).parent().remove();
-            
+
             // Atualizar estado vazio
             atualizarEstadoVazio();
         });
-        
+
         // Sobrescrever o validateForm para incluir validação de palavras-chave
         window.validateFormOriginal = window.validateForm || function() { return true; };
-        
+
         window.validateForm = function() {
             // Validações originais
             if (!window.validateFormOriginal()) {
                 return false;
             }
-            
+
             // Verificar se campo vigente foi preenchido
             if (!$("#vigente").val()) {
                 $(document).Toasts('create', {
@@ -1170,7 +1170,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 $("#vigente").focus();
                 return false;
             }
-            
+
             // Verificar se há palavras-chave curtas demais
             if (novasPalavrasChave.length > 0) {
                 var palavrasCurtas = novasPalavrasChave.filter(palavra => palavra.length < 3);
@@ -1186,13 +1186,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     return false;
                 }
             }
-            
+
             return true;
         };
-        
+
         // Inicializar contador do resumo
         $('#resumo').trigger('input');
-        
+
         // Inicializar estado vazio
         atualizarEstadoVazio();
     });
@@ -1205,11 +1205,11 @@ document.addEventListener('DOMContentLoaded', function() {
 function aplicarEstadoInicialEdit() {
     const checkbox = document.getElementById('vigencia_indeterminada');
     const dataInput = document.getElementById('data_limite_vigencia');
-    
+
     // Verificar se há valores old() (indicando retorno após erro de validação)
     const oldCheckboxValue = "{{ old('vigencia_indeterminada_hidden', '') }}";
     const oldDataValue = "{{ old('data_limite_vigencia', '') }}";
-    
+
     if (oldCheckboxValue !== "") {
         // Há valor old(), aplicar o estado salvo
         checkbox.checked = oldCheckboxValue === '1';
@@ -1218,7 +1218,7 @@ function aplicarEstadoInicialEdit() {
         const normaValue = {{ $norma->vigencia_indeterminada ?? 'true' ? 'true' : 'false' }};
         checkbox.checked = normaValue;
     }
-    
+
     // Aplicar estado do campo de data baseado no checkbox
     toggleDataLimite();
 }
@@ -1228,7 +1228,7 @@ function handleVigenciaChange() {
     const vigenciaSelect = document.getElementById('vigente');
     const configSection = document.getElementById('vigencia_config_section');
     const vigenciaValue = vigenciaSelect.value;
-    
+
     // Mostrar configurações apenas para VIGENTE ou NÃO VIGENTE
     if (vigenciaValue === 'VIGENTE' || vigenciaValue === 'NÃO VIGENTE') {
         configSection.style.display = 'block';
@@ -1239,20 +1239,20 @@ function handleVigenciaChange() {
     } else {
         // Para EM ANÁLISE ou valores vazios, esconder a seção
         configSection.style.display = 'none';
-        
+
         // Limpar e resetar campos quando a seção não está visível
         const checkbox = document.getElementById('vigencia_indeterminada');
         const dataInput = document.getElementById('data_limite_vigencia');
         const dataContainer = document.getElementById('data_limite_container');
-        
+
         // Não resetar se há valores old() (após erro de validação)
         const hasOldValues = "{{ old('vigencia_indeterminada_hidden') }}" !== "";
-        
+
         if (!hasOldValues) {
             // Resetar para valor padrão apenas se não há valores old()
             const normaValue = {{ $norma->vigencia_indeterminada ?? 'true' ? 'true' : 'false' }};
             checkbox.checked = normaValue;
-            
+
             // Limpar e desabilitar campo de data se não há old()
             const oldDataValue = "{{ old('data_limite_vigencia', '') }}";
             if (oldDataValue === "") {
@@ -1261,7 +1261,7 @@ function handleVigenciaChange() {
             dataInput.disabled = true;
             dataContainer.classList.add('disabled');
         }
-        
+
         // Limpar texto de ajuda
         const helpText = document.getElementById('data_limite_help');
         if (helpText) {
@@ -1276,7 +1276,7 @@ function updateCheckboxText() {
     const checkboxText = document.getElementById('vigencia_indeterminada_text');
     const checkboxHelp = document.getElementById('vigencia_indeterminada_help');
     const vigenciaValue = vigenciaSelect.value;
-    
+
     if (vigenciaValue === 'VIGENTE') {
         checkboxText.textContent = 'Vigente por tempo indeterminado';
         checkboxHelp.textContent = 'Marque esta opção se a norma permanecerá vigente indefinidamente';
@@ -1294,7 +1294,7 @@ function toggleDataLimite() {
     const checkbox = document.getElementById('vigencia_indeterminada');
     const dataContainer = document.getElementById('data_limite_container');
     const dataInput = document.getElementById('data_limite_vigencia');
-    
+
     if (checkbox.checked) {
         // Vigência indeterminada = desabilitar data limite
         dataContainer.classList.add('disabled');
@@ -1309,7 +1309,7 @@ function toggleDataLimite() {
         dataContainer.classList.remove('disabled');
         dataInput.disabled = false;
     }
-    
+
     updateHelpText();
 }
 
@@ -1319,12 +1319,12 @@ function updateHelpText() {
     const checkbox = document.getElementById('vigencia_indeterminada');
     const helpText = document.getElementById('data_limite_help');
     const vigenciaValue = vigenciaSelect.value;
-    
+
     if (!vigenciaValue || vigenciaValue === 'EM ANÁLISE') {
         helpText.innerHTML = '';
         return;
     }
-    
+
     if (checkbox.checked) {
         helpText.innerHTML = '<i class="fas fa-info-circle text-info mr-1"></i>A norma permanecerá com este status indefinidamente.';
     } else {
@@ -1340,19 +1340,19 @@ function updateHelpText() {
 function garantirEnvioCheckbox() {
     const form = document.querySelector('form');
     const checkbox = document.getElementById('vigencia_indeterminada');
-    
+
     // Remover qualquer campo hidden anterior
     const hiddenExistente = document.querySelector('input[name="vigencia_indeterminada_hidden"]');
     if (hiddenExistente) {
         hiddenExistente.remove();
     }
-    
+
     // Criar campo hidden que sempre será enviado
     const hiddenInput = document.createElement('input');
     hiddenInput.type = 'hidden';
     hiddenInput.name = 'vigencia_indeterminada_hidden';
     hiddenInput.value = checkbox.checked ? '1' : '0';
-    
+
     // Inserir o campo hidden logo após o checkbox
     checkbox.parentNode.insertBefore(hiddenInput, checkbox.nextSibling);
 }
@@ -1360,36 +1360,36 @@ function garantirEnvioCheckbox() {
 // Função para interceptar o submit do formulário
 function interceptFormSubmit() {
     const form = document.querySelector('form');
-    
+
     form.addEventListener('submit', function(event) {
         const vigenciaSelect = document.getElementById('vigente');
         const vigenciaValue = vigenciaSelect.value;
         const checkbox = document.getElementById('vigencia_indeterminada');
         const dataInput = document.getElementById('data_limite_vigencia');
-        
+
         // Se a seção de vigência não está visível, não processar
         if (vigenciaValue !== 'VIGENTE' && vigenciaValue !== 'NÃO VIGENTE') {
             // Remover name dos campos para não serem enviados
             checkbox.removeAttribute('name');
             dataInput.removeAttribute('name');
-            
+
             // Remover qualquer campo hidden
             const hiddenExistente = document.querySelector('input[name="vigencia_indeterminada_hidden"]');
             if (hiddenExistente) {
                 hiddenExistente.remove();
             }
-            
+
             return; // Permitir submit normal
         }
-        
+
         // Se a data está desabilitada, limpar o valor
         if (dataInput.disabled) {
             dataInput.value = '';
         }
-        
+
         // Remover o atributo name do checkbox original para evitar envio duplicado
         checkbox.removeAttribute('name');
-        
+
         // Garantir que o campo hidden tenha o valor correto
         garantirEnvioCheckbox();
     });
@@ -1398,7 +1398,7 @@ function interceptFormSubmit() {
 // Atualizar o campo hidden sempre que o checkbox mudar
 function setupCheckboxListener() {
     const checkbox = document.getElementById('vigencia_indeterminada');
-    
+
     checkbox.addEventListener('change', function() {
         toggleDataLimite();
         garantirEnvioCheckbox(); // Atualizar campo hidden
@@ -1412,7 +1412,7 @@ document.addEventListener('DOMContentLoaded', function() {
     garantirEnvioCheckbox(); // Criar campo hidden inicial
     setupCheckboxListener();
     interceptFormSubmit();
-    
+
     // Adicionar listener para mudança no select de vigência
     const vigenciaSelect = document.getElementById('vigente');
     vigenciaSelect.addEventListener('change', handleVigenciaChange);
