@@ -5,15 +5,15 @@ echo "🚀 Iniciando aplicação..."
 
 # Aguardar banco de dados estar disponível
 echo "⏳ Aguardando banco de dados..."
-until pg_isready -h db -p 5432 -U postgres >/dev/null 2>&1; do
-    echo "💤 Banco não disponível, aguardando 3 segundos..."
-    sleep 3
-done
+#until pg_isready -h db -p 5432 -U postgres >/dev/null 2>&1; do
+#    echo "💤 Banco não disponível, aguardando 3 segundos..."
+#    sleep 3
+# done
 
 echo "✅ Banco de dados disponível!"
 
 # Aguardar mais um pouco para garantir
-sleep 2
+#sleep 2
 
 # Executar migrações
 echo "📊 Verificando status das migrações..."
@@ -35,6 +35,8 @@ else
         echo "✅ Banco já está atualizado!"
     fi
 fi
+
+php artisan migrate --force
 
 # Limpar e otimizar caches
 echo "🧹 Limpando caches..."

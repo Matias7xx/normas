@@ -24,8 +24,6 @@ class PublicController extends Controller
      */
     public function boletins(Request $request)
     {
-        // Verificar se o usuário está autenticado
-
         try {
             $query = Boletim::where('status', true)
                 ->with(['usuario:id,name']);
@@ -43,10 +41,10 @@ class PublicController extends Controller
                 $mostrandoMesAtual = true;
             }
 
+            $boletins = $boletins->paginate(40);
+
             // Manter parâmetros na paginação
-            if ($boletins && method_exists($boletins, 'appends')) {
-                $boletins->appends($request->only(['search_term', 'data_publicacao', 'mes_ano', 'busca']));
-            }
+            $boletins->appends($request->only(['search_term', 'data_publicacao', 'mes_ano', 'busca']));
 
             return Inertia::render('Boletins', [
                 'boletins' => $boletins,
@@ -58,9 +56,9 @@ class PublicController extends Controller
 
         } catch (\Exception $e) {
             Log::error('Erro ao carregar boletins: ' . $e->getMessage());
-            
+
             return Inertia::render('Boletins', [
-                'boletins' => collect()->paginate(10), // Paginação vazia
+                'boletins' => Boletim::where('id', 0)->paginate(40), // Paginação vazia
                 'filtros' => [],
                 'error' => 'Erro ao carregar boletins',
                 'stats' => $this->getSystemStats(),
@@ -87,49 +85,40 @@ class PublicController extends Controller
         if ($request->filled('data_publicacao')) {
             try {
                 $dataFiltro = Carbon::parse($request->data_publicacao);
-                
-                // Verificar se não é data futura
+
                 if ($dataFiltro->isFuture()) {
                     Log::warning('Tentativa de busca com data futura: ' . $request->data_publicacao);
-                    return collect(['data' => [], 'total' => 0]); // Retorna vazio
+                    return $query->whereRaw('1 = 0');
                 }
-                
+
                 $query->whereDate('data_publicacao', $dataFiltro->toDateString());
             } catch (\Exception $e) {
                 Log::warning('Data inválida no filtro: ' . $request->data_publicacao);
+                return $query->whereRaw('1 = 0');
             }
         }
 
-        // Filtro por mês/ano - usando TO_CHAR
+        // Filtro por mês/ano
         if ($request->filled('mes_ano') && !$request->filled('data_publicacao')) {
             try {
                 if (preg_match('/^(\d{4})-(\d{2})$/', $request->mes_ano, $matches)) {
-                    $mesAnoFormatado = $matches[1] . '-' . $matches[2]; // YYYY-MM
-                    
-                    // Verificar se não é mês futuro
+                    $mesAnoFormatado = $matches[1] . '-' . $matches[2];
+
                     $mesAtual = Carbon::now()->format('Y-m');
                     if ($mesAnoFormatado > $mesAtual) {
                         Log::warning('Tentativa de busca com mês futuro: ' . $request->mes_ano);
-                        return collect(['data' => [], 'total' => 0]); // Retorna vazio
+                        return $query->whereRaw('1 = 0');
                     }
-                    
-                    // PostgreSQL: TO_CHAR(data_publicacao, 'YYYY-MM') = '2025-08'
+
                     $query->whereRaw("TO_CHAR(data_publicacao, 'YYYY-MM') = ?", [$mesAnoFormatado]);
                 }
             } catch (\Exception $e) {
                 Log::warning('Mês/ano inválido no filtro: ' . $request->mes_ano);
+                return $query->whereRaw('1 = 0');
             }
         }
 
-        // Retornar todos os resultados sem paginação
-        $boletins = $query->orderBy('data_publicacao', 'desc')->get();
-        
-        return collect([
-            'data' => $boletins,
-            'total' => $boletins->count(),
-            'current_page' => 1,
-            'last_page' => 1
-        ]);
+        return $query->orderBy('data_publicacao', 'desc')->orderBy('created_at', 'desc');
     }
 
     /**
@@ -140,41 +129,25 @@ class PublicController extends Controller
         try {
             if (preg_match('/^(\d{4})-(\d{2})$/', $mesAno, $matches)) {
                 $mesAnoFormatado = $matches[1] . '-' . $matches[2];
-                
-                // Verificar se não é mês futuro
+
                 $mesAtual = Carbon::now()->format('Y-m');
                 if ($mesAnoFormatado > $mesAtual) {
-                    return collect(['data' => [], 'total' => 0]);
+                    return $query->whereRaw('1 = 0');
                 }
-                
-                // PostgreSQL: TO_CHAR(data_publicacao, 'YYYY-MM') = '2025-08'
-                $boletins = $query->whereRaw("TO_CHAR(data_publicacao, 'YYYY-MM') = ?", [$mesAnoFormatado])
+
+                return $query->whereRaw("TO_CHAR(data_publicacao, 'YYYY-MM') = ?", [$mesAnoFormatado])
                             ->orderBy('data_publicacao', 'desc')
-                            ->get();
-                            
-                return collect([
-                    'data' => $boletins,
-                    'total' => $boletins->count(),
-                    'current_page' => 1,
-                    'last_page' => 1
-                ]);
+                            ->orderBy('created_at', 'desc');
             }
         } catch (\Exception $e) {
             Log::error('Erro ao buscar boletins do mês: ' . $e->getMessage());
         }
 
-        // Fallback: retornar todos os boletins do mês atual
+        // Fallback
         $mesAtual = Carbon::now()->format('Y-m');
-        $boletins = $query->whereRaw("TO_CHAR(data_publicacao, 'YYYY-MM') = ?", [$mesAtual])
-                        ->orderBy('data_publicacao', 'desc')
-                        ->get();
-                        
-        return collect([
-            'data' => $boletins,
-            'total' => $boletins->count(),
-            'current_page' => 1,
-            'last_page' => 1
-        ]);
+        return $query->whereRaw("TO_CHAR(data_publicacao, 'YYYY-MM') = ?", [$mesAtual])
+                    ->orderBy('data_publicacao', 'desc')
+                    ->orderBy('created_at', 'desc');
     }
 
     /**
@@ -190,7 +163,7 @@ class PublicController extends Controller
 
         try {
             $boletim = Boletim::where('status', true)->findOrFail($id);
-            
+
             if (!$boletim->arquivo) {
                 abort(404, 'Arquivo não encontrado');
             }
@@ -228,7 +201,7 @@ class PublicController extends Controller
 
         try {
             $boletim = Boletim::where('status', true)->findOrFail($id);
-            
+
             if (!$boletim->arquivo) {
                 abort(404, 'Arquivo não encontrado');
             }
@@ -238,7 +211,7 @@ class PublicController extends Controller
             }
 
             $conteudo = StorageHelper::boletins()->get($boletim->arquivo);
-            
+
             // Sanitizar nome do arquivo
             $nomeDownload = preg_replace('/[^A-Za-z0-9\-_.]/', '_', $boletim->nome);
             $nomeDownload = preg_replace('/_+/', '_', $nomeDownload);
@@ -298,7 +271,7 @@ class PublicController extends Controller
     public function home()
     {
         $stats = $this->getSystemStats();
-        
+
         return Inertia::render('Home', [
             'stats' => $stats,
             'page' => 'home'
@@ -312,17 +285,17 @@ class PublicController extends Controller
     {
         $tipos = Tipo::where('status', true)->orderBy('tipo')->get();
         $orgaos = Orgao::where('status', true)->orderBy('orgao')->get();
-        
+
         $filtros = $request->only([
-            'search_term', 'tipo_id', 'orgao_id', 'vigente', 
+            'search_term', 'tipo_id', 'orgao_id', 'vigente',
             'data_inicio', 'data_fim', 'page'
         ]);
 
         $normas = null;
-        
+
         // Verificar se é uma busca ativa (quando clica no botão buscar)
         $isBusca = $request->has('busca') || $request->anyFilled(['search_term', 'tipo_id', 'orgao_id', 'vigente', 'data_inicio', 'data_fim']);
-        
+
         // Se há parâmetros de busca OU se clicou em buscar, realizar a consulta
         if ($isBusca) {
             $normas = $this->performSearch($request);
@@ -372,7 +345,7 @@ class PublicController extends Controller
     public function viewNorma($id)
     {
         $norma = Norma::where('status', true)->findOrFail($id);
-        
+
         if (!$norma->anexo) {
             abort(404, 'Arquivo não encontrado');
         }
@@ -384,7 +357,7 @@ class PublicController extends Controller
 
         // Servir do bucket 'normas'
         $conteudo = StorageHelper::normas()->get($norma->anexo);
-        
+
         return response($conteudo, 200, [
             'Content-Type' => 'application/pdf',
             'Content-Disposition' => 'inline; filename="' . $norma->anexo . '"',
@@ -398,7 +371,7 @@ class PublicController extends Controller
     public function downloadNorma($id)
     {
         $norma = Norma::where('status', true)->findOrFail($id);
-        
+
         if (!$norma->anexo) {
             abort(404, 'Arquivo não encontrado');
         }
@@ -409,13 +382,13 @@ class PublicController extends Controller
         }
 
         // Gerar nome do arquivo para download
-        $fileName = $norma->numero_norma 
+        $fileName = $norma->numero_norma
             ? sanitize_filename($norma->numero_norma) . '.pdf'
             : sanitize_filename($norma->descricao) . '.pdf';
 
         // bucket 'normas'
         $conteudo = StorageHelper::normas()->get($norma->anexo);
-        
+
         return response($conteudo, 200, [
             'Content-Type' => 'application/pdf',
             'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
@@ -429,7 +402,7 @@ class PublicController extends Controller
     public function searchApi(Request $request)
     {
         $normas = $this->performSearch($request);
-        
+
         return response()->json([
             'success' => true,
             'data' => $normas
@@ -467,15 +440,15 @@ class PublicController extends Controller
     {
         // Base query com eager loading
         $query = Norma::with([
-            'tipo:id,tipo', 
-            'orgao:id,orgao', 
+            'tipo:id,tipo',
+            'orgao:id,orgao',
             'palavrasChave:id,palavra_chave'
         ])
         ->where('status', true);
 
         // Verificar se há algum filtro ativo
         $hasFilters = $request->anyFilled(['search_term', 'tipo_id', 'orgao_id', 'vigente', 'data_inicio', 'data_fim']);
-        
+
         // Se não há filtros, mostrar todas as normas ativas ordenadas por data
         if (!$hasFilters) {
             $query->orderBy('data', 'desc')->orderBy('id', 'desc');
@@ -529,7 +502,7 @@ class PublicController extends Controller
         // Processar palavras-chave para exibição
         $normas->getCollection()->transform(function ($norma) {
             $palavrasChave = $norma->palavrasChave;
-            
+
             if ($palavrasChave->count() > 3) {
                 $norma->palavras_chave = $palavrasChave->take(3);
                 $norma->palavras_chave_restantes = $palavrasChave->count() - 3;
@@ -537,7 +510,7 @@ class PublicController extends Controller
                 $norma->palavras_chave = $palavrasChave;
                 $norma->palavras_chave_restantes = 0;
             }
-            
+
             return $norma;
         });
 
@@ -548,23 +521,23 @@ class PublicController extends Controller
     private function applySearchWithRelevance($query, $searchTerm)
     {
         $searchTerm = trim($searchTerm);
-        
+
         if (empty($searchTerm)) {
             return $query;
         }
-        
+
         // Dividir em palavras e filtrar palavras muito pequenas
         $words = array_filter(array_map('trim', explode(' ', $searchTerm)), function($word) {
             return strlen($word) >= 2;
         });
-        
+
         if (empty($words)) {
             return $query;
         }
-        
+
         // Criar subquery para calcular relevância
         $relevanceSelect = $this->buildRelevanceScorePostgreSQL($words, $searchTerm);
-        
+
         return $query->select('normas.*')
                     ->selectRaw("({$relevanceSelect}) as relevance_score")
                     ->where(function($q) use ($words, $searchTerm) {
@@ -575,7 +548,7 @@ class PublicController extends Controller
                                          ->orWhere('resumo', 'ILIKE', "%{$word}%");
                             });
                         }
-                        
+
                         // Busca nas palavras-chave
                         $q->orWhereHas('palavrasChave', function($subq) use ($words) {
                             foreach ($words as $word) {
@@ -593,18 +566,18 @@ class PublicController extends Controller
     private function buildRelevanceScorePostgreSQL($words, $fullTerm)
     {
         $scoreQueries = [];
-        
+
         // Score para frase exata (busca primeiro)
         $scoreQueries[] = "CASE WHEN descricao ILIKE '%{$fullTerm}%' THEN 10 ELSE 0 END";
         $scoreQueries[] = "CASE WHEN resumo ILIKE '%{$fullTerm}%' THEN 8 ELSE 0 END";
-        
+
         // Score para palavras individuais
         foreach ($words as $index => $word) {
             $weight = max(1, 5 - $index); // Primeiras palavras têm peso maior
             $scoreQueries[] = "CASE WHEN descricao ILIKE '%{$word}%' THEN {$weight} ELSE 0 END";
             $scoreQueries[] = "CASE WHEN resumo ILIKE '%{$word}%' THEN " . ($weight - 1) . " ELSE 0 END";
         }
-        
+
         return implode(' + ', $scoreQueries);
     }
 
@@ -636,7 +609,7 @@ class PublicController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            
+
             return Inertia::render('Especificacoes', [
                 'especificacoes' => [],
                 'error' => 'Erro ao carregar especificações técnicas'
@@ -652,7 +625,7 @@ class PublicController extends Controller
         try {
             $especificacao = Especificacao::where('status', true)
                 ->findOrFail($id);
-            
+
             if (!$especificacao->arquivo) {
                 abort(404, 'Arquivo não encontrado');
             }
@@ -664,7 +637,7 @@ class PublicController extends Controller
 
             // Buscar arquivo do MinIO
             $conteudo = StorageHelper::especificacoes()->get($especificacao->arquivo);
-            
+
             // Gerar nome para download
             $nomeDownload = sanitize_filename($especificacao->nome) . '.pdf';
 
@@ -688,7 +661,7 @@ class PublicController extends Controller
         try {
             $especificacao = Especificacao::where('status', true)
                 ->findOrFail($id);
-            
+
             if (!$especificacao->arquivo) {
                 abort(404, 'Arquivo não encontrado');
             }

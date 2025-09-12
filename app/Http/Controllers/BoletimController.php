@@ -45,25 +45,8 @@ class BoletimController extends Controller
                 $boletins = $this->buscarBoletinsPorMes($query, $mesAtual);
             }
 
-            // Paginação
-            if ($boletins instanceof \Illuminate\Database\Eloquent\Builder) {
-                $boletins = $boletins->paginate(40);
-                $boletins->appends($request->only(['search_term', 'data_publicacao', 'mes_ano', 'busca']));
-            } elseif ($boletins instanceof \Illuminate\Support\Collection) {
-                $currentPage = $request->input('page', 1);
-                $perPage = 40;
-                $pagedData = $boletins->slice(($currentPage - 1) * $perPage, $perPage)->values();
-                
-                $boletins = new \Illuminate\Pagination\LengthAwarePaginator(
-                    $pagedData,
-                    $boletins->count(),
-                    $perPage,
-                    $currentPage,
-                    ['path' => request()->url(), 'pageName' => 'page']
-                );
-                
-                $boletins->appends($request->only(['search_term', 'data_publicacao', 'mes_ano', 'busca']));
-            }
+            $boletins = $boletins->paginate(40);
+            $boletins->appends($request->only(['search_term', 'data_publicacao', 'mes_ano', 'busca']));
 
             return view('boletins.boletim_list', [
                 'boletins' => $boletins,
@@ -76,7 +59,10 @@ class BoletimController extends Controller
 
         } catch (\Exception $e) {
             Log::error('Erro ao listar boletins: ' . $e->getMessage());
-            return back()->withErrors(['Erro ao carregar lista de boletins.']);
+            Log::error('Stack trace: ' . $e->getTraceAsString());
+
+            return redirect()->route('boletins.index')
+                ->withErrors(['Erro ao carregar lista de boletins: ' . $e->getMessage()]);
         }
     }
 
@@ -98,14 +84,12 @@ class BoletimController extends Controller
         if ($request->filled('data_publicacao')) {
             try {
                 $dataFiltro = Carbon::parse($request->data_publicacao);
-                
-                // Verificar se não é data futura
+
                 if ($dataFiltro->isFuture()) {
                     Log::warning('Tentativa de busca com data futura: ' . $request->data_publicacao);
-                    // Retorna query que não vai encontrar nada
                     return $query->whereRaw('1 = 0');
                 }
-                
+
                 $query->whereDate('data_publicacao', $dataFiltro->toDateString());
             } catch (\Exception $e) {
                 Log::warning('Data inválida no filtro: ' . $request->data_publicacao);
@@ -113,20 +97,18 @@ class BoletimController extends Controller
             }
         }
 
-        // Filtro por mês/ano - usando TO_CHAR
+        // Filtro por mês/ano
         if ($request->filled('mes_ano') && !$request->filled('data_publicacao')) {
             try {
                 if (preg_match('/^(\d{4})-(\d{2})$/', $request->mes_ano, $matches)) {
-                    $mesAnoFormatado = $matches[1] . '-' . $matches[2]; // YYYY-MM
-                    
-                    // Verificar se não é mês futuro
+                    $mesAnoFormatado = $matches[1] . '-' . $matches[2];
+
                     $mesAtual = Carbon::now()->format('Y-m');
                     if ($mesAnoFormatado > $mesAtual) {
                         Log::warning('Tentativa de busca com mês futuro: ' . $request->mes_ano);
                         return $query->whereRaw('1 = 0');
                     }
-                    
-                    // TO_CHAR(data_publicacao, 'YYYY-MM') = '2025-08'
+
                     $query->whereRaw("TO_CHAR(data_publicacao, 'YYYY-MM') = ?", [$mesAnoFormatado]);
                 }
             } catch (\Exception $e) {
@@ -135,7 +117,6 @@ class BoletimController extends Controller
             }
         }
 
-        // Retornar com ordenação
         return $query->orderBy('data_publicacao', 'desc')->orderBy('created_at', 'desc');
     }
 
@@ -147,14 +128,12 @@ class BoletimController extends Controller
         try {
             if (preg_match('/^(\d{4})-(\d{2})$/', $mesAno, $matches)) {
                 $mesAnoFormatado = $matches[1] . '-' . $matches[2];
-                
-                // Verificar se não é mês futuro
+
                 $mesAtual = Carbon::now()->format('Y-m');
                 if ($mesAnoFormatado > $mesAtual) {
                     return $query->whereRaw('1 = 0');
                 }
-                
-                // TO_CHAR(data_publicacao, 'YYYY-MM') = '2025-08'
+
                 return $query->whereRaw("TO_CHAR(data_publicacao, 'YYYY-MM') = ?", [$mesAnoFormatado])
                             ->orderBy('data_publicacao', 'desc')
                             ->orderBy('created_at', 'desc');
@@ -163,7 +142,7 @@ class BoletimController extends Controller
             Log::error('Erro ao buscar boletins do mês: ' . $e->getMessage());
         }
 
-        // Fallback: retornar todos os boletins do mês atual
+        // Fallback
         $mesAtual = Carbon::now()->format('Y-m');
         return $query->whereRaw("TO_CHAR(data_publicacao, 'YYYY-MM') = ?", [$mesAtual])
                     ->orderBy('data_publicacao', 'desc')
@@ -187,10 +166,10 @@ class BoletimController extends Controller
             // Upload do arquivo para MinIO
             $arquivo = $request->file('arquivo');
             $caminhoCompleto = $this->generateUniqueFileName($arquivo, $request->nome, $request->data_publicacao);
-            
+
             // Salvar no bucket 'boletins' com a estrutura de pastas ano/mes/
             $uploaded = StorageHelper::boletins()->putFileAs('', $arquivo, $caminhoCompleto);
-            
+
             if (!$uploaded) {
                 return back()->withErrors(['Erro ao fazer upload do arquivo.'])->withInput();
             }
@@ -200,8 +179,9 @@ class BoletimController extends Controller
                 'nome' => $request->nome,
                 'descricao' => $request->descricao,
                 'data_publicacao' => $request->data_publicacao,
-                'arquivo' => $caminhoCompleto, // Salva: 2025/09/nome_arquivo.pdf
-                'user_id' => Auth::id()
+                'arquivo' => $caminhoCompleto,
+                'user_id' => Auth::id(),
+                'status' => true
             ]);
 
             return redirect()
@@ -244,10 +224,10 @@ class BoletimController extends Controller
             if ($request->hasFile('arquivo')) {
                 $arquivo = $request->file('arquivo');
                 $novoCaminhoArquivo = $this->generateUniqueFileName($arquivo, $request->nome, $request->data_publicacao);
-                
+
                 // Upload do novo arquivo
                 $uploaded = StorageHelper::boletins()->putFileAs('', $arquivo, $novoCaminhoArquivo);
-                
+
                 if ($uploaded) {
                     // Remove arquivo antigo se conseguiu fazer upload do novo
                     if ($caminhoArquivoAtual && StorageHelper::boletins()->exists($caminhoArquivoAtual)) {
@@ -286,7 +266,7 @@ class BoletimController extends Controller
     {
         try {
             $boletim = Boletim::findOrFail($id);
-            
+
             // Soft delete - apenas marca como inativo
             $boletim->update(['status' => false]);
 
@@ -307,7 +287,7 @@ class BoletimController extends Controller
     {
         try {
             $boletim = Boletim::findOrFail($id);
-            
+
             if (!$boletim->arquivo) {
                 return back()->withErrors(['Arquivo não encontrado.']);
             }
@@ -318,7 +298,7 @@ class BoletimController extends Controller
 
             // Buscar arquivo do MinIO
             $conteudo = StorageHelper::boletins()->get($boletim->arquivo);
-            
+
             return response($conteudo, 200, [
                 'Content-Type' => 'application/pdf',
                 'Content-Disposition' => 'attachment; filename="' . $boletim->nome_arquivo_download . '"',
@@ -340,7 +320,7 @@ class BoletimController extends Controller
     {
         try {
             $boletim = Boletim::findOrFail($id);
-            
+
             if (!$boletim->arquivo) {
                 abort(404, 'Arquivo não encontrado');
             }
@@ -374,25 +354,25 @@ class BoletimController extends Controller
     {
         $extension = $file->getClientOriginalExtension();
         $nomeBoletimSanitizado = $this->sanitize_filename($nomeBoletim);
-        
+
         // Criar estrutura de pasta baseada na data de publicação
         $dataCarbon = Carbon::parse($dataPublicacao);
         $ano = $dataCarbon->format('Y');
         $mes = $dataCarbon->format('m');
-        
+
         // Construir nome do arquivo
         $nomeArquivo = $nomeBoletimSanitizado . '.' . $extension;
-        
+
         // Verificar se já existe um arquivo com o mesmo nome na mesma pasta
         $caminhoCompleto = $ano . '/' . $mes . '/' . $nomeArquivo;
         $contador = 1;
-        
+
         while (StorageHelper::boletins()->exists($caminhoCompleto)) {
             $nomeArquivoComContador = $nomeBoletimSanitizado . '_' . $contador . '.' . $extension;
             $caminhoCompleto = $ano . '/' . $mes . '/' . $nomeArquivoComContador;
             $contador++;
         }
-        
+
         return $caminhoCompleto;
     }
 
