@@ -4,7 +4,7 @@
 
     <!-- Flash Messages -->
     <div v-if="showFlash && flashMessage" class="fixed top-20 right-4 z-50 animate-slide-in-right">
-      <div 
+      <div
         :class="alertClasses"
         class="px-6 py-4 rounded-lg shadow-xl min-w-80 max-w-md border-l-4"
         role="alert"
@@ -45,8 +45,8 @@
     </div>
 
     <!-- Progress Bar -->
-    <div 
-      v-show="$page.props.loading || isNavigating" 
+    <div
+      v-show="$page.props.loading || isNavigating"
       class="fixed top-0 left-0 right-0 z-50 h-1 bg-yellow-600 animate-pulse"
     ></div>
 
@@ -58,12 +58,12 @@
     <PublicFooter :stats="stats" />
 
     <!-- Modal de Ajuda -->
-    <div 
-      v-if="showAjudaModal" 
+    <div
+      v-if="showAjudaModal"
       class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4"
       @click="showAjudaModal = false"
     >
-      <div 
+      <div
         class="bg-white rounded-lg shadow-xl max-w-md w-full p-6 animate-scale-in"
         @click.stop
       >
@@ -72,20 +72,20 @@
             <i class="fas fa-question-circle mr-2 text-blue-600"></i>
             Ajuda - Sistema de Normas
           </h3>
-          <button 
+          <button
             @click="showAjudaModal = false"
             class="text-gray-400 hover:text-gray-600 transition-colors duration-300"
           >
             <i class="fas fa-times text-xl"></i>
           </button>
         </div>
-        
+
         <div class="space-y-4 text-gray-700">
           <p>
             <strong>Navegação:</strong> Use os links no topo para navegar entre as páginas do sistema.
           </p>
           <p>
-            <strong>Consultar:</strong> Na página de consulta, você pode buscar normas por descrição, tipo, órgão ou data.
+            <strong>Consultar Normas:</strong> Na página de consulta, você pode buscar normas por descrição, tipo, órgão ou data.
           </p>
           <p>
             <strong>Filtros:</strong> Use os filtros avançados para refinar sua busca.
@@ -100,9 +100,9 @@
             <strong>Administração:</strong> Acesso restrito para gestão do sistema.
           </p>
         </div>
-        
+
         <div class="mt-6 flex justify-end">
-          <button 
+          <button
             @click="showAjudaModal = false"
             class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors duration-300"
           >
@@ -146,9 +146,9 @@ const page = usePage()
 // Sistema de Flash Messages
 const flashMessage = computed(() => {
   // Acessar page.props diretamente
-  return page.props.flash?.error || 
-         page.props.flash?.success || 
-         page.props.flash?.message || 
+  return page.props.flash?.error ||
+         page.props.flash?.success ||
+         page.props.flash?.message ||
          page.props.error ||
          null
 })
@@ -156,7 +156,7 @@ const flashMessage = computed(() => {
 const alertType = computed(() => {
   // Acessar page.props diretamente
   if (page.props.flash?.error || page.props.error) return 'error'
-  if (page.props.flash?.success) return 'success' 
+  if (page.props.flash?.success) return 'success'
   if (page.props.flash?.warning) return 'warning'
   if (page.props.flash?.message) return 'info'
   return page.props.flash?.alert_type || 'info'
@@ -226,12 +226,12 @@ watch(flashMessage, (newMessage) => {
 }
 
 @keyframes slideInRight {
-  from { 
-    opacity: 0; 
+  from {
+    opacity: 0;
     transform: translateX(100%);
   }
-  to { 
-    opacity: 1; 
+  to {
+    opacity: 1;
     transform: translateX(0);
   }
 }

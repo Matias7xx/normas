@@ -1,7 +1,7 @@
 <template>
   <PublicLayout :stats="pageStats">
     <Head title="Consulta de Normas" />
-    
+
     <!-- Header da página -->
     <section class="bg-gradient-to-r from-gray-600 via-gray-700 to-gray-800 text-white py-16">
       <div class="max-w-7xl mx-auto px-4">
@@ -50,9 +50,9 @@
                 class="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
               >
                 <option value="">Todos os tipos</option>
-                <option 
-                  v-for="tipo in (tipos || [])" 
-                  :key="tipo?.id || 'tipo-' + Math.random()" 
+                <option
+                  v-for="tipo in (tipos || [])"
+                  :key="tipo?.id || 'tipo-' + Math.random()"
                   :value="tipo?.id"
                 >
                   {{ tipo?.tipo || 'Tipo não informado' }}
@@ -72,9 +72,9 @@
                 class="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
               >
                 <option value="">Todos os órgãos</option>
-                <option 
-                  v-for="orgao in (orgaos || [])" 
-                  :key="orgao?.id || 'orgao-' + Math.random()" 
+                <option
+                  v-for="orgao in (orgaos || [])"
+                  :key="orgao?.id || 'orgao-' + Math.random()"
                   :value="orgao?.id"
                 >
                   {{ orgao?.orgao || 'Órgão não informado' }}
@@ -83,7 +83,7 @@
             </div>
 
             <!-- Vigência -->
-            <div>
+            <!-- <div>
               <label for="vigente" class="block text-sm font-medium text-gray-700 mb-2">
                 <i class="fas fa-calendar-check mr-2 text-blue-600"></i>
                 Vigência
@@ -98,7 +98,7 @@
                 <option value="EM ANÁLISE">Em Análise</option>
                 <option value="NÃO VIGENTE">Não Vigente</option>
               </select>
-            </div>
+            </div> -->
 
             <!-- Botão Filtros de Data -->
             <div class="flex items-end">
@@ -153,7 +153,7 @@
               <i v-else class="fas fa-search mr-2"></i>
               {{ carregando ? 'Consultando...' : 'Consultar' }}
             </button>
-            
+
             <button
               type="button"
               @click="limparFiltros"
@@ -200,8 +200,8 @@
               <div class="flex-1 min-w-0">
                 <h3 class="text-lg font-semibold text-gray-900 mb-2 break-words">
                   {{ norma?.descricao || 'Descrição não informada' }}
-                  <span 
-                    v-if="norma?.tipo?.tipo" 
+                  <span
+                    v-if="norma?.tipo?.tipo"
                     class="inline-block mt-1 sm:mt-0 sm:ml-2 text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded whitespace-nowrap"
                   >
                     {{ norma.tipo.tipo }}
@@ -211,9 +211,9 @@
                   {{ norma.resumo }}
                 </p>
               </div>
-              
+
               <!-- Status de vigência -->
-              <div class="flex-shrink-0 sm:ml-4">
+              <!-- <div class="flex-shrink-0 sm:ml-4">
                 <span
                   :class="getVigenciaClass(norma?.vigente)"
                   class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap"
@@ -221,7 +221,7 @@
                   <i :class="getVigenciaIcon(norma?.vigente)" class="mr-1"></i>
                   {{ norma?.vigente || 'N/A' }}
                 </span>
-              </div>
+              </div> -->
             </div>
 
             <!-- Informações detalhadas -->
@@ -233,16 +233,16 @@
                   {{ norma.orgao.orgao }}
                 </span>
               </div>
-              
+
               <!-- Data -->
               <div v-if="norma?.data" class="flex items-center">
                 <i class="fas fa-calendar mr-2 text-blue-600 flex-shrink-0"></i>
-                <span>Data: {{ formatarData(norma.data) }}</span>
+                <span>{{ formatarData(norma.data) }}</span>
               </div>
-              
+
               <!-- Palavras-chave -->
-              <div 
-                v-if="norma?.palavras_chave && Array.isArray(norma.palavras_chave) && norma.palavras_chave.length > 0" 
+              <!-- <div
+                v-if="norma?.palavras_chave && Array.isArray(norma.palavras_chave) && norma.palavras_chave.length > 0"
                 class="sm:col-span-1 lg:col-span-2 xl:col-span-1"
               >
                 <div class="flex items-start">
@@ -263,7 +263,7 @@
                     </span>
                   </div>
                 </div>
-              </div>
+              </div> -->
             </div>
 
             <!-- Botões de ação -->
@@ -279,7 +279,7 @@
                     <i class="fas fa-eye"></i>
                     <span class="whitespace-nowrap">Ver Detalhes</span>
                   </button>
-                  
+
                   <button
                     v-if="norma?.anexo_url || norma?.anexo"
                     @click="baixarArquivo(norma?.id)"
@@ -374,7 +374,7 @@ const form = ref({
 })
 
 const temFiltrosAtivos = computed(() => {
-  return !!(form.value.search_term || form.value.tipo_id || form.value.orgao_id || 
+  return !!(form.value.search_term || form.value.tipo_id || form.value.orgao_id ||
            form.value.vigente || form.value.data_inicio || form.value.data_fim)
 })
 
@@ -388,38 +388,38 @@ const paginasVisiveis = computed(() => {
   if (!props.normas || !props.normas.current_page || !props.normas.last_page) {
     return []
   }
-  
+
   const current = props.normas.current_page
   const last = props.normas.last_page
   const pages = []
-  
+
   // Sempre mostrar primeira página
   if (current > 3) {
     pages.push(1)
     if (current > 4) pages.push('...')
   }
-  
+
   // Páginas ao redor da atual
   for (let i = Math.max(1, current - 2); i <= Math.min(last, current + 2); i++) {
     pages.push(i)
   }
-  
+
   // Sempre mostrar última página
   if (current < last - 2) {
     if (current < last - 3) pages.push('...')
     pages.push(last)
   }
-  
+
   return pages
 })
 
 // Métodos
 const buscarNormas = () => {
   carregando.value = true
-  
+
   // Adicionar parâmetro 'busca=1' para indicar que é uma busca ativa
   const params = { ...form.value, busca: 1 }
-  
+
   router.get('/consulta', params, {
     preserveState: true,
     preserveScroll: true,
@@ -435,7 +435,7 @@ const buscarNormas = () => {
 
 const buscarTodasNormas = () => {
   carregando.value = true
-  
+
   // Limpar todos os filtros e fazer busca
   form.value = {
     search_term: '',
@@ -445,7 +445,7 @@ const buscarTodasNormas = () => {
     data_inicio: '',
     data_fim: ''
   }
-  
+
   // Fazer busca com parâmetro indicando que é busca ativa
   router.get('/consulta', { busca: 1 }, {
     preserveState: true,
@@ -468,7 +468,7 @@ const limparFiltros = () => {
     data_inicio: '',
     data_fim: ''
   }
-  
+
   router.get('/consulta', {}, {
     preserveState: true
   })
@@ -477,14 +477,14 @@ const limparFiltros = () => {
 //Formatar data
 const formatarData = (data) => {
   if (!data) return ''
-  
+
   try {
     const dataObj = new Date(data)
-    
+
     if (isNaN(dataObj.getTime())) {
       return data
     }
-    
+
     return dataObj.toLocaleDateString('pt-BR', {
       day: 'numeric',
       month: 'long',
@@ -499,9 +499,9 @@ const formatarData = (data) => {
 
 const irParaPagina = (pagina) => {
   if (pagina === '...' || pagina === props.normas?.current_page || !pagina) return
-  
+
   const params = { ...form.value, page: pagina, busca: 1 }
-  
+
   router.get('/consulta', params, {
     preserveState: true,
     preserveScroll: true
@@ -521,12 +521,12 @@ const baixarArquivo = (normaId) => {
     console.error('ID da norma não informado')
     return
   }
-  
+
   // Criar um link temporário para forçar o download
   const link = document.createElement('a')
   link.href = `/norma/${normaId}/download`
   link.target = '_blank'
-  
+
   // Adicionar o link ao DOM
   document.body.appendChild(link)
   link.click()
@@ -536,7 +536,7 @@ const baixarArquivo = (normaId) => {
 // Funções para classes de vigência
 const getVigenciaClass = (vigente) => {
   if (!vigente) return 'bg-gray-100 text-gray-800'
-  
+
   switch (vigente) {
     case 'VIGENTE':
       return 'bg-green-100 text-green-800'
@@ -551,7 +551,7 @@ const getVigenciaClass = (vigente) => {
 
 const getVigenciaIcon = (vigente) => {
   if (!vigente) return 'fas fa-question-circle'
-  
+
   switch (vigente) {
     case 'VIGENTE':
       return 'fas fa-check-circle'
@@ -567,7 +567,7 @@ const getVigenciaIcon = (vigente) => {
 // Watchers
 watch(() => props.filtros, (newFiltros) => {
   if (newFiltros && typeof newFiltros === 'object') {
-    form.value = { 
+    form.value = {
       search_term: newFiltros.search_term || '',
       tipo_id: newFiltros.tipo_id || '',
       orgao_id: newFiltros.orgao_id || '',

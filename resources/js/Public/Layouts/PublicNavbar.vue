@@ -40,7 +40,7 @@
             title="Consultar Normas"
           >
             <i class="fas fa-search mr-2"></i>
-            <span>Consultar</span>
+            <span>Consultar Normas</span>
           </Link>
 
           <Link
@@ -127,7 +127,7 @@
             @click="mobileMenuOpen = false"
           >
             <i class="fas fa-search mr-3"></i>
-            Consultar
+            Consultar Normas
           </Link>
 
           <Link
