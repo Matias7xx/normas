@@ -66,10 +66,10 @@ Route::get('/especificacao/view/{id}', [PublicController::class, 'viewEspecifica
 Route::middleware([Authenticate::class])->group(function() {
     // Página de boletins com busca
     Route::get('/boletins', [PublicController::class, 'boletins'])->name('public.boletins');
-    
+
     // Visualização de PDF de boletim
     Route::get('/boletim/view/{id}', [PublicController::class, 'viewBoletim'])->name('public.boletim.view');
-    
+
     // Download de boletim
     Route::get('/boletim/download/{id}', [PublicController::class, 'downloadBoletim'])->name('public.boletim.download');
 });
@@ -84,35 +84,35 @@ Route::middleware([CheckAdminRoles::class])->group(function() {
     Route::get('/foto-usuario/{cpf?}', function($cpf = null) {
         Log::info("=== DEBUG ROTA FOTO ===");
         Log::info("CPF recebido: " . ($cpf ?? 'null'));
-        
+
         if (!Auth::check()) {
             Log::warning("Usuário não autenticado");
             return abort(404);
         }
-        
+
         // Se não passou CPF, usa o do usuário logado
         if (!$cpf) {
             $cpf = str_replace(['.', '-'], '', Auth::user()->cpf ?? '');
             Log::info("CPF do usuário logado: {$cpf}");
         }
-        
+
         $nomeArquivo = "{$cpf}_F.jpg";
         Log::info("Nome do arquivo: {$nomeArquivo}");
-        
+
         try {
             // DEBUG: Configuração do disco
             $diskConfig = config('filesystems.disks.s3');
             Log::info("Configuração do disco:", $diskConfig);
-            
+
             // Usar o disco s3 (bucket funcionais)
             $exists = StorageHelper::fotos()->exists($nomeArquivo);
             Log::info("Arquivo existe: " . ($exists ? 'SIM' : 'NÃO'));
-            
+
             if ($exists) {
                 $conteudo = StorageHelper::fotos()->get($nomeArquivo);
                 $tamanho = strlen($conteudo);
                 Log::info("Arquivo encontrado - Tamanho: {$tamanho} bytes");
-                
+
                 return response($conteudo, 200)
                     ->header('Content-Type', 'image/jpg')
                     ->header('Cache-Control', 'public, max-age=3600'); // Cache por 1 hora
@@ -124,17 +124,17 @@ Route::middleware([CheckAdminRoles::class])->group(function() {
                 } catch (\Exception $e) {
                     Log::error("Erro ao listar arquivos: " . $e->getMessage());
                 }
-                
+
                 Log::warning("Arquivo não encontrado: {$nomeArquivo}");
                 return abort(404);
             }
-            
+
         } catch (\Exception $e) {
             Log::error("Erro na rota de foto: " . $e->getMessage());
             Log::error("Stack trace: " . $e->getTraceAsString());
             return abort(500);
         }
-        
+
     })->name('foto.usuario');
 
     // =====================  USUÁRIOS   ============================
@@ -170,17 +170,29 @@ Route::middleware([CheckAdminRoles::class])->group(function() {
        // Rota para normas duplicadas - apenas para (role 1 e 2)
         Route::get('/duplicadas', [NormaController::class, 'normasDuplicadas'])
         ->name('normas.duplicadas');
+
+        // Verificação de grupos duplicados
+        Route::post('/verificar-grupo-duplicadas', [NormaController::class, 'verificarGrupoDuplicadas'])
+            ->name('normas.verificar_grupo_duplicadas');
+
+        // Lista de grupos verificados
+        Route::get('/grupos-verificados', [NormaController::class, 'gruposVerificados'])
+            ->name('normas.grupos_verificados');
+
+        // Remover verificação
+        Route::delete('/grupos-verificados/{id}', [NormaController::class, 'removerVerificacao'])
+        ->name('normas.remover_verificacao');
     });
-    
+
     Route::group(['prefix' => 'normas', 'middleware' => ['auth', 'admin']], function(){
         // Criação
         Route::get('/norma_create', [NormaController::class, 'create'])->name('normas.norma_create');
         Route::post('/norma_store', [NormaController::class, 'store'])->name('normas.norma_store');
-        
+
         // Edição
         Route::get('/norma_edit/{id}', [NormaController::class, 'edit'])->name('normas.norma_edit');
         Route::post('/norma_update/{id}', [NormaController::class, 'update'])->name('normas.norma_update');
-        
+
         // Exclusão (soft delete)
         Route::delete('/norma_destroy/{id}', [NormaController::class, 'destroy'])->name('normas.norma_destroy');
     });
@@ -202,10 +214,10 @@ Route::middleware([CheckAdminRoles::class])->group(function() {
         Route::post('/especificacoes_store', [EspecificacaoController::class, 'store'])->name('especificacoes.especificacoes_store');
         Route::get('/especificacoes_edit/{id}', [EspecificacaoController::class, 'edit'])->name('especificacoes.especificacoes_edit');
         Route::post('/especificacoes_update/{id}', [EspecificacaoController::class, 'update'])->name('especificacoes.especificacoes_update');
-        
+
         // Excluir especificação (soft delete)
         Route::get('/excluir/{id}', [EspecificacaoController::class, 'destroy'])->name('especificacoes.excluir');
-        
+
         // Download e visualização de arquivos (área administrativa)
         Route::get('/download/{id}', [EspecificacaoController::class, 'download'])->name('especificacoes.download');
         Route::get('/view/{id}', [EspecificacaoController::class, 'view'])->name('especificacoes.view');
@@ -213,27 +225,27 @@ Route::middleware([CheckAdminRoles::class])->group(function() {
 
     // =====================  GESTÃO DE BOLETINS - APENAS ROLE 1 (ROOT) ou 7  ============================
     Route::group(['prefix' => 'admin/boletins', 'middleware' => ['auth']], function(){
-        
+
         // Listagem
         Route::get('/', [BoletimController::class, 'index'])->name('boletins.index');
-        
+
         // Formulário de criação
         Route::get('/create', [BoletimController::class, 'create'])->name('boletins.create');
-        
+
         Route::post('/', [BoletimController::class, 'store'])->name('boletins.store');
-        
+
         // Formulário de edição
         Route::get('/{id}/edit', [BoletimController::class, 'edit'])->name('boletins.edit');
-        
+
         // Atualizar boletim
         Route::put('/{id}', [BoletimController::class, 'update'])->name('boletins.update');
-        
+
         // Remover boletim - soft delete
         Route::delete('/{id}', [BoletimController::class, 'destroy'])->name('boletins.destroy');
-        
+
         // Visualizar PDF
         Route::get('/{id}/view', [BoletimController::class, 'view'])->name('boletins.view');
-        
+
         // Download PDF
         Route::get('/{id}/download', [BoletimController::class, 'download'])->name('boletins.download');
     });
@@ -277,15 +289,15 @@ Route::middleware([CheckAdminRoles::class])->group(function() {
         // Dashboard de vigência - apenas para role 1 e 2
         Route::get('/dashboard', [VigenciaDashboardController::class, 'index'])
             ->name('vigencia.dashboard');
-        
+
         // Executar atualização de vigência
         Route::post('/executar', [VigenciaDashboardController::class, 'executarAtualizacao'])
             ->name('vigencia.executar');
-        
+
         // Atualizar norma específica
         Route::post('/atualizar-norma/{id}', [VigenciaDashboardController::class, 'atualizarNormaEspecifica'])
             ->name('vigencia.atualizar.norma');
-        
+
         // API para dados de gráficos
         Route::get('/dados-graficos', [VigenciaDashboardController::class, 'getDadosGraficos'])
             ->name('vigencia.dados.graficos');

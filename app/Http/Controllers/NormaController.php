@@ -17,8 +17,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use App\Helpers\StorageHelper;
-use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
+use App\Models\GrupoDuplicadaVerificado;
+use Illuminate\Http\JsonResponse;
 
 class NormaController extends Controller
 {
@@ -880,74 +881,70 @@ public function normasDuplicadas(Request $request)
         abort(403, 'Acesso negado.');
     }
 
+    $grupos_por_pagina = 5;
+    $pagina_atual = (int) $request->get('page', 1);
+
     // Buscar todas as normas ativas
-    $normas = Norma::where('status', true)
-        ->with(['tipo', 'orgao'])
+    $normas = Norma::with(['tipo', 'orgao'])
+        ->ativas()
         ->orderBy('data', 'desc')
+        ->orderBy('descricao', 'asc')
         ->get();
 
     $duplicadas = [];
-    $ja_processadas = [];
+    $normas_processadas = [];
 
+    // Agrupar normas similares
     foreach ($normas as $norma1) {
-        if (in_array($norma1->id, $ja_processadas)) {
+        if (in_array($norma1->id, $normas_processadas)) {
             continue;
         }
 
-        $grupo = [];
+        $grupo_atual = [$norma1];
+        $normas_processadas[] = $norma1->id;
 
         foreach ($normas as $norma2) {
-            if ($norma1->id === $norma2->id || in_array($norma2->id, $ja_processadas)) {
-                continue;
-            }
+            if ($norma1->id !== $norma2->id &&
+                !in_array($norma2->id, $normas_processadas) &&
+                $this->saoNormasIdenticasOuQuaseIdenticas($norma1, $norma2)) {
 
-            if ($this->saoNormasIdenticasOuQuaseIdenticas($norma1, $norma2)) {
-                if (empty($grupo)) {
-                    $grupo[] = $norma1;
-                }
-                $grupo[] = $norma2;
-                $ja_processadas[] = $norma2->id;
+                $grupo_atual[] = $norma2;
+                $normas_processadas[] = $norma2->id;
             }
         }
 
-        if (count($grupo) > 1) {
-            $duplicadas[] = $grupo;
-            $ja_processadas[] = $norma1->id;
+        // Apenas grupos com 2 ou mais normas
+        if (count($grupo_atual) >= 2) {
+            $normasIds = collect($grupo_atual)->pluck('id')->toArray();
+
+            // **FILTRAR GRUPOS JÁ VERIFICADOS**
+            if (!GrupoDuplicadaVerificado::grupoJaVerificado($normasIds)) {
+                $duplicadas[] = $grupo_atual;
+            }
         }
     }
 
-    // paginação
-    $currentPage = $request->get('page', 1);
-    $perPage = 20; // 20 grupos por página
-    $total = count($duplicadas);
+    $total_grupos = count($duplicadas);
 
-    // Calcular offset
-    $offset = ($currentPage - 1) * $perPage;
+    // Aplicar paginação
+    $offset = ($pagina_atual - 1) * $grupos_por_pagina;
+    $duplicadas_paginadas = array_slice($duplicadas, $offset, $grupos_por_pagina);
 
-    // Pegar apenas os itens da página atual
-    $currentPageItems = array_slice($duplicadas, $offset, $perPage);
-
-    // Criar o objeto paginador
-    $paginatedDuplicadas = new LengthAwarePaginator(
-        $currentPageItems,
-        $total,
-        $perPage,
-        $currentPage,
-        [
-            'path' => $request->url(),
-            'pageName' => 'page',
-        ]
+    // Criar objeto de paginação
+    $paginacao = new \Illuminate\Pagination\LengthAwarePaginator(
+        $duplicadas_paginadas,
+        $total_grupos,
+        $grupos_por_pagina,
+        $pagina_atual,
+        ['path' => $request->url(), 'pageName' => 'page']
     );
 
-    // query parameters
-    $paginatedDuplicadas->appends($request->query());
-
     return view('normas.duplicadas', [
-        'duplicadas' => $currentPageItems,
-        'paginacao' => $paginatedDuplicadas,
-        'total_grupos' => $total,
-        'grupos_por_pagina' => $perPage,
-        'pagina_atual' => $currentPage
+        'duplicadas' => $duplicadas_paginadas,
+        'paginacao' => $paginacao,
+        'total_grupos' => $total_grupos,
+        'grupos_por_pagina' => $grupos_por_pagina,
+        'pagina_atual' => $pagina_atual
     ]);
 }
 
@@ -985,6 +982,93 @@ private function saoNormasIdenticasOuQuaseIdenticas($norma1, $norma2)
     //Com todos os critérios iguais, indica duplicata
     $similaridade = $this->calcularSimilaridadeExata($desc1, $desc2);
     return $similaridade >= 95.0;
+}
+
+/**
+ * Marca um grupo como verificado
+ */
+public function verificarGrupoDuplicadas(Request $request): JsonResponse
+{
+    try {
+        $request->validate([
+            'normas_ids' => 'required|array|min:2',
+            'normas_ids.*' => 'integer|exists:normas,id',
+            'status' => 'required|in:verificado',
+            'observacoes' => 'nullable|string|max:1000'
+        ]);
+
+        $normasIds = $request->normas_ids;
+        $status = $request->status;
+        $observacoes = $request->observacoes;
+        $usuarioId = auth()->id();
+
+        // Verificar se o grupo já foi verificado
+        if (GrupoDuplicadaVerificado::grupoJaVerificado($normasIds)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Este grupo já foi verificado anteriormente.'
+            ]);
+        }
+
+        // Marcar como verificado
+        GrupoDuplicadaVerificado::marcarComoVerificado(
+            $normasIds,
+            $usuarioId,
+            $status,
+            $observacoes
+        );
+
+        $mensagem = $status === 'verificado'
+            ? 'Grupo marcado como "não é duplicata" com sucesso!'
+            : 'Grupo marcado como "falso positivo" com sucesso!';
+
+        return response()->json([
+            'success' => true,
+            'message' => $mensagem
+        ]);
+
+    } catch (\Exception $e) {
+        \Log::error('Erro ao verificar grupo de duplicadas: ' . $e->getMessage());
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Erro interno do servidor'
+        ], 500);
+    }
+}
+
+/**
+ * Lista grupos verificados
+ */
+public function gruposVerificados(Request $request)
+{
+    $grupos = GrupoDuplicadaVerificado::with('verificadoPor')
+        ->orderBy('verificado_em', 'desc')
+        ->paginate(10);
+
+    return view('normas.grupos-verificados', compact('grupos'));
+}
+
+/**
+ * Remove verificação de um grupo (permite reaparecer)
+ */
+public function removerVerificacao(Request $request, $id): JsonResponse
+{
+    try {
+        $grupo = GrupoDuplicadaVerificado::findOrFail($id);
+        $grupo->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Verificação removida. O grupo voltará a aparecer na lista de duplicadas.'
+        ]);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Erro ao remover verificação'
+        ], 500);
+    }
 }
 
 /**
