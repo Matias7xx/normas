@@ -50,7 +50,8 @@
           </p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <!-- lg:grid-cols-4 quando descomentar vigência -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           <div class="bg-white rounded-lg shadow-md p-6 text-center hover:shadow-lg transition-shadow duration-300">
             <div class="text-4xl font-bold text-blue-600 mb-2">
               {{ animatedStats.total_normas }}
@@ -59,13 +60,13 @@
             <div class="text-sm text-gray-500 mt-1">Cadastradas no sistema</div>
           </div>
 
-          <div class="bg-white rounded-lg shadow-md p-6 text-center hover:shadow-lg transition-shadow duration-300">
+          <!-- <div class="bg-white rounded-lg shadow-md p-6 text-center hover:shadow-lg transition-shadow duration-300">
             <div class="text-4xl font-bold text-blue-600 mb-2">
               {{ animatedStats.normas_vigentes }}
             </div>
             <div class="text-gray-600 font-medium">Normas Vigentes</div>
             <div class="text-sm text-gray-500 mt-1">Atualmente em vigor</div>
-          </div>
+          </div> -->
 
           <div class="bg-white rounded-lg shadow-md p-6 text-center hover:shadow-lg transition-shadow duration-300">
             <div class="text-4xl font-bold text-blue-600 mb-2">

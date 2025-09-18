@@ -7,8 +7,7 @@
       <div class="max-w-7xl mx-auto px-4">
         <div class="text-center">
           <h1 class="text-3xl md:text-4xl font-bold mb-4">
-            <!-- <i class="fas fa-search mr-3"></i> -->
-            Consulta Pública de Normas
+            Consulta de Normas
           </h1>
           <p class="text-xl text-blue-100 max-w-2xl mx-auto">
             Pesquise por descrição, resumo ou palavra-chave da norma
@@ -190,110 +189,96 @@
       <!-- Lista de normas -->
       <div v-if="normas?.data && Array.isArray(normas.data) && normas.data.length > 0" class="space-y-4">
         <div
-          v-for="norma in normas.data"
-          :key="norma?.id || 'norma-' + Math.random()"
-          class="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 border border-gray-200"
+            v-for="norma in normas.data"
+            :key="norma?.id || 'norma-' + Math.random()"
+            class="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 border border-gray-200"
         >
-          <div class="p-4 sm:p-6">
-            <!-- Cabeçalho do card -->
-            <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-4 space-y-3 sm:space-y-0">
-              <div class="flex-1 min-w-0">
-                <h3 class="text-lg font-semibold text-gray-900 mb-2 break-words">
-                  {{ norma?.descricao || 'Descrição não informada' }}
-                  <span
-                    v-if="norma?.tipo?.tipo"
-                    class="inline-block mt-1 sm:mt-0 sm:ml-2 text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded whitespace-nowrap"
-                  >
-                    {{ norma.tipo.tipo }}
-                  </span>
+            <div class="p-6">
+            <div class="flex items-start justify-between mb-4">
+                <div class="flex-1">
+                <h3 class="text-lg font-semibold text-gray-900 mb-2 flex items-center">
+                    {{ norma?.descricao || 'Descrição não informada' }}
                 </h3>
-                <p v-if="norma?.resumo" class="text-gray-700 mb-3 leading-relaxed break-words">
-                  {{ norma.resumo }}
+                <p v-if="norma?.resumo" class="text-gray-700 mb-3 leading-relaxed">
+                    {{ norma.resumo }}
                 </p>
-              </div>
-
-              <!-- Status de vigência -->
-              <!-- <div class="flex-shrink-0 sm:ml-4">
-                <span
-                  :class="getVigenciaClass(norma?.vigente)"
-                  class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap"
-                >
-                  <i :class="getVigenciaIcon(norma?.vigente)" class="mr-1"></i>
-                  {{ norma?.vigente || 'N/A' }}
-                </span>
-              </div> -->
-            </div>
-
-            <!-- Informações detalhadas -->
-            <div class="space-y-3 sm:space-y-0 sm:grid sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 sm:gap-4 text-sm text-gray-600 mb-4">
-              <!-- Órgão -->
-              <div v-if="norma?.orgao?.orgao" class="flex items-center min-w-0">
-                <i class="fas fa-building mr-2 text-blue-600 flex-shrink-0"></i>
-                <span class="truncate" :title="norma.orgao.orgao">
-                  {{ norma.orgao.orgao }}
-                </span>
-              </div>
-
-              <!-- Data -->
-              <div v-if="norma?.data" class="flex items-center">
-                <i class="fas fa-calendar mr-2 text-blue-600 flex-shrink-0"></i>
-                <span>{{ formatarData(norma.data) }}</span>
-              </div>
-
-              <!-- Palavras-chave -->
-              <!-- <div
-                v-if="norma?.palavras_chave && Array.isArray(norma.palavras_chave) && norma.palavras_chave.length > 0"
-                class="sm:col-span-1 lg:col-span-2 xl:col-span-1"
-              >
-                <div class="flex items-start">
-                  <i class="fas fa-tags mr-2 text-blue-600 flex-shrink-0 mt-0.5"></i>
-                  <div class="flex flex-wrap gap-1 min-w-0">
-                    <span
-                      v-for="palavra in norma.palavras_chave"
-                      :key="palavra?.id || 'palavra-' + Math.random()"
-                      class="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs whitespace-nowrap"
-                    >
-                      {{ palavra?.palavra_chave || 'Palavra-chave' }}
-                    </span>
-                    <span
-                      v-if="(norma?.palavras_chave_restantes || 0) > 0"
-                      class="bg-gray-200 text-gray-600 px-2 py-1 rounded text-xs whitespace-nowrap"
-                    >
-                      +{{ norma.palavras_chave_restantes }}
-                    </span>
-                  </div>
                 </div>
-              </div> -->
+
+                <!-- Status de vigência -->
+                <!-- <div class="flex-shrink-0 ml-4">
+                <span
+                    :class="getVigenciaClass(norma?.vigente)"
+                    class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap"
+                >
+                    <i :class="getVigenciaIcon(norma?.vigente)" class="mr-1"></i>
+                    {{ norma?.vigente || 'N/A' }}
+                </span>
+                </div> -->
             </div>
 
-            <!-- Botões de ação -->
-            <div class="pt-4 border-t border-gray-200">
-              <div class="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
-                <!-- Botões principais -->
-                <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
-                  <button
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600 mb-4">
+
+                <!-- Órgão -->
+                <div v-if="norma?.orgao?.orgao">
+                <i class="fas fa-building mr-1 text-blue-600"></i>
+                {{ norma.orgao.orgao }}
+                </div>
+
+                <!-- Data -->
+                <div v-if="norma?.data">
+                <i class="fas fa-calendar mr-1 text-blue-600"></i>
+                {{ formatarData(norma.data) }}
+                </div>
+
+                <!-- Palavras-chave -->
+                <!-- <div
+                v-if="norma?.palavras_chave && Array.isArray(norma.palavras_chave) && norma.palavras_chave.length > 0"
+                >
+                <div class="flex items-start">
+                    <i class="fas fa-tags mr-1 text-blue-600 flex-shrink-0 mt-0.5"></i>
+                    <div class="flex flex-wrap gap-1 min-w-0">
+                    <span
+                        v-for="palavra in norma.palavras_chave"
+                        :key="palavra?.id || 'palavra-' + Math.random()"
+                        class="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs whitespace-nowrap"
+                    >
+                        {{ palavra?.palavra_chave || 'Palavra-chave' }}
+                    </span>
+                    <span
+                        v-if="(norma?.palavras_chave_restantes || 0) > 0"
+                        class="bg-gray-200 text-gray-600 px-2 py-1 rounded text-xs whitespace-nowrap"
+                    >
+                        +{{ norma.palavras_chave_restantes }}
+                    </span>
+                    </div>
+                </div>
+                </div> -->
+            </div>
+
+            <div class="flex items-center justify-between pt-4 border-t border-gray-200">
+                <div class="flex space-x-3">
+                <button
                     @click="visualizarNorma(norma?.id)"
                     :disabled="!norma?.id"
-                    class="group bg-white hover:bg-slate-50 border border-slate-300 hover:border-slate-400 text-slate-700 hover:text-slate-900 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 hover:scale-105 hover:shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
+                    class="bg-white hover:bg-slate-50 border border-slate-300 hover:border-slate-400 text-slate-700 hover:text-slate-900 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 hover:scale-105 hover:shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
                     <i class="fas fa-eye"></i>
-                    <span class="whitespace-nowrap">Ver Detalhes</span>
-                  </button>
+                    Ver Detalhes
+                </button>
 
-                  <button
+                <button
                     v-if="norma?.anexo_url || norma?.anexo"
                     @click="baixarArquivo(norma?.id)"
-                    class="group bg-white hover:bg-slate-50 border border-slate-300 hover:border-slate-400 text-slate-700 hover:text-slate-900 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 hover:scale-105 hover:shadow-md active:scale-95"
-                  >
+                    class="bg-white hover:bg-slate-50 border border-slate-300 hover:border-slate-400 text-slate-700 hover:text-slate-900 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 hover:scale-105 hover:shadow-md active:scale-95"
+                >
                     <i class="fas fa-download"></i>
-                    <span class="whitespace-nowrap">Baixar PDF</span>
-                  </button>
+                    Baixar
+                </button>
                 </div>
-              </div>
             </div>
-          </div>
+            </div>
         </div>
-      </div>
+        </div>
 
       <!-- Estado vazio -->
       <div v-else-if="normas?.data && Array.isArray(normas.data) && normas.data.length === 0" class="text-center py-8 sm:py-12">

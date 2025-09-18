@@ -38,7 +38,7 @@
             <div class="card">
                 <div class="card-header">
                     <h4 class="card-title mb-0">
-                        <i class="fas fa-edit text-dark me-2"></i>
+                        <i class="fas fa-edit text-dark mr-2"></i>
                         {{ $especificacao->nome }}
                     </h4>
                 </div>
@@ -46,7 +46,7 @@
                 <div class="card-body">
                     @if($errors->any())
                         <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <i class="fas fa-exclamation-triangle mr-2"></i>
                             <ul class="mb-0">
                                 @foreach($errors->all() as $error)
                                     <li>{{ $error }}</li>
@@ -58,19 +58,19 @@
 
                     <form action="{{ route('especificacoes.especificacoes_update', $especificacao->id) }}" method="POST" enctype="multipart/form-data" id="formEspecificacao">
                         @csrf
-                        
+
                         <div class="row">
                             <div class="col-md-12">
                                 <div class="mb-3">
                                     <label for="nome" class="form-label fw-bold">
-                                        <i class="fas fa-tag me-1"></i>
+                                        <i class="fas fa-tag mr-1"></i>
                                         Nome da Especificação <span class="text-danger">*</span>
                                     </label>
-                                    <input type="text" 
-                                           class="form-control @error('nome') is-invalid @enderror" 
-                                           id="nome" 
-                                           name="nome" 
-                                           value="{{ old('nome', $especificacao->nome) }}" 
+                                    <input type="text"
+                                           class="form-control @error('nome') is-invalid @enderror"
+                                           id="nome"
+                                           name="nome"
+                                           value="{{ old('nome', $especificacao->nome) }}"
                                            placeholder="Ex: Câmera de Ação Portátil"
                                            maxlength="255"
                                            required>
@@ -78,7 +78,7 @@
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                     <div class="form-text">
-                                        <i class="fas fa-info-circle me-1"></i>
+                                        <i class="fas fa-info-circle mr-1"></i>
                                         Digite um nome para a especificação técnica
                                     </div>
                                 </div>
@@ -91,7 +91,7 @@
                                 <div class="col-md-12">
                                     <div class="mb-3">
                                         <label class="form-label fw-bold">
-                                            <i class="fas fa-file-pdf text-danger me-1"></i>
+                                            <i class="fas fa-file-pdf text-danger mr-1"></i>
                                             Arquivo Atual
                                         </label>
                                         <div class="card">
@@ -104,14 +104,14 @@
                                                         </div>
                                                     </div>
                                                     <div>
-                                                        <a href="{{ route('especificacoes.view', $especificacao->id) }}" 
-                                                           class="btn btn-sm btn-outline-danger me-1" 
+                                                        <a href="{{ route('especificacoes.view', $especificacao->id) }}"
+                                                           class="btn btn-sm btn-outline-danger mr-1"
                                                            target="_blank"
                                                            title="Visualizar PDF">
                                                             <i class="fas fa-eye"></i> Visualizar
                                                         </a>
-                                                        <a href="{{ route('especificacoes.download', $especificacao->id) }}" 
-                                                           class="btn btn-sm btn-outline-dark" 
+                                                        <a href="{{ route('especificacoes.download', $especificacao->id) }}"
+                                                           class="btn btn-sm btn-outline-dark"
                                                            title="Download PDF">
                                                             <i class="fas fa-download"></i> Download
                                                         </a>
@@ -129,36 +129,36 @@
                             <div class="col-md-12">
                                 <div class="mb-4">
                                     <label for="arquivo" class="form-label fw-bold">
-                                        <i class="fas fa-file-pdf text-danger me-1"></i>
+                                        <i class="fas fa-file-pdf text-danger mr-1"></i>
                                         {{ $especificacao->arquivo ? 'Substituir Arquivo PDF' : 'Arquivo PDF da Especificação' }}
                                         @if(!$especificacao->arquivo)
                                             <span class="text-danger">*</span>
                                         @endif
                                     </label>
-                                    <input type="file" 
-                                           class="form-control @error('arquivo') is-invalid @enderror" 
-                                           id="arquivo" 
-                                           name="arquivo" 
+                                    <input type="file"
+                                           class="form-control @error('arquivo') is-invalid @enderror"
+                                           id="arquivo"
+                                           name="arquivo"
                                            accept=".pdf"
                                            {{ !$especificacao->arquivo ? 'required' : '' }}>
                                     @error('arquivo')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                     <div class="form-text">
-                                        <i class="fas fa-info-circle me-1"></i>
+                                        <i class="fas fa-info-circle mr-1"></i>
                                         {{ $especificacao->arquivo ? 'Deixe em branco para manter o arquivo atual. ' : '' }}
                                         Apenas arquivos PDF são aceitos. Tamanho máximo: 10MB
                                     </div>
-                                    
+
                                     <!-- Preview do novo arquivo selecionado -->
                                     <div id="arquivoPreview" class="mt-2 d-none">
                                         <div class="alert alert-warning">
-                                            <i class="fas fa-file-pdf text-danger me-2"></i>
+                                            <i class="fas fa-file-pdf text-danger mr-2"></i>
                                             <strong>Novo arquivo:</strong>
                                             <span id="nomeArquivo"></span>
                                             <span id="tamanhoArquivo" class="text-muted ms-2"></span>
                                             <div class="mt-1">
-                                                <small><i class="fas fa-exclamation-triangle me-1"></i>Este arquivo substituirá o arquivo atual</small>
+                                                <small><i class="fas fa-exclamation-triangle mr-1"></i>Este arquivo substituirá o arquivo atual</small>
                                             </div>
                                         </div>
                                     </div>
@@ -172,7 +172,7 @@
                                 <div class="card mb-4">
                                     <div class="card-body py-2">
                                         <h6 class="mb-2">
-                                            <i class="fas fa-info-circle text-dark me-1"></i>
+                                            <i class="fas fa-info-circle text-dark mr-1"></i>
                                             Informações de Auditoria
                                         </h6>
                                         <div class="row text-sm">
@@ -198,16 +198,16 @@
                             <div class="col-12">
                                 <div class="d-flex justify-content-between">
                                     <a href="{{ route('especificacoes.especificacoes_list') }}" class="btn btn-secondary">
-                                        <i class="fas fa-arrow-left me-1"></i>
+                                        <i class="fas fa-arrow-left mr-1"></i>
                                         Voltar
                                     </a>
                                     <div>
-                                        <button type="reset" class="btn btn-outline-secondary me-2">
-                                            <i class="fas fa-undo me-1"></i>
+                                        <button type="reset" class="btn btn-outline-secondary mr-2">
+                                            <i class="fas fa-undo mr-1"></i>
                                             Resetar
                                         </button>
                                         <button type="submit" class="btn btn-dark" id="btnSalvar">
-                                            <i class="fas fa-save me-1"></i>
+                                            <i class="fas fa-save mr-1"></i>
                                             Atualizar Especificação
                                         </button>
                                     </div>
@@ -235,7 +235,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Preview do arquivo selecionado
     inputArquivo.addEventListener('change', function(e) {
         const arquivo = e.target.files[0];
-        
+
         if (arquivo) {
             // Verificar se é PDF
             if (arquivo.type !== 'application/pdf') {
@@ -255,11 +255,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Mostrar preview
             nomeArquivo.textContent = arquivo.name;
-            
+
             // Formatar tamanho do arquivo
             const tamanhoMB = (arquivo.size / (1024 * 1024)).toFixed(2);
             tamanhoArquivo.textContent = `(${tamanhoMB} MB)`;
-            
+
             arquivoPreview.classList.remove('d-none');
         } else {
             arquivoPreview.classList.add('d-none');
@@ -269,7 +269,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Loading state no botão de salvar
     form.addEventListener('submit', function() {
         btnSalvar.disabled = true;
-        btnSalvar.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Atualizando...';
+        btnSalvar.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Atualizando...';
     });
 
     // Esconder alertas após 5 segundos
@@ -293,26 +293,26 @@ document.addEventListener('DOMContentLoaded', function() {
         margin-bottom: 1rem;
         border-radius: 8px;
     }
-    
+
     .page-header h2 {
         margin: 0;
         font-weight: 300;
     }
-    
+
     .page-header .breadcrumb {
         background: transparent;
         margin: 0;
     }
-    
+
     .page-header .breadcrumb-item a {
         color: rgba(255,255,255,0.8);
         text-decoration: none;
     }
-    
+
     .page-header .breadcrumb-item a:hover {
         color: white;
     }
-    
+
     .page-header .breadcrumb-item.active {
         color: rgba(255,255,255,0.9);
     }

@@ -1,7 +1,7 @@
 <template>
   <PublicLayout :stats="pageStats">
     <Head title="Boletim Interno" />
-    
+
     <!-- Header da página -->
     <section class="bg-gradient-to-r from-gray-600 via-gray-700 to-gray-800 text-white py-16">
       <div class="max-w-7xl mx-auto px-4">
@@ -55,7 +55,7 @@
                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
-            
+
             <!-- Mês/Ano -->
             <div>
               <label for="mes_ano" class="block text-sm font-medium text-gray-700 mb-2">
@@ -83,7 +83,7 @@
               <i v-else class="fas fa-search mr-2"></i>
               {{ carregando ? 'Buscando...' : 'Buscar Boletins' }}
             </button>
-            
+
             <button
               type="button"
               @click="limparFiltros"
@@ -132,7 +132,6 @@
             <div class="flex items-start justify-between mb-4">
               <div class="flex-1">
                 <h3 class="text-lg font-semibold text-gray-900 mb-2 flex items-center">
-                  <i class="fas fa-file-pdf text-red-600 mr-2"></i>
                   {{ boletim?.nome || 'Boletim Informativo' }}
                 </h3>
                 <p v-if="boletim?.descricao" class="text-gray-700 mb-3 leading-relaxed">
@@ -153,7 +152,7 @@
                 <button
                   v-if="boletim?.arquivo"
                   @click="visualizarPDF(boletim?.id)"
-                  class="bg-gradient-to-r from-[#c1a85a] to-[#b39c4f] hover:from-[#a8914a] hover:to-[#9b853f] text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 hover:shadow-md text-sm"
+                  class="bg-white hover:bg-slate-50 border border-slate-300 hover:border-slate-400 text-slate-700 hover:text-slate-900 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 hover:scale-105 hover:shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <i class="fas fa-eye"></i>
                   Visualizar
@@ -163,7 +162,7 @@
                   v-if="boletim?.arquivo"
                   @click="baixarBoletim(boletim?.id, boletim?.nome)"
                   :disabled="baixandoId === boletim?.id"
-                  class="bg-gradient-to-r from-[#c1a85a] to-[#b39c4f] hover:from-[#a8914a] hover:to-[#9b853f] disabled:from-gray-400 disabled:to-gray-500 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 hover:shadow-md disabled:cursor-not-allowed text-sm"
+                  class="bg-white hover:bg-slate-50 border border-slate-300 hover:border-slate-400 text-slate-700 hover:text-slate-900 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 hover:scale-105 hover:shadow-md active:scale-95"
                 >
                   <i class="fas fa-download" :class="{ 'animate-spin': baixandoId === boletim?.id }"></i>
                   {{ baixandoId === boletim?.id ? 'Baixando...' : 'Baixar' }}
@@ -185,7 +184,7 @@
           >
             <i class="fas fa-chevron-left"></i>
           </button>
-          
+
           <template v-for="pagina in paginasVisiveis" :key="pagina">
             <button
               v-if="pagina === '...'"
@@ -203,7 +202,7 @@
               {{ pagina }}
             </button>
           </template>
-          
+
           <button
             v-if="boletins.current_page < boletins.last_page"
             @click="irParaPagina(boletins.current_page + 1)"
@@ -316,39 +315,39 @@ const paginasVisiveis = computed(() => {
   if (!props.boletins || !props.boletins.current_page || !props.boletins.last_page) {
     return []
   }
-  
+
   const current = props.boletins.current_page
   const last = props.boletins.last_page
   const pages = []
-  
+
   if (current > 3) {
     pages.push(1)
     if (current > 4) pages.push('...')
   }
-  
+
   for (let i = Math.max(1, current - 2); i <= Math.min(last, current + 2); i++) {
     pages.push(i)
   }
-  
+
   if (current < last - 2) {
     if (current < last - 3) pages.push('...')
     pages.push(last)
   }
-  
+
   return pages
 })
 
 // Métodos
 const buscarBoletins = () => {
   carregando.value = true
-  
+
   // Limpar campo conflitante se preencheu o outro
   if (form.value.data_publicacao && form.value.mes_ano) {
     form.value.mes_ano = ''
   }
-  
+
   const params = { ...form.value, busca: 1 }
-  
+
   router.get('/boletins', params, {
     preserveState: true,
     preserveScroll: true,
@@ -364,15 +363,15 @@ const buscarBoletins = () => {
 
 const mostrarMesAtual = () => {
   carregando.value = true
-  
+
   form.value = {
     search_term: '',
     data_publicacao: '',
     mes_ano: props.mesAtual
   }
-  
+
   const params = { mes_ano: props.mesAtual, busca: 1 }
-  
+
   router.get('/boletins', params, {
     preserveState: true,
     onFinish: () => {
@@ -383,14 +382,14 @@ const mostrarMesAtual = () => {
 
 const buscarTodosBoletins = () => {
   carregando.value = true
-  
+
   // Limpar todos os filtros
   form.value = {
     search_term: '',
     data_publicacao: '',
     mes_ano: ''
   }
-  
+
   router.get('/boletins', { busca: 1 }, {
     preserveState: true,
     onFinish: () => {
@@ -409,7 +408,7 @@ const limparFiltros = () => {
     data_publicacao: '',
     mes_ano: ''
   }
-  
+
   router.get('/boletins', {}, {
     preserveState: true
   })
@@ -417,14 +416,14 @@ const limparFiltros = () => {
 
 const formatarDataPublicacao = (data) => {
   if (!data) return 'Data não disponível'
-  
+
   try {
     const dataObj = new Date(data)
-    
+
     if (isNaN(dataObj.getTime())) {
       return data
     }
-    
+
     return dataObj.toLocaleDateString('pt-BR', {
       day: 'numeric',
       month: 'long',
@@ -439,14 +438,14 @@ const formatarDataPublicacao = (data) => {
 
 const formatarMesAno = (mesAno) => {
   if (!mesAno) return 'Mês atual'
-  
+
   try {
     const [ano, mes] = mesAno.split('-')
     const meses = [
       'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
       'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
     ]
-    
+
     return `${meses[parseInt(mes) - 1]} de ${ano}`
   } catch (error) {
     return mesAno
@@ -455,9 +454,9 @@ const formatarMesAno = (mesAno) => {
 
 const irParaPagina = (pagina) => {
   if (pagina === '...' || pagina === props.boletins?.current_page || !pagina) return
-  
+
   const params = { ...form.value, page: pagina, busca: 1 }
-  
+
   router.get('/boletins', params, {
     preserveState: true,
     preserveScroll: true
@@ -469,7 +468,7 @@ const visualizarPDF = (id) => {
     console.error('ID do boletim não informado')
     return
   }
-  
+
   window.open(`/boletim/view/${id}`, '_blank')
 }
 
@@ -478,21 +477,21 @@ const baixarBoletim = async (id, nome) => {
     console.error('ID do boletim não informado')
     return
   }
-  
+
   baixandoId.value = id
-  
+
   try {
     const link = document.createElement('a')
     link.href = `/boletim/download/${id}`
     link.download = `${nome || 'boletim'}.pdf`
     link.target = '_blank'
-    
+
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
-    
+
     await new Promise(resolve => setTimeout(resolve, 1000))
-    
+
   } catch (error) {
     console.error('Erro ao baixar boletim:', error)
     alert('Erro ao baixar o arquivo. Tente novamente.')
@@ -504,7 +503,7 @@ const baixarBoletim = async (id, nome) => {
 // Watchers
 watch(() => props.filtros, (newFiltros) => {
   if (newFiltros && typeof newFiltros === 'object') {
-    form.value = { 
+    form.value = {
       search_term: newFiltros.search_term || '',
       data_publicacao: newFiltros.data_publicacao || '',
       mes_ano: newFiltros.mes_ano || ''

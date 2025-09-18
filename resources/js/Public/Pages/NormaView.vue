@@ -123,75 +123,113 @@
     </div>
 
       <!-- Visualizador de PDF -->
-      <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
         <h2 class="text-xl font-semibold text-gray-900 mb-4">
-          <i class="fas fa-file-pdf mr-2 text-red-600"></i>
-          Documento Digital
+        <i class="fas fa-file-pdf mr-2 text-red-600"></i>
+        Documento Digital
         </h2>
 
+        <!-- Mobile -->
+        <div v-if="isMobile" class="text-center py-8">
+        <div class="bg-gray-50 border border-gray-200 rounded-lg p-6 mb-4">
+            <i class="fas fa-mobile-alt text-4xl text-gray-500 mb-4"></i>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">
+            Visualização Mobile
+            </h3>
+            <p class="text-gray-600 mb-4">
+            Para uma melhor experiência de leitura em dispositivos móveis,
+            recomendamos abrir o documento em uma nova aba ou fazer o download.
+            </p>
+
+            <!-- Botões de ação para mobile -->
+            <div class="flex flex-col gap-3">
+            <button
+                @click="abrirEmNovaAba"
+                class="w-full bg-white hover:bg-slate-50 border border-slate-300 hover:border-slate-400 text-slate-700 hover:text-slate-900 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 hover:scale-105 hover:shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+                <i class="fas fa-external-link-alt"></i>
+                Abrir em Nova Aba
+            </button>
+
+            <button
+                @click="baixarArquivo"
+                class="w-full bg-white hover:bg-slate-50 border border-slate-300 hover:border-slate-400 text-slate-700 hover:text-slate-900 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 hover:scale-105 hover:shadow-md active:scale-95"
+            >
+                <i class="fas fa-download"></i>
+                Baixar PDF
+            </button>
+
+            </div>
+        </div>
+        </div>
+
         <!-- Container do PDF -->
-        <div class="border border-gray-300 rounded-lg overflow-hidden" style="height: 550px;">
-          <iframe
-            :src="`/norma/${norma.id}/view?v=${norma.updated_at}#zoom=100`"
+        <div v-if="!isMobile || mostrarPdfMobile" class="border border-gray-300 rounded-lg overflow-hidden" :style="{ height: isMobile ? '400px' : '550px' }">
+
+        <iframe
+            :src="`/norma/${norma.id}/view?v=${norma.updated_at}#zoom=${isMobile ? '75' : '100'}`"
             class="w-full h-full"
             frameborder="0"
             title="Visualizador de PDF"
-          >
-            <p class="p-4 text-center text-gray-600">
-              Seu navegador não suporta a visualização de PDFs.
-              <button @click="baixarArquivo" class="text-blue-600 hover:underline">
+            @load="onIframeLoad"
+            @error="onIframeError"
+        >
+            <div class="p-4 text-center text-gray-600">
+            <p class="mb-4">Seu navegador não suporta a visualização de PDFs.</p>
+            <button @click="baixarArquivo" class="text-blue-600 hover:underline">
                 Clique aqui para baixar o arquivo.
-              </button>
-            </p>
-          </iframe>
+            </button>
+            </div>
+        </iframe>
         </div>
 
         <!-- Botões de Ação -->
-        <div class="flex flex-wrap justify-between items-center gap-3 mt-4 p-4 bg-gradient-to-r from-slate-50 to-gray-50 rounded-lg border border-gray-200">
-          <div class="text-sm text-gray-600 flex items-center">
+        <div v-if="!isMobile || mostrarPdfMobile" class="flex flex-wrap justify-between items-center gap-3 mt-4 p-4 bg-gradient-to-r from-slate-50 to-gray-50 rounded-lg border border-gray-200">
+        <div class="text-sm text-gray-600 flex items-center">
             <div class="w-2 h-2 bg-slate-400 rounded-full mr-2 animate-pulse"></div>
-            Use os controles do visualizador para navegar pelo documento
-          </div>
+            <span v-if="!isMobile">Use os controles do visualizador para navegar pelo documento</span>
+            <span v-else>Deslize ou use os controles para navegar</span>
+        </div>
 
-          <div class="flex gap-2">
+        <div class="flex gap-2 flex-wrap">
             <!-- Botão Download -->
             <button
-              @click="baixarArquivo"
-              class="group bg-white hover:bg-slate-50 border border-slate-300 hover:border-slate-400 text-slate-700 hover:text-slate-900 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 hover:scale-105 hover:shadow-md active:scale-95"
+            @click="baixarArquivo"
+            class="group bg-white hover:bg-slate-50 border border-slate-300 hover:border-slate-400 text-slate-700 hover:text-slate-900 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 hover:scale-105 hover:shadow-md active:scale-95"
             >
-              <i class="fas fa-download text-sm group-hover:animate-bounce"></i>
-              <span class="hidden sm:inline">Baixar PDF</span>
+            <i class="fas fa-download text-sm group-hover:animate-bounce"></i>
+            <span class="hidden sm:inline">Baixar PDF</span>
             </button>
 
             <!-- Botão Nova Aba -->
             <button
-              @click="abrirEmNovaAba"
-              class="group bg-white hover:bg-slate-50 border border-slate-300 hover:border-slate-400 text-slate-700 hover:text-slate-900 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 hover:scale-105 hover:shadow-md active:scale-95"
+            @click="abrirEmNovaAba"
+            class="group bg-white hover:bg-slate-50 border border-slate-300 hover:border-slate-400 text-slate-700 hover:text-slate-900 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 hover:scale-105 hover:shadow-md active:scale-95"
             >
-              <i class="fas fa-external-link-alt text-sm group-hover:rotate-12"></i>
-              <span class="hidden sm:inline">Nova Aba</span>
+            <i class="fas fa-external-link-alt text-sm group-hover:rotate-12"></i>
+            <span class="hidden sm:inline">Nova Aba</span>
             </button>
 
             <!-- Botão Compartilhar -->
             <button
-              @click="compartilhar"
-              class="group bg-white hover:bg-slate-50 border border-slate-300 hover:border-slate-400 text-slate-700 hover:text-slate-900 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 hover:scale-105 hover:shadow-md active:scale-95"
+            @click="compartilhar"
+            class="group bg-white hover:bg-slate-50 border border-slate-300 hover:border-slate-400 text-slate-700 hover:text-slate-900 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 hover:scale-105 hover:shadow-md active:scale-95"
             >
-              <i class="fas fa-share-alt text-sm group-hover:rotate-12"></i>
-              <span class="hidden sm:inline">Compartilhar</span>
+            <i class="fas fa-share-alt text-sm group-hover:rotate-12"></i>
+            <span class="hidden sm:inline">Compartilhar</span>
             </button>
 
             <!-- Botão Voltar -->
             <button
-              @click="voltar"
-              class="group bg-white hover:bg-slate-50 border border-slate-300 hover:border-slate-400 text-slate-700 hover:text-slate-900 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 hover:scale-105 hover:shadow-md active:scale-95"
+            @click="voltar"
+            class="group bg-white hover:bg-slate-50 border border-slate-300 hover:border-slate-400 text-slate-700 hover:text-slate-900 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 hover:scale-105 hover:shadow-md active:scale-95"
             >
-              <i class="fas fa-arrow-left text-sm group-hover:-translate-x-1"></i>
-              <span class="hidden sm:inline">Voltar</span>
+            <i class="fas fa-arrow-left text-sm group-hover:-translate-x-1"></i>
+            <span class="hidden sm:inline">Voltar</span>
             </button>
-          </div>
         </div>
-      </div>
+        </div>
+    </div>
     </section>
   </PublicLayout>
 </template>
@@ -199,6 +237,7 @@
 <script setup>
 import { Head, Link, router } from '@inertiajs/vue3'
 import PublicLayout from '../Layouts/PublicLayout.vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 
 const props = defineProps({
   norma: {
@@ -214,6 +253,10 @@ const props = defineProps({
     default: () => ({})
   }
 })
+
+// Estado para controle mobile
+const isMobile = ref(false)
+const mostrarPdfMobile = ref(false)
 
 const formatarData = (data) => {
   if (!data) return ''
@@ -327,4 +370,38 @@ const getVigenciaTextClass = (vigente) => {
       return 'text-gray-600'
   }
 }
+
+// Detectar dispositivo mobile
+const detectMobile = () => {
+  const userAgent = navigator.userAgent || navigator.vendor || window.opera
+  const isMobileDevice = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent.toLowerCase())
+  const isSmallScreen = window.innerWidth <= 768
+
+  isMobile.value = isMobileDevice || isSmallScreen
+}
+
+// Eventos do iframe
+const onIframeLoad = () => {
+  console.log('PDF carregado com sucesso')
+}
+
+const onIframeError = () => {
+  console.error('Erro ao carregar PDF')
+}
+
+// Lifecycle
+onMounted(() => {
+  detectMobile()
+
+  // Listener para mudanças de orientação/tamanho
+  window.addEventListener('resize', detectMobile)
+  window.addEventListener('orientationchange', () => {
+    setTimeout(detectMobile, 100)
+  })
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', detectMobile)
+  window.removeEventListener('orientationchange', detectMobile)
+})
 </script>

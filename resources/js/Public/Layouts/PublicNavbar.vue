@@ -1,105 +1,115 @@
 <template>
   <nav class="bg-[#1a1a1a] shadow-lg border-b-4 border-[#c1a85a] sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4">
-      <div class="flex items-center justify-center h-16">
+      <div class="flex items-center justify-between h-20">
         <!-- Brand/Logo -->
-        <!-- <Link
+        <Link
           href="/"
-          class="flex items-center space-x-3 fade-in hover:opacity-80 transition-opacity duration-300"
+          class="flex items-center space-x-2.5 fade-in hover:opacity-80 transition-opacity duration-300 flex-shrink-0"
         >
           <img
             src="/images/brasao_pcpb.png"
             alt="Logo PCPB"
             class="h-10 w-10 opacity-90 brightness-110 flex-shrink-0"
           />
-          <div class="brand-text">
-            <h4 class="text-white font-bold text-lg mb-0 leading-tight">
+          <div class="brand-text hidden sm:block">
+            <h4 class="text-white font-semibold text-lg mb-0 leading-tight">
               Biblioteca de Normas
             </h4>
             <small class="text-gray-400 text-sm">
               Polícia Civil da Paraíba
             </small>
           </div>
-        </Link> -->
+          <!-- mobile -->
+          <div class="brand-text sm:hidden">
+            <h4 class="text-white font-semibold text-base leading-tight">
+              Biblioteca de Normas
+            </h4>
+          </div>
+        </Link>
 
-        <div class="hidden md:flex items-center space-x-6">
+        <!-- Desktop -->
+        <div class="hidden lg:flex items-center space-x-5">
           <Link
             href="/"
             :class="isActive('/') ? 'text-[#c1a85a]' : 'text-gray-300 hover:text-[#c1a85a]'"
-            class="nav-link transition-colors duration-300 flex items-center px-3 py-2"
+            class="nav-link transition-colors duration-300 flex items-center px-3 py-2.5 text-base font-medium"
             title="Página Inicial"
           >
-            <i class="fas fa-home mr-2"></i>
+            <i class="fas fa-home mr-2 text-lg"></i>
             <span>Início</span>
           </Link>
 
           <Link
             href="/consulta"
             :class="isActive('/consulta') ? 'text-[#c1a85a]' : 'text-gray-300 hover:text-[#c1a85a]'"
-            class="nav-link transition-colors duration-300 flex items-center px-3 py-2"
+            class="nav-link transition-colors duration-300 flex items-center px-3 py-2.5 text-base font-medium"
             title="Consultar Normas"
           >
-            <i class="fas fa-search mr-2"></i>
+            <i class="fas fa-search mr-2 text-lg"></i>
             <span>Consultar Normas</span>
           </Link>
 
           <Link
             href="/especificacoes"
             :class="isActive('/especificacoes') ? 'text-[#c1a85a]' : 'text-gray-300 hover:text-[#c1a85a]'"
-            class="nav-link transition-colors duration-300 flex items-center px-3 py-2"
+            class="nav-link transition-colors duration-300 flex items-center px-3 py-2.5 text-base font-medium"
             title="Especificações Técnicas"
           >
-            <i class="fas fa-tools mr-2"></i>
+            <i class="fas fa-tools mr-2 text-lg"></i>
             <span>Especificações</span>
           </Link>
 
           <a
             href="/boletins"
             :class="isActive('/boletins') ? 'text-[#c1a85a]' : 'text-gray-300 hover:text-[#c1a85a]'"
-            class="nav-link transition-colors duration-300 flex items-center px-3 py-2"
+            class="nav-link transition-colors duration-300 flex items-center px-3 py-2.5 text-base font-medium"
             title="Boletins Informativos"
           >
-            <i class="fas fa-newspaper mr-2"></i>
+            <i class="fas fa-newspaper mr-2 text-lg"></i>
             <span>Boletim Interno</span>
           </a>
 
           <button
             @click="$emit('show-help')"
-            class="nav-link text-gray-300 hover:text-[#c1a85a] transition-colors duration-300 flex items-center px-3 py-2"
+            class="nav-link text-gray-300 hover:text-[#c1a85a] transition-colors duration-300 flex items-center px-3 py-2.5 text-base font-medium"
             title="Ajuda"
           >
-            <i class="fas fa-question-circle mr-2"></i>
+            <i class="fas fa-question-circle mr-2 text-lg"></i>
             <span>Ajuda</span>
           </button>
+        </div>
 
-          <!-- Desktop: Mostrar Sair se logado e Área Administrativa sempre -->
+        <!-- Desktop -->
+        <div class="hidden lg:flex items-center space-x-3">
           <template v-if="page.props.auth?.user">
             <button
               @click="logout"
-              class="nav-link text-gray-300 hover:text-red-500 px-4 py-2 transition-colors duration-300 flex items-center"
+              class="nav-link text-gray-300 hover:text-red-500 px-3 py-2.5 transition-colors duration-300 flex items-center text-base font-medium"
               title="Sair"
             >
-              <i class="fas fa-sign-out-alt mr-2"></i>
+              <i class="fas fa-sign-out-alt mr-2 text-lg"></i>
               <span>Sair</span>
             </button>
           </template>
           <a
             href="/login"
-            class="bg-[#9c8642] hover:bg-[#8d793f] text-gray-900 px-4 py-2 rounded-lg font-medium transition-all duration-300 hover:scale-105 shadow-md flex items-center md:block hidden"
+            class="bg-[#9c8642] hover:bg-[#8d793f] text-gray-900 px-4 py-2.5 rounded-lg font-semibold transition-all duration-300 hover:scale-105 shadow-md flex items-center text-base"
             title="Área Administrativa"
           >
-            <i class="fas fa-cog mr-2"></i>
-            <span>Administração</span>
+            <i class="fas fa-cog mr-2 text-lg"></i>
+            <span class="hidden xl:inline">Administração</span>
+            <span class="xl:hidden">Admin</span>
           </a>
         </div>
 
         <!-- Mobile menu -->
-        <div class="md:hidden absolute right-4">
+        <div class="lg:hidden">
           <button
             @click="mobileMenuOpen = !mobileMenuOpen"
-            class="text-gray-300 hover:text-[#c1a85a] focus:outline-none focus:text-[#c1a85a] transition-colors duration-300"
+            class="text-gray-300 hover:text-[#c1a85a] focus:outline-none focus:text-[#c1a85a] transition-colors duration-300 p-2.5"
           >
-            <i :class="mobileMenuOpen ? 'fas fa-times' : 'fas fa-bars'" class="text-xl"></i>
+            <i :class="mobileMenuOpen ? 'fas fa-times' : 'fas fa-bars'" class="text-lg"></i>
           </button>
         </div>
       </div>
@@ -107,67 +117,77 @@
       <!-- Navegação Mobile -->
       <div
         v-show="mobileMenuOpen"
-        class="md:hidden py-4 border-t border-gray-700 animate-fade-in"
+        class="lg:hidden py-4 border-t border-gray-700 animate-fade-in"
       >
-        <div class="flex flex-col space-y-3">
+        <div class="flex flex-col space-y-2">
           <Link
             href="/"
             :class="isActive('/') ? 'text-[#c1a85a] bg-gray-800' : 'text-gray-300 hover:text-[#c1a85a] hover:bg-gray-800'"
-            class="px-3 py-2 rounded transition-colors duration-300 flex items-center"
+            class="px-3 py-3 rounded transition-colors duration-300 flex items-center text-base font-medium"
             @click="mobileMenuOpen = false"
           >
-            <i class="fas fa-home mr-3"></i>
+            <i class="fas fa-home mr-3 w-5 text-lg"></i>
             Início
           </Link>
 
           <Link
             href="/consulta"
             :class="isActive('/consulta') ? 'text-[#c1a85a] bg-gray-800' : 'text-gray-300 hover:text-[#c1a85a] hover:bg-gray-800'"
-            class="px-3 py-2 rounded transition-colors duration-300 flex items-center"
+            class="px-3 py-3 rounded transition-colors duration-300 flex items-center text-base font-medium"
             @click="mobileMenuOpen = false"
           >
-            <i class="fas fa-search mr-3"></i>
+            <i class="fas fa-search mr-3 w-5 text-lg"></i>
             Consultar Normas
           </Link>
 
           <Link
             href="/especificacoes"
             :class="isActive('/especificacoes') ? 'text-[#c1a85a] bg-gray-800' : 'text-gray-300 hover:text-[#c1a85a] hover:bg-gray-800'"
-            class="px-3 py-2 rounded transition-colors duration-300 flex items-center"
+            class="px-3 py-3 rounded transition-colors duration-300 flex items-center text-base font-medium"
             @click="mobileMenuOpen = false"
           >
-            <i class="fas fa-tools mr-3"></i>
+            <i class="fas fa-tools mr-3 w-5 text-lg"></i>
             Especificações
           </Link>
 
           <a
             href="/boletins"
             :class="isActive('/boletins') ? 'text-[#c1a85a] bg-gray-800' : 'text-gray-300 hover:text-[#c1a85a] hover:bg-gray-800'"
-            class="px-3 py-2 rounded transition-colors duration-300 flex items-center"
+            class="px-3 py-3 rounded transition-colors duration-300 flex items-center text-base font-medium"
             @click="mobileMenuOpen = false"
           >
-            <i class="fas fa-newspaper mr-3"></i>
+            <i class="fas fa-newspaper mr-3 w-5 text-lg"></i>
             Boletim Interno
           </a>
 
           <button
             @click="$emit('show-help'); mobileMenuOpen = false"
-            class="text-gray-300 hover:text-[#c1a85a] hover:bg-gray-800 px-3 py-2 rounded transition-colors duration-300 flex items-center text-left w-full"
+            class="text-gray-300 hover:text-[#c1a85a] hover:bg-gray-800 px-3 py-3 rounded transition-colors duration-300 flex items-center text-left w-full text-base font-medium"
           >
-            <i class="fas fa-question-circle mr-3"></i>
+            <i class="fas fa-question-circle mr-3 w-5 text-lg"></i>
             Ajuda
           </button>
 
-          <!-- Mobile: Mostrar só Sair se logado -->
           <template v-if="page.props.auth?.user">
             <button
               @click="logout; mobileMenuOpen = false"
-              class="text-gray-300 hover:text-red-500 hover:bg-gray-800 px-3 py-2 rounded transition-colors duration-300 flex items-center text-left w-full"
+              class="text-gray-300 hover:text-red-500 hover:bg-gray-800 px-3 py-3 rounded transition-colors duration-300 flex items-center text-left w-full text-base font-medium"
             >
-              <i class="fas fa-sign-out-alt mr-3"></i>
+              <i class="fas fa-sign-out-alt mr-3 w-5 text-lg"></i>
               Sair
             </button>
           </template>
+
+          <div class="pt-2 border-t border-gray-700 mt-2">
+            <a
+              href="/login"
+              class="bg-[#9c8642] hover:bg-[#8d793f] text-gray-900 px-3 py-3 rounded-lg font-semibold transition-all duration-300 flex items-center justify-center mx-3 text-base"
+              @click="mobileMenuOpen = false"
+            >
+              <i class="fas fa-cog mr-2 text-lg"></i>
+              Área Administrativa
+            </a>
+          </div>
         </div>
       </div>
     </div>

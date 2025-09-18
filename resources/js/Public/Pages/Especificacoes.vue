@@ -1,7 +1,7 @@
 <template>
   <PublicLayout :stats="pageStats">
     <Head title="Especificações Técnicas" />
-    
+
     <!-- Header da página -->
     <section class="bg-gradient-to-r from-gray-600 via-gray-700 to-gray-800 text-white py-16">
       <div class="max-w-7xl mx-auto px-4">
@@ -18,75 +18,76 @@
 
     <!-- Lista de especificações -->
     <section class="max-w-7xl mx-auto px-4 py-8 min-h-[60vh]">
-      <!-- Loading state -->
-      <div v-if="carregando" class="text-center py-12">
+    <!-- Loading state -->
+    <div v-if="carregando" class="text-center py-12">
         <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
         <p class="mt-4 text-gray-600">Carregando especificações...</p>
-      </div>
+    </div>
 
-      <!-- Lista de especificações -->
-      <div v-else-if="especificacoes && especificacoes.length > 0" class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+    <!-- Lista de especificações -->
+    <div v-else-if="especificacoes && especificacoes.length > 0" class="space-y-4">
         <div
-          v-for="(especificacao, index) in especificacoes"
-          :key="especificacao?.id || `spec-${index}`"
-          class="flex flex-col lg:flex-row lg:items-center lg:justify-between px-4 sm:px-6 py-5 border-b-2 border-gray-100 hover:bg-gray-50 transition-colors duration-200 group last:border-b-0"
+        v-for="(especificacao, index) in especificacoes"
+        :key="especificacao?.id || `spec-${index}`"
+        class="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 border border-gray-200"
         >
-          <!-- Nome da especificação -->
-          <div class="flex-1 mb-4 lg:mb-0 lg:mr-6">
-            <h3 class="text-lg font-semibold text-gray-900 group-hover:text-gray-700 transition-colors mb-2">
-              {{ especificacao?.nome || 'Especificação técnica' }}
-            </h3>
-            <div class="flex items-center text-sm text-gray-500">
-              <i class="fas fa-calendar-alt mr-2"></i>
-              {{ formatarData(especificacao?.created_at) }}
+        <div class="p-6">
+            <div class="flex items-start justify-between mb-4">
+            <div class="flex-1">
+                <h3 class="text-lg font-semibold text-gray-900 mb-2 flex items-center">
+                {{ especificacao?.nome || 'Especificação técnica' }}
+                </h3>
+                <p v-if="especificacao?.descricao" class="text-gray-700 mb-3 leading-relaxed">
+                {{ especificacao.descricao }}
+                </p>
             </div>
-          </div>
-
-          <!-- Botões de ação -->
-          <div class="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full lg:w-auto">
-            <!-- Botão Visualizar -->
-            <button
-              v-if="especificacao?.arquivo"
-              @click="visualizarPDF(especificacao?.id)"
-              class="bg-gradient-to-r from-[#c1a85a] to-[#b39c4f] hover:from-[#a8914a] hover:to-[#9b853f] disabled:from-gray-400 disabled:to-gray-500 text-white px-4 sm:px-6 py-2.5 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 hover:shadow-md disabled:cursor-not-allowed w-full sm:w-auto min-w-[120px]"
-            >
-              <i class="fas fa-eye text-sm"></i>
-              <span>Visualizar</span>
-            </button>
-
-            <!-- Botão Baixar -->
-            <button
-              v-if="especificacao?.arquivo"
-              @click="baixarEspecificacao(especificacao?.id, especificacao?.nome)"
-              :disabled="baixandoId === especificacao?.id"
-              class="bg-gradient-to-r from-[#c1a85a] to-[#b39c4f] hover:from-[#a8914a] hover:to-[#9b853f] disabled:from-gray-400 disabled:to-gray-500 text-white px-4 sm:px-6 py-2.5 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 hover:shadow-md disabled:cursor-not-allowed w-full sm:w-auto min-w-[120px] relative"
-            >
-              <i 
-                :class="baixandoId === especificacao?.id ? 'fas fa-spinner fa-spin' : 'fas fa-download'"
-                class="text-sm"
-              ></i>
-              <span>{{ baixandoId === especificacao?.id ? 'Baixando...' : 'Baixar' }}</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Estado vazio -->
-      <div v-else class="flex items-center justify-center min-h-[400px]">
-        <div class="text-center">
-          <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-8 sm:p-12 max-w-md mx-auto border border-gray-200">
-            <div class="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mx-auto mb-6">
-              <i class="fas fa-folder-open text-3xl sm:text-4xl text-gray-600"></i>
             </div>
-            <h3 class="text-xl sm:text-2xl font-bold text-gray-800 mb-4">
-              Nenhuma especificação disponível
-            </h3>
-            <p class="text-gray-600 mb-8 leading-relaxed text-sm sm:text-base">
-              No momento não há especificações técnicas publicadas. Volte em breve para verificar novas atualizações.
-            </p>
-          </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600 mb-4">
+            <div v-if="especificacao?.created_at">
+                <i class="fas fa-calendar mr-1 text-blue-600"></i>
+                Data de Criação: {{ formatarData(especificacao.created_at) }}
+            </div>
+            </div>
+
+            <div class="flex items-center justify-between pt-4 border-t border-gray-200">
+            <div class="flex space-x-3">
+                <button
+                v-if="especificacao?.arquivo"
+                @click="visualizarPDF(especificacao?.id)"
+                class="bg-white hover:bg-slate-50 border border-slate-300 hover:border-slate-400 text-slate-700 hover:text-slate-900 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 hover:scale-105 hover:shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                <i class="fas fa-eye"></i>
+                Visualizar
+                </button>
+
+                <button
+                v-if="especificacao?.arquivo"
+                @click="baixarEspecificacao(especificacao?.id, especificacao?.nome)"
+                :disabled="baixandoId === especificacao?.id"
+                class="bg-white hover:bg-slate-50 border border-slate-300 hover:border-slate-400 text-slate-700 hover:text-slate-900 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 hover:scale-105 hover:shadow-md active:scale-95"
+                >
+                <i class="fas fa-download" :class="{ 'animate-spin': baixandoId === especificacao?.id }"></i>
+                {{ baixandoId === especificacao?.id ? 'Baixando...' : 'Baixar' }}
+                </button>
+            </div>
+            </div>
         </div>
-      </div>
+        </div>
+    </div>
+
+    <!-- Estado vazio -->
+    <div v-else class="text-center py-12">
+        <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-8">
+        <i class="fas fa-folder-open text-4xl text-gray-400 mb-4"></i>
+        <h3 class="text-xl font-semibold text-gray-700 mb-2">
+            Nenhuma especificação encontrada
+        </h3>
+        <p class="text-gray-600 mb-6">
+            No momento não há especificações técnicas disponíveis.
+        </p>
+        </div>
+    </div>
     </section>
   </PublicLayout>
 </template>
@@ -118,14 +119,14 @@ const pageStats = computed(() => ({
 
 const formatarData = (data) => {
   if (!data) return 'Data não disponível'
-  
+
   try {
     const dataObj = new Date(data)
-    
+
     if (isNaN(dataObj.getTime())) {
       return data
     }
-    
+
     return dataObj.toLocaleDateString('pt-BR', {
       day: 'numeric',
       month: 'short',
@@ -143,24 +144,24 @@ const baixarEspecificacao = async (id, nome) => {
     console.error('ID da especificação não informado')
     return
   }
-  
+
   baixandoId.value = id
-  
+
   try {
     // Criar um link temporário para forçar o download
     const link = document.createElement('a')
     link.href = `/especificacao/download/${id}`
     link.download = `${nome || 'especificacao'}.pdf`
     link.target = '_blank'
-    
+
     // Adicionar o link ao DOM
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
-    
+
     // Pequeno delay para melhorar a UX
     await new Promise(resolve => setTimeout(resolve, 1000))
-    
+
   } catch (error) {
     console.error('Erro ao baixar especificação:', error)
     alert('Erro ao baixar o arquivo. Tente novamente.')
@@ -174,7 +175,7 @@ const visualizarPDF = (id) => {
     console.error('ID da especificação não informado')
     return
   }
-  
+
   // Abrir PDF em nova aba
   window.open(`/especificacao/view/${id}`, '_blank')
 }
@@ -241,18 +242,18 @@ button:disabled {
   .flex.flex-col.sm\\:flex-row button {
     min-height: 44px;
   }
-  
+
   /* Padding reduzido em telas pequenas */
   .px-4.sm\\:px-6 {
     padding-left: 1rem;
     padding-right: 1rem;
   }
-  
+
   /* Texto ligeiramente menor em mobile */
   .text-lg {
     font-size: 1.1rem;
   }
-  
+
   /* Ícones menores */
   .text-3xl.sm\\:text-4xl {
     font-size: 2rem;
@@ -265,7 +266,7 @@ button:disabled {
     transform: translateY(-2px);
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   }
-  
+
   .group:hover {
     transform: translateY(-1px);
     box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
