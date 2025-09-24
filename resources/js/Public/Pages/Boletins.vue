@@ -114,9 +114,9 @@
                 (do mês atual)
               </span>
             </div>
-            <div class="text-sm text-blue-600">
+            <!-- <div class="text-sm text-blue-600">
               Página {{ boletins?.current_page || 1 }} de {{ boletins?.last_page || 1 }}
-            </div>
+            </div> -->
           </div>
         </div>
       </div>

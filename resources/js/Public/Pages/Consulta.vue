@@ -187,7 +187,7 @@
       </div>
 
       <!-- Lista de normas -->
-      <div v-if="normas?.data && Array.isArray(normas.data) && normas.data.length > 0" class="space-y-4">
+      <div v-if="normas?.data && Array.isArray(normas.data) && normas.data.length > 0" class="space-y-4 mb-8">
         <div
             v-for="norma in normas.data"
             :key="norma?.id || 'norma-' + Math.random()"
@@ -278,7 +278,87 @@
             </div>
             </div>
         </div>
+      </div>
+
+      <!-- Paginação -->
+      <div v-if="normas?.data && normas.data.length > 0 && normas.last_page > 1" class="flex flex-col items-center space-y-4">
+        <!-- Navegação de páginas -->
+        <nav aria-label="Navegação de páginas" class="w-full">
+          <ul class="flex justify-center items-center space-x-1 flex-wrap gap-y-2">
+            <!-- Primeira página -->
+            <li v-if="normas.current_page > 1" class="hidden sm:block">
+              <button
+                @click="irParaPagina(1)"
+                class="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-blue-50 hover:border-blue-300 transition-all duration-200 flex items-center"
+                title="Primeira página"
+              >
+                <i class="fas fa-angle-double-left"></i>
+              </button>
+            </li>
+
+            <!-- Página anterior -->
+            <li v-if="normas.current_page > 1">
+              <button
+                @click="irParaPagina(normas.current_page - 1)"
+                class="px-2 sm:px-3 py-2 text-xs sm:text-sm bg-white border border-gray-300 rounded-md hover:bg-blue-50 hover:border-blue-300 transition-all duration-200 flex items-center space-x-1"
+              >
+                <i class="fas fa-angle-left"></i>
+                <span class="hidden sm:inline">Anterior</span>
+              </button>
+            </li>
+
+            <!-- Páginas numeradas -->
+            <li v-for="page in paginasVisiveisMobile" :key="page">
+              <button
+                v-if="page !== '...'"
+                @click="irParaPagina(page)"
+                :class="[
+                  'px-2 sm:px-3 py-2 text-xs sm:text-sm rounded-md transition-all duration-200 min-w-[32px] sm:min-w-[36px]',
+                  page === normas.current_page
+                    ? 'bg-blue-600 text-white border border-blue-600 font-semibold'
+                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-blue-50 hover:border-blue-300'
+                ]"
+              >
+                {{ page }}
+              </button>
+              <span v-else class="px-2 py-2 text-xs sm:text-sm text-gray-500">...</span>
+            </li>
+
+            <!-- Próxima página -->
+            <li v-if="normas.current_page < normas.last_page">
+              <button
+                @click="irParaPagina(normas.current_page + 1)"
+                class="px-2 sm:px-3 py-2 text-xs sm:text-sm bg-white border border-gray-300 rounded-md hover:bg-blue-50 hover:border-blue-300 transition-all duration-200 flex items-center space-x-1"
+              >
+                <span class="hidden sm:inline">Próxima</span>
+                <i class="fas fa-angle-right"></i>
+              </button>
+            </li>
+
+            <!-- Última página -->
+            <li v-if="normas.current_page < normas.last_page" class="hidden sm:block">
+              <button
+                @click="irParaPagina(normas.last_page)"
+                class="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-blue-50 hover:border-blue-300 transition-all duration-200 flex items-center"
+                title="Última página"
+              >
+                <i class="fas fa-angle-double-right"></i>
+              </button>
+            </li>
+          </ul>
+        </nav>
+
+        <!-- Informações da paginação -->
+        <div class="text-sm text-gray-600 text-center">
+          Mostrando
+          <span class="font-semibold">{{ ((normas.current_page - 1) * normas.per_page) + 1 }}</span>
+          a
+          <span class="font-semibold">{{ Math.min(normas.current_page * normas.per_page, normas.total) }}</span>
+          de
+          <span class="font-semibold">{{ normas.total }}</span>
+          resultados
         </div>
+      </div>
 
       <!-- Estado vazio -->
       <div v-else-if="normas?.data && Array.isArray(normas.data) && normas.data.length === 0" class="text-center py-8 sm:py-12">
@@ -369,7 +449,7 @@ const pageStats = computed(() => ({
   total_encontradas: props.normas?.total || 0
 }))
 
-const paginasVisiveis = computed(() => {
+const paginasVisiveisMobile = computed(() => {
   if (!props.normas || !props.normas.current_page || !props.normas.last_page) {
     return []
   }
@@ -378,21 +458,32 @@ const paginasVisiveis = computed(() => {
   const last = props.normas.last_page
   const pages = []
 
-  // Sempre mostrar primeira página
-  if (current > 3) {
-    pages.push(1)
-    if (current > 4) pages.push('...')
-  }
+  // mobile
+  const isMobile = window.innerWidth < 640
 
-  // Páginas ao redor da atual
-  for (let i = Math.max(1, current - 2); i <= Math.min(last, current + 2); i++) {
-    pages.push(i)
-  }
+  if (isMobile) {
+    // Em mobile, mostrar apenas 3 páginas no máximo
+    const startPage = Math.max(1, current - 1)
+    const endPage = Math.min(last, current + 1)
 
-  // Sempre mostrar última página
-  if (current < last - 2) {
-    if (current < last - 3) pages.push('...')
-    pages.push(last)
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i)
+    }
+  } else {
+    // Desktop
+    if (current > 3) {
+      pages.push(1)
+      if (current > 4) pages.push('...')
+    }
+
+    for (let i = Math.max(1, current - 2); i <= Math.min(last, current + 2); i++) {
+      pages.push(i)
+    }
+
+    if (current < last - 2) {
+      if (current < last - 3) pages.push('...')
+      pages.push(last)
+    }
   }
 
   return pages
@@ -489,7 +580,7 @@ const irParaPagina = (pagina) => {
 
   router.get('/consulta', params, {
     preserveState: true,
-    preserveScroll: true
+    preserveScroll: false // Permite scroll para o topo após mudança de página
   })
 }
 
