@@ -94,12 +94,11 @@
           </template>
           <a
             href="/login"
-            class="bg-[#9c8642] hover:bg-[#8d793f] text-gray-900 px-4 py-2.5 rounded-lg font-semibold transition-all duration-300 hover:scale-105 shadow-md flex items-center text-base"
+            class="hidden xl:flex bg-[#9c8642] hover:bg-[#8d793f] text-gray-900 px-4 py-2.5 rounded-lg font-semibold transition-all duration-300 hover:scale-105 shadow-md items-center text-base"
             title="Área Administrativa"
           >
             <i class="fas fa-cog mr-2 text-lg"></i>
-            <span class="hidden xl:inline">Administração</span>
-            <span class="xl:hidden">Admin</span>
+            <span>Administração</span>
           </a>
         </div>
 
@@ -161,7 +160,7 @@
           </a>
 
           <button
-            @click="$emit('show-help'); mobileMenuOpen = false"
+            @click="handleShowHelp"
             class="text-gray-300 hover:text-[#c1a85a] hover:bg-gray-800 px-3 py-3 rounded transition-colors duration-300 flex items-center text-left w-full text-base font-medium"
           >
             <i class="fas fa-question-circle mr-3 w-5 text-lg"></i>
@@ -170,24 +169,13 @@
 
           <template v-if="page.props.auth?.user">
             <button
-              @click="logout; mobileMenuOpen = false"
+              @click="handleMobileLogout"
               class="text-gray-300 hover:text-red-500 hover:bg-gray-800 px-3 py-3 rounded transition-colors duration-300 flex items-center text-left w-full text-base font-medium"
             >
               <i class="fas fa-sign-out-alt mr-3 w-5 text-lg"></i>
               Sair
             </button>
           </template>
-
-          <div class="pt-2 border-t border-gray-700 mt-2">
-            <a
-              href="/login"
-              class="bg-[#9c8642] hover:bg-[#8d793f] text-gray-900 px-3 py-3 rounded-lg font-semibold transition-all duration-300 flex items-center justify-center mx-3 text-base"
-              @click="mobileMenuOpen = false"
-            >
-              <i class="fas fa-cog mr-2 text-lg"></i>
-              Área Administrativa
-            </a>
-          </div>
         </div>
       </div>
     </div>
@@ -209,6 +197,16 @@ const isActive = (route) => {
     return currentUrl === '/'
   }
   return currentUrl.startsWith(route)
+}
+
+const handleShowHelp = () => {
+  mobileMenuOpen.value = false
+  emit('show-help')
+}
+
+const handleMobileLogout = () => {
+  mobileMenuOpen.value = false
+  logout()
 }
 
 const logout = () => {
