@@ -8,16 +8,13 @@
             <img src="{{asset('images/logo-pc.png')}}" alt="Logo PCPB" class="logo-img"/>
         </div>
         <h1 class="app-title">Biblioteca de Normas</h1>
-        <p class="app-subtitle">Assessoria Técnico-Normativa</p>
+        <p class="app-subtitle">Diretoria Técnico-Normativa</p>
     </div>
 
     <!-- Login Card -->
     <div class="login-card">
         <!-- Login Form -->
         <div class="login-form-section">
-            <div class="login-header">
-                <h2>Acesso ao Sistema</h2>
-            </div>
 
             <!-- Mensagens de erro -->
             @if ($errors->any())
@@ -31,14 +28,14 @@
 
             <form id="loginForm" action="{{route('login')}}" method="POST">
                 @csrf
-                
+
                 <div class="form-group">
                     <label for="matricula" class="form-label">Matrícula</label>
                     <div class="input-wrapper">
-                        <input 
-                            type="text" 
-                            id="matricula" 
-                            name="matricula" 
+                        <input
+                            type="text"
+                            id="matricula"
+                            name="matricula"
                             class="form-control {{ $errors->has('matricula') ? 'error' : '' }}"
                             placeholder="Informe sua matrícula"
                             value="{{ old('matricula') }}"
@@ -52,10 +49,10 @@
                 <div class="form-group">
                     <label for="password" class="form-label">Senha</label>
                     <div class="input-wrapper">
-                        <input 
-                            type="password" 
-                            id="password" 
-                            name="password" 
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
                             class="form-control {{ $errors->has('password') ? 'error' : '' }}"
                             placeholder="••••••••"
                             required
@@ -76,8 +73,7 @@
                 </div>
 
                 <button type="submit" class="btn-login" id="loginBtn">
-                    <i class="fas fa-sign-in-alt"></i>
-                    Login
+                    Entrar
                 </button>
             </form>
         </div>
@@ -102,12 +98,12 @@
         height: 100%;
         margin: 0;
         padding: 0;
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
+        background: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%) !important;
     }
 
     body {
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
+        background: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%) !important;
         min-height: 100vh;
         display: flex;
         align-items: center;
@@ -118,9 +114,9 @@
 
     /* Sobrescrever estilos do AdminLTE */
     .login-page {
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
+        background: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%) !important;
         background-color: transparent !important;
-        background-image: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
+        background-image: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%) !important;
     }
 
     /* Forçar background em todos os containers */
@@ -158,21 +154,21 @@
     .logo-img {
         height: 160px;
         width: auto;
-        filter: brightness(1.1) drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+        filter: drop-shadow(0 4px 4px rgba(0, 0, 0, 0.2));
     }
 
     .app-title {
-        font-size: 28px;
+        font-size: 24px;
         font-weight: 700;
-        color: #2c3e50;
+        color: #1e2939;
         margin-bottom: 8px;
         letter-spacing: -0.5px;
         text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 
     .app-subtitle {
-        font-size: 16px;
-        color: #34495e;
+        font-size: 14px;
+        color: #4a5565;
         font-weight: 400;
         text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
     }
@@ -180,25 +176,14 @@
     /* Login Card */
     .login-card {
         background: white !important;
-        backdrop-filter: blur(10px);
-        border-radius: 20px;
-        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        box-shadow: 0 15px 20px rgba(0, 0, 0, 0.1);
         overflow: hidden;
         width: 100%;
-        padding: 40px 35px;
-        border: 1px solid rgba(255, 255, 255, 0.8);
+        padding: 30px 25px;
+        border: 1px solid #e5e5e5;
         position: relative;
-        margin-bottom: 15px;
-    }
-
-    .login-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: #bea55a;
+        margin-bottom: 10px;
     }
 
     .login-form-section {
@@ -238,8 +223,9 @@
     .form-control {
         width: 100%;
         padding: 16px 16px 16px 50px;
+        height: 43px;
         border: 1px solid #ddd;
-        border-radius: 12px;
+        border-radius: 6px;
         font-size: 16px;
         font-weight: 400;
         color: #2c3e50;
@@ -253,7 +239,7 @@
 
     .form-control:focus {
         outline: none;
-        border-color: #bea55a;
+        border-color: #000000;
         box-shadow: 0 0 0 1px rgba(44, 62, 80, 0.15);
         background: rgba(255, 255, 255, 1);
     }
@@ -269,14 +255,14 @@
         top: 50%;
         transform: translateY(-50%);
         color: #999;
-        font-size: 18px;
+        font-size: 15px;
         transition: color 0.3s ease;
         pointer-events: none;
     }
 
-    .form-control:focus + .input-icon {
+    /* .form-control:focus + .input-icon {
         color: #bea55a;
-    }
+    } */
 
     .password-toggle {
         position: absolute;
@@ -300,7 +286,7 @@
         display: flex;
         justify-content: flex-start;
         align-items: center;
-        margin-bottom: 32px;
+        margin-bottom: 25px;
     }
 
     .checkbox-wrapper {
@@ -324,11 +310,11 @@
     .btn-login {
         width: 100%;
         padding: 12px;
-        background: linear-gradient(135deg, #bea55a 0%, #d4c47a 100%);
+        background: linear-gradient(135deg, #bea55a 0%, #bea55a 100%);
         color: white;
         border: none;
-        border-radius: 12px;
-        font-size: 16px;
+        border-radius: 6px;
+        font-size: 13px;
         font-weight: 700;
         cursor: pointer;
         transition: all 0.3s ease;
@@ -336,13 +322,11 @@
         overflow: hidden;
         text-transform: uppercase;
         letter-spacing: 0.5px;
-        box-shadow: 0 4px 15px rgba(44, 62, 80, 0.4);
+        box-shadow: 0 4px 10px rgba(44, 62, 80, 0.4);
     }
 
     .btn-login:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 25px rgba(190, 165, 90, 0.4);
-        background: linear-gradient(135deg, #d4c47a 0%, #bea55a 100%);
+        background: linear-gradient(135deg, #8b7431 0%, #8b7431 100%);
     }
 
     .btn-login:active {
@@ -380,10 +364,9 @@
         text-align: center;
         margin-top: 10px;
         padding: 10px;
-        color: #4d4e4e;
+        color: #525252;
         font-size: 14px;
-        font-weight: 500;
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        font-weight: 400;
     }
 
     /* Loading animation */
@@ -417,7 +400,7 @@
         body {
             padding: 15px;
         }
-        
+
         .login-card {
             padding: 30px 25px;
         }
@@ -463,7 +446,7 @@
     document.getElementById('togglePassword').addEventListener('click', function() {
         const passwordField = document.getElementById('password');
         const toggleIcon = this.querySelector('i');
-        
+
         if (passwordField.type === 'password') {
             passwordField.type = 'text';
             toggleIcon.classList.remove('fa-eye');
@@ -480,7 +463,7 @@
         const loginBtn = document.getElementById('loginBtn');
         loginBtn.classList.add('btn-loading');
         loginBtn.disabled = true;
-        
+
         // Remove loading após timeout para permitir retorno em caso de erro
         setTimeout(() => {
             loginBtn.classList.remove('btn-loading');
