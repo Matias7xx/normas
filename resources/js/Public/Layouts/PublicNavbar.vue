@@ -1,5 +1,7 @@
 <template>
-  <nav class="bg-[#1a1a1a] shadow-lg border-b-4 border-[#c1a85a] sticky top-0 z-50">
+  <nav
+    class="bg-[#1a1a1a] shadow-lg border-b-4 border-[#c1a85a] sticky top-0 z-50"
+  >
     <div class="max-w-7xl mx-auto px-4">
       <div class="flex items-center justify-between h-20">
         <!-- Brand/Logo -->
@@ -32,7 +34,11 @@
         <div class="hidden lg:flex items-center space-x-5">
           <Link
             href="/"
-            :class="isActive('/') ? 'text-[#c1a85a]' : 'text-gray-300 hover:text-[#c1a85a]'"
+            :class="
+              isActive('/')
+                ? 'text-[#c1a85a]'
+                : 'text-gray-300 hover:text-[#c1a85a]'
+            "
             class="nav-link transition-colors duration-300 flex items-center px-3 py-2.5 text-base font-medium"
             title="Página Inicial"
           >
@@ -42,7 +48,11 @@
 
           <Link
             href="/consulta"
-            :class="isActive('/consulta') ? 'text-[#c1a85a]' : 'text-gray-300 hover:text-[#c1a85a]'"
+            :class="
+              isActive('/consulta')
+                ? 'text-[#c1a85a]'
+                : 'text-gray-300 hover:text-[#c1a85a]'
+            "
             class="nav-link transition-colors duration-300 flex items-center px-3 py-2.5 text-base font-medium"
             title="Consultar Normas"
           >
@@ -52,7 +62,11 @@
 
           <Link
             href="/especificacoes"
-            :class="isActive('/especificacoes') ? 'text-[#c1a85a]' : 'text-gray-300 hover:text-[#c1a85a]'"
+            :class="
+              isActive('/especificacoes')
+                ? 'text-[#c1a85a]'
+                : 'text-gray-300 hover:text-[#c1a85a]'
+            "
             class="nav-link transition-colors duration-300 flex items-center px-3 py-2.5 text-base font-medium"
             title="Especificações Técnicas"
           >
@@ -62,7 +76,11 @@
 
           <a
             href="/boletins"
-            :class="isActive('/boletins') ? 'text-[#c1a85a]' : 'text-gray-300 hover:text-[#c1a85a]'"
+            :class="
+              isActive('/boletins')
+                ? 'text-[#c1a85a]'
+                : 'text-gray-300 hover:text-[#c1a85a]'
+            "
             class="nav-link transition-colors duration-300 flex items-center px-3 py-2.5 text-base font-medium"
             title="Boletins Informativos"
           >
@@ -108,7 +126,10 @@
             @click="mobileMenuOpen = !mobileMenuOpen"
             class="text-gray-300 hover:text-[#c1a85a] focus:outline-none focus:text-[#c1a85a] transition-colors duration-300 p-2.5"
           >
-            <i :class="mobileMenuOpen ? 'fas fa-times' : 'fas fa-bars'" class="text-lg"></i>
+            <i
+              :class="mobileMenuOpen ? 'fas fa-times' : 'fas fa-bars'"
+              class="text-lg"
+            ></i>
           </button>
         </div>
       </div>
@@ -121,7 +142,11 @@
         <div class="flex flex-col space-y-2">
           <Link
             href="/"
-            :class="isActive('/') ? 'text-[#c1a85a] bg-gray-800' : 'text-gray-300 hover:text-[#c1a85a] hover:bg-gray-800'"
+            :class="
+              isActive('/')
+                ? 'text-[#c1a85a] bg-gray-800'
+                : 'text-gray-300 hover:text-[#c1a85a] hover:bg-gray-800'
+            "
             class="px-3 py-3 rounded transition-colors duration-300 flex items-center text-base font-medium"
             @click="mobileMenuOpen = false"
           >
@@ -131,7 +156,11 @@
 
           <Link
             href="/consulta"
-            :class="isActive('/consulta') ? 'text-[#c1a85a] bg-gray-800' : 'text-gray-300 hover:text-[#c1a85a] hover:bg-gray-800'"
+            :class="
+              isActive('/consulta')
+                ? 'text-[#c1a85a] bg-gray-800'
+                : 'text-gray-300 hover:text-[#c1a85a] hover:bg-gray-800'
+            "
             class="px-3 py-3 rounded transition-colors duration-300 flex items-center text-base font-medium"
             @click="mobileMenuOpen = false"
           >
@@ -141,7 +170,11 @@
 
           <Link
             href="/especificacoes"
-            :class="isActive('/especificacoes') ? 'text-[#c1a85a] bg-gray-800' : 'text-gray-300 hover:text-[#c1a85a] hover:bg-gray-800'"
+            :class="
+              isActive('/especificacoes')
+                ? 'text-[#c1a85a] bg-gray-800'
+                : 'text-gray-300 hover:text-[#c1a85a] hover:bg-gray-800'
+            "
             class="px-3 py-3 rounded transition-colors duration-300 flex items-center text-base font-medium"
             @click="mobileMenuOpen = false"
           >
@@ -151,7 +184,11 @@
 
           <a
             href="/boletins"
-            :class="isActive('/boletins') ? 'text-[#c1a85a] bg-gray-800' : 'text-gray-300 hover:text-[#c1a85a] hover:bg-gray-800'"
+            :class="
+              isActive('/boletins')
+                ? 'text-[#c1a85a] bg-gray-800'
+                : 'text-gray-300 hover:text-[#c1a85a] hover:bg-gray-800'
+            "
             class="px-3 py-3 rounded transition-colors duration-300 flex items-center text-base font-medium"
             @click="mobileMenuOpen = false"
           >
@@ -183,35 +220,35 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { Link, usePage, router } from '@inertiajs/vue3'
+import { ref } from 'vue';
+import { Link, usePage, router } from '@inertiajs/vue3';
 
-const emit = defineEmits(['show-help'])
+const emit = defineEmits(['show-help']);
 
-const mobileMenuOpen = ref(false)
-const page = usePage()
+const mobileMenuOpen = ref(false);
+const page = usePage();
 
-const isActive = (route) => {
-  const currentUrl = page.url
+const isActive = route => {
+  const currentUrl = page.url;
   if (route === '/') {
-    return currentUrl === '/'
+    return currentUrl === '/';
   }
-  return currentUrl.startsWith(route)
-}
+  return currentUrl.startsWith(route);
+};
 
 const handleShowHelp = () => {
-  mobileMenuOpen.value = false
-  emit('show-help')
-}
+  mobileMenuOpen.value = false;
+  emit('show-help');
+};
 
 const handleMobileLogout = () => {
-  mobileMenuOpen.value = false
-  logout()
-}
+  mobileMenuOpen.value = false;
+  logout();
+};
 
 const logout = () => {
-  router.post('/logout')
-}
+  router.post('/logout');
+};
 </script>
 
 <style scoped>
@@ -220,8 +257,14 @@ const logout = () => {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .animate-fade-in {
@@ -229,8 +272,14 @@ const logout = () => {
 }
 
 @keyframes fadeInDown {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .nav-link {

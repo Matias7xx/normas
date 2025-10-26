@@ -6,7 +6,7 @@
                 <div class="d-flex align-items-center">
                     <div>
                         <strong style="color: #343a40;">
-                            <a href="https://policiacivil.pb.gov.br" class="text-decoration-none" 
+                            <a href="https://policiacivil.pb.gov.br" class="text-decoration-none"
                                style="color: #bea55a;" target="_blank" rel="noopener">
                                 Polícia Civil da Paraíba
                             </a>
@@ -17,7 +17,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Informações técnicas e direitos -->
             <div class="col-md-6 text-right">
                 <div class="mb-1">
@@ -33,12 +33,12 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- informações -->
-        <div class="row border-top" style="border-color: #dee2e6 !important;">
+        {{-- <div class="row border-top" style="border-color: #dee2e6 !important;">
             <div class="col-12 py-2">
                 <div class="d-flex justify-content-between align-items-center flex-wrap">
-                    
+
                     <div class="d-flex align-items-center">
                         <span class="text-muted small mr-3" style="color: #6c757d;">
                             <i class="fas fa-users mr-1" style="color: #bea55a;"></i>
@@ -55,7 +55,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> --}}
     </div>
 </footer>
 
@@ -103,17 +103,17 @@
     .main-footer .row {
         text-align: center;
     }
-    
+
     .main-footer .col-md-6:last-child {
         text-align: center !important;
         margin-top: 10px;
     }
-    
+
     .main-footer .d-flex {
         flex-direction: column;
         align-items: center;
     }
-    
+
     .main-footer .d-flex > span {
         margin: 2px 0 !important;
     }

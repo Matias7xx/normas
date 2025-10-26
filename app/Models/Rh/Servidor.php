@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Servidor extends Model
 {
-    /* use HasFactory;
+  /* use HasFactory;
     protected $connection = 'db_rh';
     protected $table = 'servidor';
     protected $primaryKey = 'id_servidor';
@@ -22,8 +22,7 @@ class Servidor extends Model
     public function cargo(){
         return $this->belongsTo(Cargo::class, 'cargo', 'codigo');
     } */
-
-    /*  use HasFactory; //comente daqui até o fim
+/*  use HasFactory; //comente daqui até o fim
     
     //Usando a conexão padrão temporariamente. Trecho necessário para login sem API
     protected $table = 'users';

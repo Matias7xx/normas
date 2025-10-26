@@ -7,11 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Orgao extends Model
 {
-    use HasFactory;
+  use HasFactory;
 
-    protected $fillable = [
-        'usuario_id',
-        'orgao',
-        'status'
-    ];
+  protected $fillable = ['usuario_id', 'orgao', 'status'];
 }

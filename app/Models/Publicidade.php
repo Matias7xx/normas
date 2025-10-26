@@ -7,10 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Publicidade extends Model
 {
-    use HasFactory;
+  use HasFactory;
 
-    public function documento(){
-        // return $this->belongsTo(Documento::class, 'publicidade_id', 'id');
-    }
+  public function documento()
+  {
+    // return $this->belongsTo(Documento::class, 'publicidade_id', 'id');
+  }
 }
-

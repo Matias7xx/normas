@@ -3,7 +3,10 @@
     <PublicNavbar @show-help="mostrarAjuda" />
 
     <!-- Flash Messages -->
-    <div v-if="showFlash && flashMessage" class="fixed top-20 right-4 z-50 animate-slide-in-right">
+    <div
+      v-if="showFlash && flashMessage"
+      class="fixed top-20 right-4 z-50 animate-slide-in-right"
+    >
       <div
         :class="alertClasses"
         class="px-6 py-4 rounded-lg shadow-xl min-w-80 max-w-md border-l-4"
@@ -34,7 +37,10 @@
     <div v-if="showBreadcrumb" class="bg-white border-b border-gray-200">
       <div class="max-w-7xl mx-auto px-4 py-3">
         <nav class="text-sm text-gray-600">
-          <Link href="/" class="hover:text-yellow-600 transition-colors duration-300">
+          <Link
+            href="/"
+            class="hover:text-yellow-600 transition-colors duration-300"
+          >
             <i class="fas fa-home mr-1"></i>
             Início
           </Link>
@@ -82,22 +88,29 @@
 
         <div class="space-y-4 text-gray-700">
           <p>
-            <strong>Navegação:</strong> Use os links no topo para navegar entre as páginas do sistema.
+            <strong>Navegação:</strong> Use os links no topo para navegar entre
+            as páginas do sistema.
           </p>
           <p>
-            <strong>Consultar Normas:</strong> Na página de consulta, você pode buscar normas por descrição, tipo, órgão ou data.
+            <strong>Consultar Normas:</strong> Na página de consulta, você pode
+            buscar normas por descrição, tipo, órgão ou data.
           </p>
           <p>
-            <strong>Filtros:</strong> Use os filtros avançados para refinar sua busca.
+            <strong>Filtros:</strong> Use os filtros avançados para refinar sua
+            busca.
           </p>
           <p>
-            <strong>Especificações:</strong> Documentos que definem os requisitos mínimos para equipamentos utilizados nas atividades da Polícia Civil da Paraíba.
+            <strong>Especificações:</strong> Documentos que definem os
+            requisitos mínimos para equipamentos utilizados nas atividades da
+            Polícia Civil da Paraíba.
           </p>
           <p>
-            <strong>Boletim Interno:</strong> Pesquise boletins por data de publicação ou número do Boletim.
+            <strong>Boletim Interno:</strong> Pesquise boletins por data de
+            publicação ou número do Boletim.
           </p>
           <p>
-            <strong>Administração:</strong> Acesso restrito para gestão do sistema.
+            <strong>Administração:</strong> Acesso restrito para gestão do
+            sistema.
           </p>
         </div>
 
@@ -115,100 +128,105 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
-import { Link, usePage } from '@inertiajs/vue3'
-import PublicNavbar from '../Layouts/PublicNavbar.vue'
-import PublicFooter from '../Layouts/PublicFooter.vue'
+import { ref, computed, onMounted, watch } from 'vue';
+import { Link, usePage } from '@inertiajs/vue3';
+import PublicNavbar from '../Layouts/PublicNavbar.vue';
+import PublicFooter from '../Layouts/PublicFooter.vue';
 
 const props = defineProps({
   stats: {
     type: Object,
-    default: () => ({})
+    default: () => ({}),
   },
   showBreadcrumb: {
     type: Boolean,
-    default: false
+    default: false,
   },
   pageTitle: {
     type: String,
-    default: ''
-  }
-})
+    default: '',
+  },
+});
 
 // State
-const showAjudaModal = ref(false)
-const isNavigating = ref(false)
-const showFlash = ref(false)
+const showAjudaModal = ref(false);
+const isNavigating = ref(false);
+const showFlash = ref(false);
 
 // Computed
-const page = usePage()
+const page = usePage();
 
 // Sistema de Flash Messages
 const flashMessage = computed(() => {
   // Acessar page.props diretamente
-  return page.props.flash?.error ||
-         page.props.flash?.success ||
-         page.props.flash?.message ||
-         page.props.error ||
-         null
-})
+  return (
+    page.props.flash?.error ||
+    page.props.flash?.success ||
+    page.props.flash?.message ||
+    page.props.error ||
+    null
+  );
+});
 
 const alertType = computed(() => {
   // Acessar page.props diretamente
-  if (page.props.flash?.error || page.props.error) return 'error'
-  if (page.props.flash?.success) return 'success'
-  if (page.props.flash?.warning) return 'warning'
-  if (page.props.flash?.message) return 'info'
-  return page.props.flash?.alert_type || 'info'
-})
+  if (page.props.flash?.error || page.props.error) return 'error';
+  if (page.props.flash?.success) return 'success';
+  if (page.props.flash?.warning) return 'warning';
+  if (page.props.flash?.message) return 'info';
+  return page.props.flash?.alert_type || 'info';
+});
 
 const alertClasses = computed(() => {
-  const base = 'bg-white shadow-lg'
+  const base = 'bg-white shadow-lg';
   switch (alertType.value) {
     case 'error':
-      return base + ' border-red-500 text-red-800'
+      return base + ' border-red-500 text-red-800';
     case 'success':
-      return base + ' border-green-500 text-green-800'
+      return base + ' border-green-500 text-green-800';
     case 'warning':
-      return base + ' border-yellow-500 text-yellow-800'
+      return base + ' border-yellow-500 text-yellow-800';
     default:
-      return base + ' border-blue-500 text-blue-800'
+      return base + ' border-blue-500 text-blue-800';
   }
-})
+});
 
 const iconClass = computed(() => {
   switch (alertType.value) {
     case 'error':
-      return 'fas fa-exclamation-triangle text-red-600'
+      return 'fas fa-exclamation-triangle text-red-600';
     case 'success':
-      return 'fas fa-check-circle text-green-600'
+      return 'fas fa-check-circle text-green-600';
     case 'warning':
-      return 'fas fa-exclamation-circle text-yellow-600'
+      return 'fas fa-exclamation-circle text-yellow-600';
     default:
-      return 'fas fa-info-circle text-blue-600'
+      return 'fas fa-info-circle text-blue-600';
   }
-})
+});
 
 // Methods
 const mostrarAjuda = () => {
-  showAjudaModal.value = true
-}
+  showAjudaModal.value = true;
+};
 
 const closeFlashMessage = () => {
-  showFlash.value = false
-}
+  showFlash.value = false;
+};
 
 // Mostrar flash message automaticamente
-watch(flashMessage, (newMessage) => {
-  if (newMessage) {
-    showFlash.value = true
-    // Auto-dismiss após 5 segundos
-    setTimeout(() => {
-      showFlash.value = false
-    }, 5000)
-  }
-}, { immediate: true })
-
+watch(
+  flashMessage,
+  newMessage => {
+    if (newMessage) {
+      showFlash.value = true;
+      // Auto-dismiss após 5 segundos
+      setTimeout(() => {
+        showFlash.value = false;
+      }, 5000);
+    }
+  },
+  { immediate: true }
+);
 </script>
 
 <style scoped>
@@ -221,8 +239,14 @@ watch(flashMessage, (newMessage) => {
 }
 
 @keyframes scaleIn {
-  from { opacity: 0; transform: scale(0.9); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 @keyframes slideInRight {

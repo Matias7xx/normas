@@ -7,24 +7,24 @@ use Illuminate\Support\Facades\URL;
 
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     *
-     * @return void
-     */
-    public function register()
-    {
-        //
-    }
+  /**
+   * Register any application services.
+   *
+   * @return void
+   */
+  public function register()
+  {
+    //
+  }
 
-    /**
-     * Bootstrap any application services.
-     *
-     * @return void
-     */
-    public function boot()
-    {
-        URL::forceScheme(env('HTTP_SCHEMA', 'https'));
+  /**
+   * Bootstrap any application services.
+   *
+   * @return void
+   */
+  public function boot()
+  {
+    URL::forceScheme(env('HTTP_SCHEMA', 'https'));
         URL::forceRootUrl(env('APP_URL'));
-    }
+  }
 }

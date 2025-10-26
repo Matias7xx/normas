@@ -1,23 +1,23 @@
-import { createApp, h } from 'vue'
-import { createInertiaApp } from '@inertiajs/vue3'
+import { createApp, h } from 'vue';
+import { createInertiaApp } from '@inertiajs/vue3';
 
 createInertiaApp({
-  resolve: async (name) => {
+  resolve: async name => {
     // Para Laravel Mix, usar require.context ou import dinâmico
     try {
       // Tentar importar dinamicamente
-      const module = await import(`./Public/Pages/${name}.vue`)
-      return module.default || module
+      const module = await import(`./Public/Pages/${name}.vue`);
+      return module.default || module;
     } catch (error) {
-      console.warn(`Página "${name}" não encontrada:`, error)
-      
+      console.warn(`Página "${name}" não encontrada:`, error);
+
       // Fallback para Home
       try {
-        const homeModule = await import('./Public/Pages/Home.vue')
-        return homeModule.default || homeModule
+        const homeModule = await import('./Public/Pages/Home.vue');
+        return homeModule.default || homeModule;
       } catch (homeError) {
-        console.error('Erro ao carregar página Home:', homeError)
-        
+        console.error('Erro ao carregar página Home:', homeError);
+
         // Fallback final
         return {
           template: `
@@ -28,18 +28,18 @@ createInertiaApp({
           `,
           mounted() {
             setTimeout(() => {
-              window.location.href = '/'
-            }, 2000)
-          }
-        }
+              window.location.href = '/';
+            }, 2000);
+          },
+        };
       }
     }
   },
   setup({ el, App, props, plugin }) {
     return createApp({ render: () => h(App, props) })
       .use(plugin)
-      .mount(el)
+      .mount(el);
   },
 }).catch(err => {
-  console.error('Erro crítico do Inertia:', err)
-})
+  console.error('Erro crítico do Inertia:', err);
+});

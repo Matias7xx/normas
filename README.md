@@ -1,6 +1,5 @@
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="public/images/brasao_pcpb_c.png" width="400"></a></p>
 
-
 ## Sobre o Boilerplate
 
 Este boilerplate foi construido utilizando a versão 8 do Framework Laravel e utiliza como pacote de CSS/Frontend o [AdminLTE](https://adminlte.io/) 3.2 que é baseado em Bootstrap 4. As principais funcionalidades deste projeto incluem a integração com a API do Sistema de Recursos Humanos da PCPB, pacote de auditoria [Laravel Auditing](https://laravel-auditing.com/), sistema de ACL com Perfis e Permissões, entre outros.
@@ -12,39 +11,43 @@ O Laravel tem a mais extensa e completa [documentação](https://laravel.com/doc
 
 Se você não quiser ler, [Laracasts](https://laracasts.com) pode ajudar. Laracasts contém mais de 1500 tutoriais em vídeo sobre uma variedade de tópicos, incluindo Laravel, PHP moderno, teste de unidade e JavaScript. Aumente suas habilidades explorando nossa abrangente biblioteca de vídeos.
 
-
 ## Iniciando o projeto
 
 Clonando o repositório:
-````
+
+```
 https://git.sesds.pb.gov.br/jeorgy/boilerplate-l8.git
-````
+```
 
 Instalando as dependências:
-````
+
+```
 composer install
-````
+```
 
 Copiar arquivo de variáveis de ambiente:
-````
+
+```
 cp .env.example .env
-````
+```
 
 Gerando a Key do projeto:
-````
+
+```
 php artisan key:generate
-````
+```
 
 Rodando as migrations e populando o banco de dados:
-````
-php artisan migrate:fresh --seed
-````
 
+```
+php artisan migrate:fresh --seed
+```
 
 Iniciando o servidor de desenvolvimento:
-````
+
+```
 php artisan serve
-````
+```
 
 Faça login usando os dados:
 

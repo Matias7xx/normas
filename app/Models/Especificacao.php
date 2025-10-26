@@ -7,45 +7,40 @@ use Illuminate\Database\Eloquent\Model;
 
 class Especificacao extends Model
 {
-    use HasFactory;
+  use HasFactory;
 
-    protected $table = 'especificacoes';
+  protected $table = 'especificacoes';
 
-    protected $fillable = [
-        'nome',
-        'arquivo',
-        'status',
-        'usuario_id'
-    ];
+  protected $fillable = ['nome', 'arquivo', 'status', 'usuario_id'];
 
-    protected $casts = [
-        'status' => 'boolean',
-    ];
+  protected $casts = [
+    'status' => 'boolean',
+  ];
 
-    /**
-     * Relacionamento com usuário
-     */
-    public function usuario()
-    {
-        return $this->belongsTo(User::class, 'usuario_id');
+  /**
+   * Relacionamento com usuário
+   */
+  public function usuario()
+  {
+    return $this->belongsTo(User::class, 'usuario_id');
+  }
+
+  /**
+   * Scope para especificações ativas
+   */
+  public function scopeAtivas($query)
+  {
+    return $query->where('status', true);
+  }
+
+  /**
+   * Accessor para URL do arquivo
+   */
+  public function getArquivoUrlAttribute()
+  {
+    if ($this->arquivo) {
+      return asset('storage/especificacoes/' . $this->arquivo);
     }
-
-    /**
-     * Scope para especificações ativas
-     */
-    public function scopeAtivas($query)
-    {
-        return $query->where('status', true);
-    }
-
-    /**
-     * Accessor para URL do arquivo
-     */
-    public function getArquivoUrlAttribute()
-    {
-        if ($this->arquivo) {
-            return asset('storage/especificacoes/' . $this->arquivo);
-        }
-        return null;
-    }
+    return null;
+  }
 }

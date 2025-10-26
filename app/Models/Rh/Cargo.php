@@ -7,8 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Cargo extends Model
 {
-    use HasFactory;
-    protected $connection = 'db_rh';
-    protected $primaryKey = 'idcargo';
-    protected $table = 'cargo';
+  use HasFactory;
+  protected $connection = 'db_rh';
+  protected $primaryKey = 'idcargo';
+  protected $table = 'cargo';
 }
