@@ -171,8 +171,8 @@ class NormaController extends Controller
       }
 
       // Paginação
-      $perPage = $request->input('per_page', 15);
-      $perPage = in_array($perPage, [10, 15, 25, 50]) ? $perPage : 15;
+      $perPage = $request->input('per_page', 20);
+      $perPage = in_array($perPage, [20, 30, 40, 50]) ? $perPage : 20;
 
       $normas = $query->paginate($perPage);
 

@@ -6,7 +6,7 @@
     <section
       class="bg-gradient-to-r from-gray-600 via-gray-700 to-gray-800 text-white py-16"
     >
-      <div class="max-w-7xl mx-auto px-4">
+      <div class="max-w-7xl mx-auto px-2 sm:px-4">
         <div class="text-center">
           <h1 class="text-3xl md:text-4xl font-bold mb-4">
             Consulta de Normas
@@ -20,7 +20,7 @@
 
     <!-- Formulário de Busca -->
     <section class="bg-white shadow-lg -mt-6 relative z-10">
-      <div class="max-w-7xl mx-auto px-4 py-6 sm:py-8">
+      <div class="max-w-7xl mx-auto px-2 sm:px-4 py-6 sm:py-8">
         <form @submit.prevent="buscarNormas" class="space-y-6">
           <!-- Busca por termo -->
           <div>
@@ -163,7 +163,7 @@
 
           <!-- Botões de ação -->
           <div
-            class="flex flex-col sm:flex-row gap-3 justify-center items-center"
+            class="flex flex-col sm:flex-row gap-3 justify-center items-stretch"
           >
             <button
               type="submit"
@@ -189,7 +189,7 @@
     </section>
 
     <!-- Resultados -->
-    <section class="max-w-7xl mx-auto px-4 py-8">
+    <section class="max-w-7xl mx-auto px-2 sm:px-4 py-8">
       <!-- Estatísticas da busca -->
       <div v-if="normas?.data && Array.isArray(normas.data)" class="mb-6">
         <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">

@@ -70,8 +70,8 @@
                                     <i class="fas fa-search text-muted"></i>
                                 </span>
                             </div>
-                            <input type="text" class="form-control" id="search_term" name="search_term" 
-                                placeholder="Descrição, resumo ou palavra-chave..." 
+                            <input type="text" class="form-control" id="search_term" name="search_term"
+                                placeholder="Descrição, resumo ou palavra-chave..."
                                 autocomplete="off">
                             <div class="input-group-append">
                                 <button type="button" class="btn btn-outline-secondary" id="clear-search">
@@ -81,7 +81,7 @@
                         </div>
                         <small class="form-text text-muted">Busca em descrição, resumo e palavras-chave</small>
                     </div>
-                    
+
                     <div class="col-md-2">
                         <label for="tipo_id" class="form-label font-weight-bold">
                             <i class="fas fa-tags mr-1"></i> Tipo de Norma
@@ -95,7 +95,7 @@
                             @endforeach
                         </select>
                     </div>
-                    
+
                     <div class="col-md-2">
                         <label for="orgao_id" class="form-label font-weight-bold">
                             <i class="fas fa-building mr-1"></i> Órgão
@@ -121,7 +121,7 @@
                             @endforeach
                         </select>
                     </div>
-                    
+
                     <div class="col-md-3">
                         <label class="form-label font-weight-bold">
                             <i class="fas fa-calendar-alt mr-1"></i> Período
@@ -132,7 +132,7 @@
                         </button>
                     </div>
                 </div>
-                
+
                 <!-- Seção de Período -->
                 <div id="period-filter-content" style="display: none;">
                     <div class="border rounded p-3 bg-light">
@@ -140,7 +140,7 @@
                             <i class="fas fa-calendar-alt mr-2 text-dark"></i>
                             Configurar Período de Busca
                         </h6>
-                        
+
                         <div class="row">
                             <!-- Data de Início -->
                             <div class="col-md-6">
@@ -181,7 +181,7 @@
                                     </small>
                                 </div>
                             </div>
-                            
+
                             <!-- Data de Fim -->
                             <div class="col-md-6">
                                 <div class="form-group">
@@ -222,7 +222,7 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <!-- Filtros Rápidos de Período -->
                         <div class="row mt-3">
                             <div class="col-12">
@@ -244,7 +244,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Botões de Ação -->
                 <div class="row mt-2">
                     <div class="col-md-12">
@@ -257,7 +257,7 @@
                                     <i class="fas fa-eraser mr-1"></i> Limpar Todos os Filtros
                                 </button>
                             </div>
-                            
+
                             @if(($userPermissions['canCreate'] ?? false))
                             <div>
                                 <a href="{{ route('normas.norma_create') }}" class="btn btn-secondary">
@@ -272,7 +272,7 @@
         </div>
     </div>
 </div>
-        
+
         <!-- Barra de informações e resultados -->
         <div class="row mb-3">
             <div class="col-12">
@@ -284,7 +284,7 @@
                     </div>
                     <div class="d-flex align-items-center">
                         <small class="text-muted mr-2">Ordenar por:</small>
-                        <select id="sort-select" class="form-control form-control-sm mr-2" style="width: auto;">
+                        <select id="sort-select" class="form-control form-control-sm mr-3" style="width: auto;">
                             <option value="data-desc" selected>Mais Recentes</option>
                             <option value="data-asc">Mais Antigas</option>
                             <option value="vigente-asc">Vigente</option>
@@ -292,11 +292,19 @@
                             <option value="id-desc">ID (Maior para Menor)</option>
                             <option value="id-asc">ID (Menor para Maior)</option>
                         </select>
+
+                        <small class="text-muted mr-2">Itens por página:</small>
+                        <select id="per-page-select" class="form-control form-control-sm" style="width: auto;">
+                            <option value="20" selected>20</option>
+                            <option value="30">30</option>
+                            <option value="40">40</option>
+                            <option value="50">50</option>
+                        </select>
                     </div>
                 </div>
             </div>
         </div>
-        
+
         <!-- Tabela de normas -->
         <div class="row">
             <div class="col-md-12">
@@ -308,43 +316,43 @@
                                     <tr>
                                         <th width="5%" class="sortable border-0" data-field="id" style="cursor: pointer;">
                                             <div class="d-flex align-items-center">
-                                                ID 
+                                                ID
                                                 <i class="fas fa-sort text-muted ml-1" style="font-size: 0.8rem;"></i>
                                             </div>
                                         </th>
                                         <th width="8%" class="sortable border-0" data-field="tipo" style="cursor: pointer;">
                                             <div class="d-flex align-items-center">
-                                                Tipo 
+                                                Tipo
                                                 <i class="fas fa-sort text-muted ml-1" style="font-size: 0.8rem;"></i>
                                             </div>
                                         </th>
                                         <th width="8%" class="sortable border-0" data-field="data" style="cursor: pointer;">
                                             <div class="d-flex align-items-center">
-                                                Data 
+                                                Data
                                                 <i class="fas fa-sort text-muted ml-1" style="font-size: 0.8rem;"></i>
                                             </div>
                                         </th>
                                         <th width="12%" class="sortable border-0" data-field="vigente" style="cursor: pointer;">
                                             <div class="d-flex align-items-center">
-                                                Vigência 
+                                                Vigência
                                                 <i class="fas fa-sort text-muted ml-1" style="font-size: 0.8rem;"></i>
                                             </div>
                                         </th>
                                         <th width="22%" class="sortable border-0" data-field="descricao" style="cursor: pointer;">
                                             <div class="d-flex align-items-center">
-                                                Norma 
+                                                Norma
                                                 <i class="fas fa-sort text-muted ml-1" style="font-size: 0.8rem;"></i>
                                             </div>
                                         </th>
                                         <th width="25%" class="sortable border-0" data-field="resumo" style="cursor: pointer;">
                                             <div class="d-flex align-items-center">
-                                                Resumo 
+                                                Resumo
                                                 <i class="fas fa-sort text-muted ml-1" style="font-size: 0.8rem;"></i>
                                             </div>
                                         </th>
                                         <th width="10%" class="sortable border-0" data-field="orgao" style="cursor: pointer;">
                                             <div class="d-flex align-items-center">
-                                                Órgão 
+                                                Órgão
                                                 <i class="fas fa-sort text-muted ml-1" style="font-size: 0.8rem;"></i>
                                             </div>
                                         </th>
@@ -361,7 +369,7 @@
                             </table>
                         </div>
                     </div>
-                    
+
                     <!-- Paginação -->
                     <div class="card-footer bg-white border-0">
                         <div class="d-flex justify-content-between align-items-center">
@@ -371,7 +379,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Mensagem quando não há dados -->
                 <div id="no-data-message" class="alert alert-secondary d-none mt-3">
                     <div class="d-flex align-items-center">
@@ -454,12 +462,12 @@
         border-radius: 10px;
         transition: all 0.3s ease;
     }
-    
+
     .card:hover {
         transform: translateY(-2px);
         box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
     }
-    
+
     .table th {
         background-color: #f8f9fa;
         font-weight: 600;
@@ -467,22 +475,22 @@
         color: #495057;
         padding: 1rem 0.75rem;
     }
-    
+
     .table tbody tr {
         border-bottom: 1px solid #f2f2f2;
         transition: all 0.2s ease;
     }
-    
+
     .sort-asc .fa-sort:before {
         content: "\f0de"; /* fa-sort-up */
         color: #007bff;
     }
-    
+
     .sort-desc .fa-sort:before {
         content: "\f0dd"; /* fa-sort-down */
         color: #007bff;
     }
-    
+
     /* Estilos para truncar texto */
     .text-truncate-custom {
         max-width: 300px;
@@ -491,7 +499,7 @@
         text-overflow: ellipsis;
         display: inline-block;
     }
-    
+
     /* Loading overlay */
     .loading-overlay {
         position: absolute;
@@ -506,42 +514,42 @@
         z-index: 1000;
         border-radius: 10px;
     }
-    
+
     /* Responsividade */
     @media (max-width: 768px) {
         .card-body {
             padding: 1rem;
         }
-        
+
         .quick-filters {
             text-align: center;
         }
-        
+
         .table-responsive {
             border-radius: 10px;
         }
-        
+
         .action-buttons {
             flex-direction: column;
             gap: 4px;
         }
-        
+
         .btn-xs {
             font-size: 0.7rem;
             padding: 0.25rem 0.4rem;
         }
     }
-    
+
     /* Animações */
     @keyframes fadeIn {
         from { opacity: 0; transform: translateY(10px); }
         to { opacity: 1; transform: translateY(0); }
     }
-    
+
     .card {
         animation: fadeIn 0.5s ease-out;
     }
-    
+
     /* Input focus */
     .form-control:focus {
         border-color: #80bdff;
@@ -549,23 +557,23 @@
         transform: scale(1.02);
         transition: all 0.2s ease;
     }
-    
+
     /* Background gradient para header */
     .bg-gradient-dark {
         background: linear-gradient(135deg, #343a40 0%, #212529 100%);
     }
-    
+
     /* Melhorias no modal */
     .modal-content {
         border-radius: 10px;
         border: none;
         box-shadow: 0 10px 30px rgba(0,0,0,0.2);
     }
-    
+
     .modal-header {
         border-radius: 10px 10px 0 0;
     }
-    
+
     /* Estilo para botões de ordenação ativos */
     .btn-group .btn.active {
         background-color: #007bff;
@@ -613,12 +621,12 @@
 }
 
     @endsections  ease;
-    
+
     .table tbody tr:hover {
         background-color: rgba(0, 123, 255, 0.05);
         transform: scale(1.01);
     }
-    
+
     /* Botões de ação aprimorados */
     .btn-xs {
         padding: 0.375rem 0.5rem;
@@ -628,19 +636,19 @@
         margin: 0 2px;
         transition: all 0.2s ease;
     }
-    
+
     .action-buttons {
         display: flex;
         justify-content: center;
         gap: 2px;
         flex-wrap: wrap;
     }
-    
+
     .action-buttons .btn:hover {
         transform: translateY(-2px);
         box-shadow: 0 4px 8px rgba(0,0,0,0.15);
     }
-    
+
     /* Badges para status de vigência */
     .badge-vigente {
         background-color: #28a745;
@@ -650,7 +658,7 @@
         border-radius: 15px;
         font-weight: 500;
     }
-    
+
     .badge-nao-vigente {
         background-color: #dc3545;
         color: white;
@@ -659,7 +667,7 @@
         border-radius: 15px;
         font-weight: 500;
     }
-    
+
     .badge-em-analise {
         background-color: #ffc107;
         color: #212529;
@@ -668,7 +676,7 @@
         border-radius: 15px;
         font-weight: 500;
     }
-    
+
     /* Filtros rápidos */
     .quick-filters .btn {
         margin: 2px;
@@ -676,25 +684,25 @@
         font-size: 0.85rem;
         transition: all 0.3s ease;
     }
-    
+
     .quick-filters .btn.active {
         background-color: #007bff;
         color: white;
         transform: scale(1.05);
     }
-    
+
     /* Select2 */
     .select2-container--default .select2-selection--single {
         height: calc(1.5em + 0.75rem + 2px) !important;
         border: 1px solid #ced4da;
         border-radius: 6px;
     }
-    
+
     .select2-container--default .select2-selection--single .select2-selection__rendered {
         line-height: calc(1.5em + 0.75rem) !important;
         padding-left: 12px;
     }
-    
+
     /* Badges personalizados */
     .badge {
         font-weight: 500;
@@ -702,18 +710,18 @@
         border-radius: 6px;
         font-size: 0.75rem;
     }
-    
+
     .badge-light {
         background-color: #faf8f9;
         color: #495057;
         border: 1px solid #dee2e6;
     }
-    
+
     /* Paginação */
     .pagination {
         margin: 0;
     }
-    
+
     .page-link {
         padding: 0.5rem 0.75rem;
         color: #007bff;
@@ -723,7 +731,7 @@
         margin: 0 2px;
         transition: all 0.2s ease;
     }
-    
+
     .page-item.active .page-link {
         z-index: 3;
         color: #fff;
@@ -731,14 +739,14 @@
         border-color: #007bff;
         transform: scale(1.1);
     }
-    
+
     .page-link:hover {
         color: #0056b3;
         background-color: #e9ecef;
         border-color: #dee2e6;
         transform: translateY(-1px);
     }
-    
+
     /* Ordenação */
     .sortable:hover {
         background-color: rgba(0, 123, 255, 0.1);
@@ -816,7 +824,7 @@
         padding: 2px 4px !important;
         max-width: 120px;
     }
-    
+
     .auditoria-badge i {
         display: none; /* Ocultar ícone em telas pequenas */
     }
