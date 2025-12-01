@@ -57,7 +57,7 @@
             title="Consultar Normas"
           >
             <i class="fas fa-search mr-2 text-lg"></i>
-            <span>Consultar Normas</span>
+            <span>Normas</span>
           </Link>
 
           <Link
@@ -85,7 +85,7 @@
             title="Boletins Informativos"
           >
             <i class="fas fa-newspaper mr-2 text-lg"></i>
-            <span>Boletim Interno</span>
+            <span>Boletim</span>
           </a>
 
           <button
@@ -101,23 +101,77 @@
         <!-- Desktop -->
         <div class="hidden lg:flex items-center space-x-3">
           <template v-if="page.props.auth?.user">
-            <button
-              @click="logout"
-              class="nav-link text-gray-300 hover:text-red-500 px-3 py-2.5 transition-colors duration-300 flex items-center text-base font-medium"
-              title="Sair"
+            <!-- Dropdown do Usuário -->
+            <div class="relative">
+              <button
+                @click="userDropdownOpen = !userDropdownOpen"
+                class="flex items-center space-x-2 text-gray-300 hover:text-[#c1a85a] px-3 py-2.5 rounded-lg transition-colors duration-300"
+              >
+                <span class="font-medium">{{ firstNameOnly }}</span>
+                <i
+                  class="fas fa-chevron-down text-sm transition-transform duration-300"
+                  :class="{ 'rotate-180': userDropdownOpen }"
+                ></i>
+              </button>
+
+              <!-- Dropdown Menu -->
+              <Transition
+                enter-active-class="transition ease-out duration-200"
+                enter-from-class="transform opacity-0 scale-95"
+                enter-to-class="transform opacity-100 scale-100"
+                leave-active-class="transition ease-in duration-150"
+                leave-from-class="transform opacity-100 scale-100"
+                leave-to-class="transform opacity-0 scale-95"
+              >
+                <div
+                  v-show="userDropdownOpen"
+                  class="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg py-1 z-50 border border-gray-200"
+                >
+                  <!-- Informações do usuário -->
+                  <div class="px-4 py-3 border-b border-gray-200">
+                    <p class="text-sm font-semibold text-gray-900">
+                      {{ userName }}
+                    </p>
+                    <p class="text-xs text-gray-500 mt-1">
+                      Matrícula: {{ userMatricula }}
+                    </p>
+                  </div>
+
+                  <!-- Opção de sair -->
+                  <button
+                    @click="logout"
+                    class="w-full text-left px-4 py-2.5 text-gray-700 hover:bg-gray-100 transition-colors duration-200 flex items-center"
+                  >
+                    <i class="fas fa-sign-out-alt mr-2 text-red-500"></i>
+                    <span>Sair</span>
+                  </button>
+                </div>
+              </Transition>
+            </div>
+
+            <!-- Botão Administração (apenas para roles permitidas) -->
+            <a
+              v-if="canAccessAdmin"
+              href="/login"
+              class="hidden xl:flex bg-[#9c8642] hover:bg-[#8d793f] text-gray-900 px-4 py-2.5 rounded-lg font-semibold transition-all duration-300 hover:scale-105 shadow-md items-center text-base"
+              title="Área Administrativa"
             >
-              <i class="fas fa-sign-out-alt mr-2 text-lg"></i>
-              <span>Sair</span>
-            </button>
+              <i class="fas fa-cog mr-2 text-lg"></i>
+              <span>Administração</span>
+            </a>
           </template>
-          <a
-            href="/login"
-            class="hidden xl:flex bg-[#9c8642] hover:bg-[#8d793f] text-gray-900 px-4 py-2.5 rounded-lg font-semibold transition-all duration-300 hover:scale-105 shadow-md items-center text-base"
-            title="Área Administrativa"
-          >
-            <i class="fas fa-cog mr-2 text-lg"></i>
-            <span>Administração</span>
-          </a>
+
+          <!-- Se não estiver logado, mostrar botão de login -->
+          <template v-else>
+            <a
+              href="/login"
+              class="bg-[#9c8642] hover:bg-[#8d793f] text-gray-900 px-4 py-2.5 rounded-lg font-semibold transition-all duration-300 hover:scale-105 shadow-md flex items-center text-base"
+              title="Fazer Login"
+            >
+              <i class="fas fa-sign-in-alt mr-2 text-lg"></i>
+              <span>Administração</span>
+            </a>
+          </template>
         </div>
 
         <!-- Mobile menu -->
@@ -140,6 +194,21 @@
         class="lg:hidden py-4 border-t border-gray-700 animate-fade-in"
       >
         <div class="flex flex-col space-y-2">
+          <!-- Info do usuário no mobile -->
+          <div
+            v-if="page.props.auth?.user"
+            class="px-3 py-3 bg-gray-800 rounded mb-2"
+          >
+            <div class="flex items-center text-gray-300">
+              <div>
+                <p class="font-medium">{{ userName }}</p>
+                <p class="text-xs text-gray-400">
+                  Matrícula: {{ userMatricula }}
+                </p>
+              </div>
+            </div>
+          </div>
+
           <Link
             href="/"
             :class="
@@ -165,7 +234,7 @@
             @click="mobileMenuOpen = false"
           >
             <i class="fas fa-search mr-3 w-5 text-lg"></i>
-            Consultar Normas
+            Normas
           </Link>
 
           <Link
@@ -193,7 +262,7 @@
             @click="mobileMenuOpen = false"
           >
             <i class="fas fa-newspaper mr-3 w-5 text-lg"></i>
-            Boletim Interno
+            Boletim
           </a>
 
           <button
@@ -203,6 +272,12 @@
             <i class="fas fa-question-circle mr-3 w-5 text-lg"></i>
             Ajuda
           </button>
+
+          <!-- Divisor -->
+          <div
+            v-if="page.props.auth?.user"
+            class="border-t border-gray-700 my-2"
+          ></div>
 
           <template v-if="page.props.auth?.user">
             <button
@@ -220,13 +295,42 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { Link, usePage, router } from '@inertiajs/vue3';
 
 const emit = defineEmits(['show-help']);
 
 const mobileMenuOpen = ref(false);
+const userDropdownOpen = ref(false);
 const page = usePage();
+
+// verificar se o usuário tem permissão de administração
+const canAccessAdmin = computed(() => {
+  const user = page.props.auth?.user;
+  if (!user || !user.role_id) return false;
+
+  // Roles permitidas: 1, 2, 3, 7
+  const allowedRoles = [1, 2, 3, 7];
+  return allowedRoles.includes(user.role_id);
+});
+
+//pegar o nome completo do usuário
+const userName = computed(() => {
+  const user = page.props.auth?.user;
+  return user?.name || 'Usuário';
+});
+
+//pegar apenas o primeiro nome
+const firstNameOnly = computed(() => {
+  const fullName = userName.value;
+  return fullName.split(' ')[0];
+});
+
+//pegar a matrícula
+const userMatricula = computed(() => {
+  const user = page.props.auth?.user;
+  return user?.matricula || 'Sem matrícula';
+});
 
 const isActive = route => {
   const currentUrl = page.url;
@@ -247,8 +351,19 @@ const handleMobileLogout = () => {
 };
 
 const logout = () => {
+  userDropdownOpen.value = false;
   router.post('/logout');
 };
+
+// Fechar dropdown ao clicar fora
+if (typeof document !== 'undefined') {
+  document.addEventListener('click', e => {
+    const dropdown = document.querySelector('.relative');
+    if (dropdown && !dropdown.contains(e.target)) {
+      userDropdownOpen.value = false;
+    }
+  });
+}
 </script>
 
 <style scoped>

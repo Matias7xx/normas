@@ -18,6 +18,9 @@ class Boletim extends Model
     'descricao',
     'data_publicacao',
     'arquivo',
+    'conteudo_indexado',
+    'indexado',
+    'indexado_em',
     'status',
     'user_id',
   ];
@@ -25,6 +28,8 @@ class Boletim extends Model
   protected $casts = [
     'data_publicacao' => 'date',
     'status' => 'boolean',
+    'indexado' => 'boolean',
+    'indexado_em' => 'datetime',
   ];
 
   /**
@@ -95,5 +100,23 @@ class Boletim extends Model
     $filename = preg_replace('/[^A-Za-z0-9\-_.]/', '_', $filename);
     $filename = preg_replace('/_+/', '_', $filename);
     return trim($filename, '_');
+  }
+
+  /**
+   * Scope para buscar boletins indexados
+   */
+  public function scopeIndexados($query)
+  {
+    return $query->where('indexado', true);
+  }
+
+  /**
+   * Scope para buscar boletins não indexados
+   */
+  public function scopePendentesIndexacao($query)
+  {
+    return $query->where(function ($q) {
+      $q->where('indexado', false)->orWhereNull('indexado');
+    });
   }
 }

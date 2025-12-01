@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Log;
 use App\Helpers\StorageHelper;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
+use App\Services\PdfTextExtractorService;
 
 class BoletimController extends Controller
 {
@@ -89,14 +90,27 @@ class BoletimController extends Controller
   {
     // Filtro por termo de busca
     if ($request->filled('search_term')) {
-      $searchTerm = trim($request->search_term);
-      $query->where(function ($q) use ($searchTerm) {
-        $q->where('nome', 'ILIKE', "%{$searchTerm}%")->orWhere(
+      $term = trim($request->search_term);
+
+      $query->where(function ($q) use ($term) {
+        // Busca tradicional em nome/descricao
+        $q->where('nome', 'ILIKE', "%{$term}%")->orWhere(
           'descricao',
           'ILIKE',
-          "%{$searchTerm}%",
+          "%{$term}%",
+        );
+
+        $q->orWhereRaw(
+          "to_tsvector('portuguese', conteudo_indexado) @@ plainto_tsquery('portuguese', ?)",
+          [$term],
         );
       });
+
+      // Ordenar por relevância quando tem busca no conteúdo
+      $query->orderByRaw(
+        "ts_rank_cd(to_tsvector('portuguese', conteudo_indexado), plainto_tsquery('portuguese', ?)) DESC",
+        [$term],
+      );
     }
 
     // Filtro por data exata
@@ -216,7 +230,7 @@ class BoletimController extends Controller
       }
 
       // Criar registro no banco - salvar o caminho completo
-      Boletim::create([
+      $boletim = Boletim::create([
         'nome' => $request->nome,
         'descricao' => $request->descricao,
         'data_publicacao' => $request->data_publicacao,
@@ -224,6 +238,8 @@ class BoletimController extends Controller
         'user_id' => Auth::id(),
         'status' => true,
       ]);
+
+      $this->indexarBoletim($boletim);
 
       return redirect()
         ->route('boletins.index')
@@ -258,6 +274,7 @@ class BoletimController extends Controller
     try {
       $boletim = Boletim::findOrFail($id);
       $caminhoArquivoAtual = $boletim->arquivo;
+      $arquivoAlterado = false;
 
       // Se enviou novo arquivo
       if ($request->hasFile('arquivo')) {
@@ -284,6 +301,7 @@ class BoletimController extends Controller
             StorageHelper::boletins()->delete($caminhoArquivoAtual);
           }
           $caminhoArquivoAtual = $novoCaminhoArquivo;
+          $arquivoAlterado = true;
         } else {
           return back()
             ->withErrors(['Erro ao fazer upload do novo arquivo.'])
@@ -298,6 +316,13 @@ class BoletimController extends Controller
         'data_publicacao' => $request->data_publicacao,
         'arquivo' => $caminhoArquivoAtual,
       ]);
+
+      if ($arquivoAlterado) {
+        $this->indexarBoletim($boletim);
+        return redirect()
+          ->route('boletins.index')
+          ->withSuccess('Boletim atualizado e re-indexado com sucesso!');
+      }
 
       return redirect()
         ->route('boletins.index')
@@ -361,6 +386,235 @@ class BoletimController extends Controller
       Log::error('Erro ao fazer download do boletim: ' . $e->getMessage());
       return back()->withErrors(['Erro ao fazer download do arquivo.']);
     }
+  }
+
+  /**
+   * Indexa o conteúdo do boletim
+   */
+  private function indexarBoletim(Boletim $boletim)
+  {
+    try {
+      $extractor = new PdfTextExtractorService();
+      $texto = $extractor->extractText($boletim->arquivo);
+
+      $boletim->update([
+        'conteudo_indexado' => $texto,
+        'indexado' => true,
+        'indexado_em' => now(),
+      ]);
+
+      $tamanhoTexto = strlen($texto ?? '');
+      Log::info(
+        "Boletim {$boletim->id} indexado com sucesso - {$tamanhoTexto} caracteres",
+      );
+    } catch (\Exception $e) {
+      // Se der erro, apenas loga mas não quebra o cadastro
+      Log::error("Erro ao indexar boletim {$boletim->id}: " . $e->getMessage());
+
+      $boletim->update([
+        'indexado' => false,
+        'conteudo_indexado' => null,
+      ]);
+    }
+  }
+
+  /**
+   * Página de gerenciamento de indexação (apenas root)
+   */
+  public function indexacao()
+  {
+    $stats = [
+      'total' => Boletim::ativos()->count(),
+      'indexados' => Boletim::ativos()->where('indexado', true)->count(),
+      'pendentes' => Boletim::ativos()->pendentesIndexacao()->count(),
+    ];
+
+    return view('boletins.indexacao', compact('stats'));
+  }
+
+  /**
+   * Iniciar indexação
+   */
+  public function iniciarIndexacao(Request $request)
+  {
+    set_time_limit(900); // 15 minutos
+    ini_set('memory_limit', '512M'); // Aumentar memória
+
+    try {
+      $tipo = $request->input('tipo', 'pendentes');
+
+      Log::info('=== INICIANDO INDEXAÇÃO ===', [
+        'tipo' => $tipo,
+        'usuario' => Auth::user()->name ?? 'Sistema',
+      ]);
+
+      $query = Boletim::ativos();
+
+      if ($tipo === 'todos') {
+        // Primeiro: LIMPAR todos os campos de indexação
+        Boletim::ativos()->update([
+          'conteudo_indexado' => null,
+          'indexado' => false,
+          'indexado_em' => null,
+        ]);
+
+        Log::info(
+          'Campos de indexação limpos. Iniciando re-indexação completa...',
+        );
+
+        $mensagemSucesso = 'Todos os boletins foram re-indexados do zero!';
+      } else {
+        // tipo = 'pendentes' apenas os que nunca foram indexados
+        $query->pendentesIndexacao();
+        $mensagemSucesso = 'Boletins pendentes indexados com sucesso!';
+      }
+
+      // Pegar boletins para processar
+      $boletins = $query->get();
+
+      if ($boletins->isEmpty()) {
+        return back()->withInfo('Nenhum boletim para indexar!');
+      }
+
+      Log::info('Processando boletins...', [
+        'quantidade' => $boletins->count(),
+        'tipo' => $tipo,
+      ]);
+
+      $sucesso = 0;
+      $erros = 0;
+
+      foreach ($boletins as $boletim) {
+        try {
+          $this->indexarBoletim($boletim);
+          $sucesso++;
+
+          // Log a cada 10 boletins para acompanhar progresso
+          if ($sucesso % 10 === 0) {
+            Log::info(
+              "Progresso da indexação: {$sucesso} de {$boletins->count()}",
+            );
+          }
+        } catch (\Exception $e) {
+          $erros++;
+          Log::error(
+            "Erro ao indexar boletim {$boletim->id}: " . $e->getMessage(),
+          );
+        }
+      }
+
+      Log::info('=== INDEXAÇÃO CONCLUÍDA ===', [
+        'tipo' => $tipo,
+        'sucesso' => $sucesso,
+        'erros' => $erros,
+        'total' => $boletins->count(),
+      ]);
+
+      $mensagemCompleta = "{$mensagemSucesso} (Sucesso: {$sucesso}";
+      if ($erros > 0) {
+        $mensagemCompleta .= ", Erros: {$erros})";
+      } else {
+        $mensagemCompleta .= ')';
+      }
+
+      return back()->withSuccess($mensagemCompleta);
+    } catch (\Exception $e) {
+      Log::error('Erro ao iniciar indexação: ' . $e->getMessage());
+      Log::error('Stack trace: ' . $e->getTraceAsString());
+      return back()->withErrors([
+        'Erro ao iniciar indexação: ' . $e->getMessage(),
+      ]);
+    }
+  }
+
+  /**
+   * Busca boletins que mencionam o usuário
+   */
+  public function meuNome(Request $request)
+  {
+    try {
+      $user = Auth::user();
+      $nomeCompleto = $user->name;
+
+      // Variações do nome para buscar
+      $variacoesNome = $this->gerarVariacoesNome($nomeCompleto);
+
+      $query = Boletim::with('usuario')
+        ->ativos()
+        ->where('indexado', true)
+        ->where(function ($q) use ($variacoesNome) {
+          foreach ($variacoesNome as $variacao) {
+            $q->orWhere('conteudo_indexado', 'ILIKE', "%{$variacao}%");
+          }
+        });
+
+      $boletins = $query->orderBy('data_publicacao', 'desc')->paginate(20);
+
+      // Adicionar contexto de onde o nome aparece
+      foreach ($boletins as $boletim) {
+        $boletim->contexto = $this->extrairContexto(
+          $boletim->conteudo_indexado,
+          $variacoesNome,
+        );
+      }
+
+      return view('boletins.boletim_meu_nome', [
+        'boletins' => $boletins,
+        'nomeUsuario' => $nomeCompleto,
+        'totalEncontrados' => $boletins->total(),
+      ]);
+    } catch (\Exception $e) {
+      Log::error('Erro ao buscar boletins com meu nome: ' . $e->getMessage());
+      return redirect()
+        ->route('boletins.index')
+        ->withErrors(['Erro ao buscar boletins.']);
+    }
+  }
+
+  /**
+   * Gera variações do nome para buscar -> será usado apenas a matrícula
+   */
+  private function gerarVariacoesNome(string $nomeCompleto): array
+  {
+    $variacoes = [];
+
+    // Nome completo
+    $variacoes[] = $nomeCompleto;
+
+    // Nome em maiúsculas
+    $variacoes[] = strtoupper($nomeCompleto);
+
+    // Apenas sobrenomes (últimos nomes)
+    $partes = explode(' ', $nomeCompleto);
+    if (count($partes) > 1) {
+      $sobrenomes = implode(' ', array_slice($partes, -2));
+      $variacoes[] = $sobrenomes;
+      $variacoes[] = strtoupper($sobrenomes);
+    }
+
+    return array_unique($variacoes);
+  }
+
+  /**
+   * Extrai contexto onde o nome aparece
+   */
+  private function extrairContexto(
+    string $texto,
+    array $variacoes,
+    int $caracteres = 150,
+  ): ?string {
+    foreach ($variacoes as $variacao) {
+      $pos = stripos($texto, $variacao);
+      if ($pos !== false) {
+        $inicio = max(0, $pos - $caracteres);
+        $fim = min(strlen($texto), $pos + strlen($variacao) + $caracteres);
+
+        $contexto = substr($texto, $inicio, $fim - $inicio);
+        return '...' . trim($contexto) . '...';
+      }
+    }
+
+    return null;
   }
 
   /**

@@ -37,16 +37,40 @@
 
     <!-- Header da página -->
     <section
-      class="bg-gradient-to-r from-gray-600 via-gray-700 to-gray-800 text-white py-16"
+      class="bg-gradient-to-r from-gray-600 via-gray-700 to-gray-800 text-white py-16 relative"
     >
       <div class="max-w-7xl mx-auto px-4">
+        <!-- Boletins com Meu Nome -->
+        <div class="absolute top-4 right-4 md:right-8 z-20">
+          <button
+            @click="buscarMeuNome"
+            :disabled="carregando"
+            class="bg-white hover:bg-gray-50 disabled:bg-gray-300 text-gray-800 px-3 md:px-5 py-2.5 rounded-lg font-medium transition-all duration-300 hover:scale-105 shadow-lg flex items-center gap-2 group"
+            title="Buscar boletins que mencionam seu nome"
+          >
+            <i
+              class="fas fa-user-check text-blue-600 group-hover:text-blue-700"
+            ></i>
+            <span class="md:hidden text-xs">Boletins com meu nome</span>
+            <!-- MOBILE -->
+            <span class="hidden md:inline">Boletins com meu nome</span>
+          </button>
+        </div>
+
         <div class="text-center">
           <h1 class="text-3xl md:text-4xl font-bold mb-4">Boletim Interno</h1>
           <p class="text-xl text-blue-100 max-w-2xl mx-auto">
-            Pesquise boletins por data de publicação ou número do Boletim
+            <span v-if="filtros?.meu_nome">
+              <i class="fas fa-user-check mr-2"></i>
+              Boletins que mencionam seu nome
+            </span>
+            <span v-else>
+              Pesquise boletins pela data de publicação, pelo número do boletim
+              ou liste os boletins que contenham o seu nome.
+            </span>
           </p>
           <div
-            v-if="mostrandoMesAtual"
+            v-if="mostrandoMesAtual && !filtros?.meu_nome"
             class="mt-4 bg-blue-600 bg-opacity-20 rounded-lg p-3 inline-block"
           >
             <i class="fas fa-calendar-alt mr-2"></i>
@@ -151,7 +175,11 @@
             <div class="text-blue-800">
               <i class="fas fa-info-circle mr-2"></i>
               <strong>{{ boletins?.total || 0 }}</strong> encontrado(s)
-              <span v-if="temFiltrosAtivos" class="ml-2 text-sm">
+              <span v-if="filtros?.meu_nome" class="ml-2 text-sm font-semibold">
+                <i class="fas fa-user-check mr-1"></i>
+                (boletins com seu nome)
+              </span>
+              <span v-else-if="temFiltrosAtivos" class="ml-2 text-sm">
                 (com filtros aplicados)
               </span>
               <span v-else-if="mostrandoMesAtual" class="ml-2 text-sm">
@@ -495,6 +523,33 @@ const buscarTodosBoletins = () => {
   router.get(
     '/boletins',
     { busca: 1 },
+    {
+      preserveState: true,
+      onFinish: () => {
+        carregando.value = false;
+      },
+      onError: errors => {
+        console.error('Erro na busca:', errors);
+        carregando.value = false;
+      },
+    }
+  );
+};
+
+const buscarMeuNome = () => {
+  carregando.value = true;
+
+  // Limpar filtros normais
+  form.value = {
+    search_term: '',
+    data_publicacao: '',
+    mes_ano: '',
+  };
+
+  // Buscar com parâmetro especial meu_nome
+  router.get(
+    '/boletins',
+    { meu_nome: 1, busca: 1 },
     {
       preserveState: true,
       onFinish: () => {

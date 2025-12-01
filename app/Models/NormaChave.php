@@ -139,7 +139,7 @@ class NormaChave extends Model
 
     // Buscar normas que compartilham estas palavras-chave
     return Norma::whereHas('palavrasChave', function ($query) use (
-      $palavrasChaveIds
+      $palavrasChaveIds,
     ) {
       $query->whereIn('palavras_chaves.id', $palavrasChaveIds);
     })

@@ -56,7 +56,7 @@ class GrupoDuplicadaVerificado extends Model
     array $normasIds,
     int $usuarioId,
     string $status = 'verificado',
-    ?string $observacoes = null
+    ?string $observacoes = null,
   ): self {
     $hash = self::gerarHashGrupo($normasIds);
 

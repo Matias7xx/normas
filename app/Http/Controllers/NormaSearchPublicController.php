@@ -33,7 +33,7 @@ class NormaSearchPublicController extends Controller
           $q->where('descricao', 'ILIKE', "%{$searchTerm}%")
             ->orWhere('resumo', 'ILIKE', "%{$searchTerm}%")
             ->orWhereHas('palavrasChave', function ($subQuery) use (
-              $searchTerm
+              $searchTerm,
             ) {
               $subQuery
                 ->where('palavra_chave', 'ILIKE', "%{$searchTerm}%")
@@ -101,7 +101,7 @@ class NormaSearchPublicController extends Controller
             $q->where('descricao', 'ILIKE', "%{$searchTerm}%")
               ->orWhere('resumo', 'ILIKE', "%{$searchTerm}%")
               ->orWhereHas('palavrasChave', function ($subQuery) use (
-                $searchTerm
+                $searchTerm,
               ) {
                 $subQuery
                   ->where('palavra_chave', 'ILIKE', "%{$searchTerm}%")

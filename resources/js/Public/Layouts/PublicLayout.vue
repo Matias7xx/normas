@@ -92,8 +92,8 @@
             as páginas do sistema.
           </p>
           <p>
-            <strong>Consultar Normas:</strong> Na página de consulta, você pode
-            buscar normas por descrição, tipo, órgão ou data.
+            <strong>Normas:</strong> Na página de consulta, você pode buscar
+            normas por descrição, tipo, órgão ou data.
           </p>
           <p>
             <strong>Filtros:</strong> Use os filtros avançados para refinar sua
@@ -105,8 +105,9 @@
             Polícia Civil da Paraíba.
           </p>
           <p>
-            <strong>Boletim Interno:</strong> Pesquise boletins por data de
-            publicação ou número do Boletim.
+            <strong>Boletim:</strong> Pesquise boletins pela data de publicação,
+            pelo número do boletim ou liste os boletins que contenham o seu
+            nome.
           </p>
           <p>
             <strong>Administração:</strong> Acesso restrito para gestão do

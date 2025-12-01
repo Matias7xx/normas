@@ -30,14 +30,17 @@ class PublicController extends Controller
         'search_term',
         'data_publicacao',
         'mes_ano',
+        'meu_nome',
       ]);
       $isBusca = $request->has('busca') || $temFiltros;
 
-      if ($isBusca) {
+      if ($request->filled('meu_nome') && $request->meu_nome == 1) {
+        $boletins = $this->buscarPorMeuNome($request, $query);
+        $mostrandoMesAtual = false;
+      } elseif ($isBusca) {
         $boletins = $this->executarBuscaBoletins($request, $query);
         $mostrandoMesAtual = false;
       } else {
-        // Mostrar boletins do mês atual por padrão
         $mesAtual = Carbon::now()->format('Y-m');
         $boletins = $this->buscarBoletinsPorMes($query, $mesAtual);
         $mostrandoMesAtual = true;
@@ -47,7 +50,13 @@ class PublicController extends Controller
 
       // Manter parâmetros na paginação
       $boletins->appends(
-        $request->only(['search_term', 'data_publicacao', 'mes_ano', 'busca']),
+        $request->only([
+          'search_term',
+          'data_publicacao',
+          'mes_ano',
+          'busca',
+          'meu_nome',
+        ]),
       );
 
       return Inertia::render('Boletins', [
@@ -56,6 +65,7 @@ class PublicController extends Controller
           'search_term',
           'data_publicacao',
           'mes_ano',
+          'meu_nome',
         ]),
         'stats' => $this->getSystemStats(),
         'mostrandoMesAtual' => $mostrandoMesAtual,
@@ -755,6 +765,123 @@ class PublicController extends Controller
       Log::error('Erro ao visualizar especificação: ' . $e->getMessage());
       abort(404, 'Arquivo não encontrado');
     }
+  }
+
+  /**
+   * Buscar boletins que mencionam o usuário logado
+   */
+  private function buscarPorMeuNome(Request $request, $query)
+  {
+    if (!Auth::check()) {
+      return $query->whereRaw('1 = 0');
+    }
+
+    $user = Auth::user();
+    $matricula = $user->matricula;
+
+    // Gerar variações da matrícula
+    $variacoesMatricula = $this->gerarVariacoesMatricula($matricula);
+
+    // Buscar apenas boletins indexados que contenham a matrícula
+    $query
+      ->where('indexado', true)
+      ->where(function ($q) use ($variacoesMatricula, $matricula) {
+        // Busca com ILIKE para cada variação da matrícula
+        foreach ($variacoesMatricula as $variacao) {
+          $q->orWhere('conteudo_indexado', 'ILIKE', "%{$variacao}%");
+        }
+
+        // Busca com expressão regular para pegar matrícula em diferentes formatos
+        // Exemplo: 1234567, 01234567, Mat. 1234567, Matrícula: 1234567
+        $matriculaSemZeros = ltrim($matricula, '0');
+        if (!empty($matriculaSemZeros)) {
+          $q->orWhereRaw('conteudo_indexado ~* ?', [
+            "\\b0*{$matriculaSemZeros}\\b",
+          ]);
+        }
+      });
+
+    return $query
+      ->orderBy('data_publicacao', 'desc')
+      ->orderBy('created_at', 'desc');
+  }
+
+  private function gerarVariacoesMatricula(string $matricula): array
+  {
+    $variacoes = [];
+
+    // Remove zeros à esquerda e espaços
+    $matriculaSemZeros = ltrim(trim($matricula), '0');
+
+    // Se ficou vazio (era só zeros), retornar apenas a matrícula original
+    if (empty($matriculaSemZeros)) {
+      return [$matricula];
+    }
+
+    // Validação: matrícula deve ter no máximo 8 dígitos
+    if (strlen($matriculaSemZeros) > 8) {
+      Log::warning("Matrícula com mais de 8 dígitos: {$matricula}");
+      return [$matricula];
+    }
+
+    // Matrícula original (como está no banco)
+    $variacoes[] = $matricula;
+
+    // Matrícula sem zeros à esquerda
+    if ($matriculaSemZeros !== $matricula) {
+      $variacoes[] = $matriculaSemZeros;
+    }
+
+    // Matrícula com 7 dígitos
+    $variacoes[] = str_pad($matriculaSemZeros, 7, '0', STR_PAD_LEFT);
+
+    // Matrícula com 8 dígitos (limite máximo do sistema)
+    if (strlen($matriculaSemZeros) <= 8) {
+      $variacoes[] = str_pad($matriculaSemZeros, 8, '0', STR_PAD_LEFT);
+    }
+
+    // Matrícula com 6 dígitos (casos antigos/excepcionais)
+    if (strlen($matriculaSemZeros) <= 6) {
+      $variacoes[] = str_pad($matriculaSemZeros, 6, '0', STR_PAD_LEFT);
+    }
+
+    // Variações com formatação comum
+    $formatacoes = [
+      "mat. {$matriculaSemZeros}",
+      "mat {$matriculaSemZeros}",
+      "Mat. {$matriculaSemZeros}",
+      "MAT. {$matriculaSemZeros}",
+      "matrícula {$matriculaSemZeros}",
+      "Matrícula {$matriculaSemZeros}",
+      "MATRÍCULA {$matriculaSemZeros}",
+      "matricula {$matriculaSemZeros}", // sem acento
+      "Matricula {$matriculaSemZeros}", // sem acento
+      "MATRICULA {$matriculaSemZeros}", // sem acento
+      "nº {$matriculaSemZeros}", // formato alternativo
+      "Nº {$matriculaSemZeros}",
+      "n° {$matriculaSemZeros}",
+    ];
+
+    foreach ($formatacoes as $formato) {
+      $variacoes[] = $formato;
+    }
+
+    // Variações com matrícula formatada (7 dígitos) nos textos
+    $matricula7Digitos = str_pad($matriculaSemZeros, 7, '0', STR_PAD_LEFT);
+    if ($matricula7Digitos !== $matriculaSemZeros) {
+      $variacoes[] = "mat. {$matricula7Digitos}";
+      $variacoes[] = "matrícula {$matricula7Digitos}";
+      $variacoes[] = "matricula {$matricula7Digitos}";
+    }
+
+    // Remover duplicatas e valores vazios
+    $variacoes = array_unique(
+      array_filter($variacoes, function ($v) {
+        return !empty(trim($v));
+      }),
+    );
+
+    return array_values($variacoes);
   }
 }
 

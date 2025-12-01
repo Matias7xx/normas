@@ -248,6 +248,15 @@ Route::middleware([CheckAdminRoles::class])->group(function() {
 
         // Download PDF
         Route::get('/{id}/download', [BoletimController::class, 'download'])->name('boletins.download');
+
+        Route::get('/indexacao', [BoletimController::class, 'indexacao'])
+        ->name('boletins.indexacao');
+
+    Route::post('/indexacao/iniciar', [BoletimController::class, 'iniciarIndexacao'])
+        ->name('boletins.indexacao.iniciar');
+        
+    Route::get('/meu-nome', [BoletimController::class, 'meuNome'])
+        ->name('boletins.meuNome');
     });
 
     // =====================  TIPOS   ============================

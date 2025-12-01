@@ -143,6 +143,11 @@
                             </h3>
                         </div>
                         <div class="col-auto">
+                            @if(Auth::user()->role_id == 1)
+                                <a href="{{ route('boletins.indexacao') }}" class="btn btn-warning mr-2" title="Gerenciar indexação de conteúdo dos PDFs">
+                                    <i class="fas fa-sync-alt"></i> Gerenciar Indexação
+                                </a>
+                            @endif
                             <a href="{{ route('boletins.create') }}" class="btn btn-success">
                                 <i class="fas fa-plus"></i> Novo Boletim
                             </a>
